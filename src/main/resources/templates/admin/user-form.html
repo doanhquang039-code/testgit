@@ -1,0 +1,44 @@
+<form th:action="@{/admin/users/save}" th:object="${user}" method="post" enctype="multipart/form-data">
+	<input type="hidden" th:field="*{id}" />
+	<div class="mb-3">
+		<label>Tên đăng nhập:</label>
+		<input type="text" th:field="*{username}" class="form-control" required />
+	</div>
+	<div class="mb-3">
+		<label>Họ tên nhân viên:</label>
+		<input type="text" th:field="*{fullName}" name="fullName" class="form-control" required />
+	</div>
+	<div class="mb-3">
+		<label>Email:</label>
+		<input type="email" th:field="*{email}" class="form-control" required />
+	</div>
+
+	<div class="mb-3">
+		<label>Mật khẩu:</label>
+		<input type="password" th:field="*{password}" class="form-control" th:required="${user.id == null}" />
+	</div>
+
+	<div class="mb-3">
+		<label>Quyền hạn:</label>
+		<select th:field="*{role}" class="form-control">
+			<option value="ADMIN">ADMIN</option>
+			<option value="MANAGER">MANAGER</option>
+			<option value="HIRING">HIRING</option>
+
+			<option value="USER">USER</option>
+		</select>
+	</div>
+	<label>Phòng ban:</label>
+	<select th:field="*{department}">
+		<option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.departmentName}"></option>
+	</select>
+	<label>Chức vụ:</label>
+	<select th:field="*{position}">
+		<option th:each="pos : ${positions}" th:value="${pos.id}" th:text="${pos.positionName}"></option>
+	</select>
+
+	<label>Ảnh đại diện:</label>
+	<input type="file" name="image" />
+
+	<button type="submit">Lưu lại</button>
+</form>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - HRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .sidebar { height: 100vh; background: #343a40; color: white; padding-top: 20px; }
+        .sidebar a { color: white; text-decoration: none; display: block; padding: 10px 20px; }
+        .sidebar a:hover { background: #495057; }
+        .card-box { border-radius: 10px; padding: 20px; color: white; margin-bottom: 20px; }
+		.card-box { 
+		    transition: transform 0.2s, box-shadow 0.2s; 
+		    cursor: pointer;
+		}
+		.card-box:hover { 
+		    transform: translateY(-5px); 
+		    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+		    filter: brightness(1.1);
+		}
+		.text-decoration-none:hover {
+		    color: inherit;
+		}
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+			<nav class="col-md-2 d-none d-md-block sidebar shadow">
+			    <h4 class="text-center py-2 text-uppercase fw-bold">HRMS ADMIN</h4>
+			    <hr>
+			    <a th:href="@{/admin/dashboard}" class="active">📊 Dashboard</a>
+			    <a th:href="@{/admin/users}">👤 Quản lý Nhân viên</a>
+			    <a th:href="@{/admin/departments}">🏢 Quản lý Phòng ban</a>
+			    <a th:href="@{/admin/positions}">💼 Quản lý Chức vụ</a>
+			    
+			    <hr class="mx-3"> <a th:href="@{/admin/contracts}">📜 Quản lý Hợp đồng</a>
+			    <a th:href="@{/admin/payroll}">💰 Bảng lương (Payroll)</a>
+			    <a th:href="@{/admin/leaves}">📅 Duyệt Nghỉ phép</a>
+			    <a th:href="@{/admin/tasks}">📝 Công việc (Tasks)</a>
+				<a th:href="@{/admin/assignments}">📝 Công việc 123 (Tasks)</a>
+			    <form th:action="@{/logout}" method="post" class="px-3 mt-4">
+			        <button type="submit" class="btn btn-outline-light btn-sm w-100">🚪 Đăng xuất</button>
+			    </form>
+			</nav>
+
+			<main class="col-md-10 ms-sm-auto px-md-4 pt-4">
+			    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+			        <h1 class="h2">Bảng điều khiển Admin</h1>
+			    </div>
+
+			    <div class="row mt-4">
+			        <div class="col-md-3">
+			            <a th:href="@{/admin/users}" class="text-decoration-none">
+			                <div class="card-box bg-primary shadow-sm hover-effect">
+			                    <h5>Tổng nhân viên</h5>
+			                    <h3 th:text="${totalUsers}">120</h3>
+			                </div>
+			            </a>
+			        </div>
+
+			        <div class="col-md-3">
+			            <a th:href="@{/admin/departments}" class="text-decoration-none">
+			                <div class="card-box bg-info text-white shadow-sm hover-effect">
+			                    <h5>Phòng ban</h5>
+			                    <h3 th:text="${totalDepartments}">8</h3>
+			                </div>
+			            </a>
+			        </div>
+
+			        <div class="col-md-3">
+			            <a th:href="@{/admin/positions}" class="text-decoration-none">
+			                <div class="card-box bg-secondary shadow-sm hover-effect">
+			                    <h5>Chức vụ</h5>
+			                    <h3 th:text="${totalPositions}">12</h3>
+			                </div>
+			            </a>
+			        </div>
+
+			        <div class="col-md-3">
+			            <a th:href="@{/admin/leaves}" class="text-decoration-none">
+			                <div class="card-box bg-warning text-dark shadow-sm hover-effect">
+			                    <h5>Nghỉ phép chờ duyệt</h5>
+			                    <h3 th:text="${pendingLeaves}">5</h3>
+			                </div>
+			            </a>
+			        </div>
+			    </div>
+			</main>
+        </div>
+    </div>
+</body>
+</html>

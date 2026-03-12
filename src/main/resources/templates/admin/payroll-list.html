@@ -1,0 +1,44 @@
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-white py-3">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <form th:action="@{/admin/payroll}" method="get" class="d-flex">
+          <input type="text" name="keyword" th:value="${keyword}" class="form-control me-2"
+            placeholder="Tìm tên nhân viên..." />
+          <button type="submit" class="btn btn-dark">Lọc</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0 text-center">
+      <thead class="table-light">
+        <tr>
+          <th>Nhân viên</th>
+          <th>Lương cơ bản</th>
+          <th>Hệ số PC</th>
+          <th>Thực nhận</th>
+          <th>Ngày tính</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="p : ${payrolls}">
+          <td th:text="${p.user.fullName}"></td>
+          <td th:text="${#numbers.formatCurrency(p.baseSalary)}"></td>
+
+          <td th:text="${#numbers.formatCurrency(p.bonus)}"></td>
+
+          <td class="text-danger fw-bold" th:text="${#numbers.formatCurrency(p.netSalary)}"></td>
+
+          <td th:text="${p.month + '/' + p.year}"></td>
+          <td>
+            <span th:class="${p.paymentStatus.name() == 'PAID' ? 'badge bg-success' : 'badge bg-warning'}"
+              th:text="${p.paymentStatus}"></span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

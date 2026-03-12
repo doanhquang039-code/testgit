@@ -1,0 +1,30 @@
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="text-primary mb-0 fw-bold">QUẢN LÝ PHÒNG BAN</h5>
+        <a th:href="@{/admin/departments/add}" class="btn btn-primary">➕ Thêm phòng ban</a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">ID</th>
+                    <th>Tên phòng ban</th>
+                    <th>Số điện thoại</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="d : ${departments}">
+                    <td class="ps-4" th:text="${d.id}"></td>
+                    <td class="fw-bold" th:text="${d.departmentName}"></td>
+                    <td th:text="${d.phoneNumber}"></td>
+                    <td class="text-center">
+						<a th:href="@{/admin/departments/edit/{id}(id=${d.id})}" 
+						   class="btn btn-sm btn-outline-warning">Sửa</a>
+                        <a th:href="@{/admin/departments/delete/{id}(id=${d.id})}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa phòng ban này?')">Xóa</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

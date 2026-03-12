@@ -1,0 +1,36 @@
+<form th:action="@{/admin/positions/save}" th:object="${position}" method="post">
+    <input type="hidden" th:field="*{id}" />
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Tên chức vụ</label>
+        <input type="text" th:field="*{positionName}" class="form-control" required />
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Cấp độ (Level)</label>
+            <input type="number" th:field="*{jobLevel}" class="form-control" min="1" required />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Hệ số phụ cấp</label>
+            <input type="number" step="0.01" th:field="*{allowanceCoeff}" class="form-control" required />
+        </div>
+    </div>
+
+	<div class="mb-4">
+	    <label class="form-label fw-bold">Chức vụ thăng tiến tiếp theo</label>
+	    <select th:field="*{nextPosition}" class="form-select">
+	        <option value="">-- Không có (Kịch trần) --</option>
+	        <option th:each="p : ${allPositions}" 
+	                th:if="${position.id == null or p.id != position.id}" 
+	                th:value="${p.id}" 
+	                th:text="${p.positionName}"></option>
+	    </select>
+	</div>
+
+    <div class="d-flex justify-content-between">
+        <a th:href="@{/admin/positions}" class="btn btn-outline-secondary px-4">Quay lại</a>
+        <button type="submit" class="btn btn-success px-4">Lưu chức vụ</button>
+    </div>
+</form>

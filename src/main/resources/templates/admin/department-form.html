@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm/Sửa Phòng Ban</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="card shadow-sm border-0 mx-auto" style="max-width: 600px;">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0" th:text="${department.id == null ? 'THÊM PHÒNG BAN MỚI' : 'CHỈNH SỬA PHÒNG BAN'}"></h5>
+            </div>
+            <div class="card-body p-4">
+                <form th:action="@{/admin/departments/save}" th:object="${department}" method="post">
+                    <input type="hidden" th:field="*{id}" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên phòng ban</label>
+                        <input type="text" th:field="*{departmentName}" class="form-control" placeholder="Ví dụ: Phòng Nhân sự" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số điện thoại</label>
+                        <input type="text" th:field="*{phoneNumber}" class="form-control" placeholder="Ví dụ: 024.1234.567" />
+                    </div>
+
+                    <div class="d-flex justify-content-between pt-3">
+                        <a th:href="@{/admin/departments}" class="btn btn-outline-secondary">Quay lại</a>
+                        <button type="submit" class="btn btn-primary px-4">Lưu phòng ban</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

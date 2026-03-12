@@ -1,0 +1,20 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tên công việc</th>
+            <th>Loại</th>
+            <th>Trạng thái</th>
+            <th>Ngày giao</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="assignment : ${myTasks}">
+            <td th:text="${assignment.task.taskName}"></td>
+            <td th:text="${assignment.task.taskType}"></td>
+            <td>
+                <span class="badge bg-info" th:text="${assignment.status}"></span>
+            </td>
+            <td th:text="${assignment.assignedDate}"></td>
+        </tr>
+    </tbody>
+</table>

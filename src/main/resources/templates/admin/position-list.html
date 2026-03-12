@@ -1,0 +1,41 @@
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Tên chức vụ</th> <th>Level</th>       <th>Hệ số phụ cấp</th> <th>Thăng tiến tới</th> <th class="text-center">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="p : ${positions}">
+            <td th:text="${p.id}"></td>
+            <td class="fw-bold text-dark" th:text="${p.positionName}"></td>
+            
+            <td th:text="${p.jobLevel}"></td>
+            
+            <td th:text="${p.allowanceCoeff != null ? #numbers.formatDecimal(p.allowanceCoeff, 1, 2) : '0.00'}"></td>
+            
+            <td>
+                <span class="badge bg-light text-secondary border" 
+                      th:text="${p.nextPosition != null ? p.nextPosition.positionName : 'Kịch trần'}">
+                </span>
+            </td>
+            
+            <td class="text-center">
+                <div class="btn-group">
+					<a th:href="@{/admin/positions/add}" class="btn btn-success shadow-sm px-3">
+					           <i class="bi bi-plus-lg me-1"></i> Thêm chức vụ mới
+					       </a>
+                    <a th:href="@{/admin/positions/edit/{id}(id=${p.id})}" 
+                       class="btn btn-sm btn-outline-warning">
+                       <i class="bi bi-pencil"></i> Sửa
+                    </a>
+                    <a th:href="@{/admin/positions/delete/{id}(id=${p.id})}" 
+                       class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Xóa chức vụ này có thể ảnh hưởng đến nhân viên liên quan?')">
+                       <i class="bi bi-trash"></i> Xóa
+                    </a>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>

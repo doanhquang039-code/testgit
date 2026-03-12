@@ -1,0 +1,31 @@
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 text-primary fw-bold">🤝 QUẢN LÝ TUYỂN DỤNG & ONBOARDING</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Họ Tên</th>
+                    <th>Email</th>
+                    <th>Vị Trí</th>
+                    <th>Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="u : ${newHires}">
+                    <td class="fw-bold" th:text="${u.fullName}"></td>
+                    <td th:text="${u.email}"></td>
+                    <td th:text="${u.position != null ? u.position.name : 'Chưa phân vị trí'}"></td>
+                    <td>
+                        <a th:href="@{/hiring/activate/{id}(id=${u.id})}" class="btn btn-sm btn-success shadow-sm">Kích
+                            Hoạt Tài Khoản</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(newHires)}">
+                    <td colspan="4" class="py-4 text-muted">Hiện không có nhân sự mới cần duyệt.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

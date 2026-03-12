@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Manager Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <h2 class="mb-4 text-primary fw-bold">Trang Quản Lý (Manager)</h2>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm bg-info text-white">
+                    <div class="card-body">
+                        <h5>Tổng nhân sự</h5>
+                        <h2 th:text="${totalEmployees}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm bg-warning text-dark">
+                    <div class="card-body">
+                        <h5>Đơn nghỉ cần duyệt</h5>
+                        <h2 th:text="${pendingLeaves}">0</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 text-success">📝 Đơn nghỉ phép mới nhất</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Nhân viên</th>
+                                    <th>Loại nghỉ</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="l : ${recentLeaves}" th:if="${lStat.index < 5}">
+                                    <td th:text="${l.user != null ? l.user.fullName : 'N/A'}"></td>
+                                    <td th:text="${l.leaveType}"></td>
+                                    <td>
+                                        <span
+                                            th:class="${l.status.name() == 'PENDING' ? 'badge bg-warning' : 'badge bg-success'}"
+                                            th:text="${l.status}"></span>
+                                    </td>
+                                    <td>
+                                        <a th:if="${l.status.name() == 'PENDING'}"
+                                            th:href="@{/admin/leaves/approve/{id}(id=${l.id})}"
+                                            class="btn btn-sm btn-outline-primary">Duyệt</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 text-info">🚀 Tiến độ dự án</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="t : ${recentTasks}" th:if="${tStat.index < 4}" class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span th:text="${t.taskName}"></span>
+                                <span class="fw-bold text-primary" th:text="${t.isExtraShift ? 'Tăng ca' : ''}"></span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-info" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

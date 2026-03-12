@@ -1,0 +1,46 @@
+package com.example.hr.controllers;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.example.hr.enums.UserStatus;
+import com.example.hr.models.Contract;
+import com.example.hr.repository.ContractRepository;
+import com.example.hr.repository.UserRepository;
+import java.util.List;
+
+@Controller
+@RequestMapping({ "/admin/contracts", "/manager/contracts" })
+
+public class ContractController {
+    @Autowired
+    private ContractRepository contractRepository;
+    @Autowired
+    private UserRepository userRepository;
+
+   @GetMapping
+public String list(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
+    List<Contract> contracts = contractRepository.findAllWithUser(keyword);
+    model.addAttribute("contracts", contracts);
+    return "admin/contract-list";
+}
+
+    @GetMapping("/add")
+    public String showAddForm(Model model) {
+        model.addAttribute("contract", new Contract());
+        model.addAttribute("users", userRepository.findByStatus(UserStatus.ACTIVE));
+        return "admin/contract-form";
+    }
+
+    @PostMapping("/save")
+    public String save(@ModelAttribute("contract") Contract contract) {
+        contractRepository.save(contract);
+        return "redirect:/admin/contracts";
+    }
+}

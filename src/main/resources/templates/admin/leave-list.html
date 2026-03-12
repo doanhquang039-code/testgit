@@ -1,0 +1,41 @@
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">DANH SÁCH ĐƠN NGHỈ PHÉP</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Nhân viên</th>
+                    <th>Loại nghỉ</th>
+                    <th>Từ ngày</th>
+                    <th>Đến ngày</th>
+                    <th>Lý do</th>
+                    <th>Trạng thái</th>
+                    <th>Người duyệt</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="l : ${leaves}">
+                    <td th:text="${l.id}"></td>
+                    <td class="fw-bold" th:text="${l.user != null ? l.user.fullName : 'N/A'}"></td>
+                    <td th:text="${l.leaveType}"></td>
+                    <td th:text="${l.startDate}"></td>
+                    <td th:text="${l.endDate}"></td>
+                    <td class="text-start" th:text="${l.reason}"></td>
+                    <td>
+                        <span th:class="${l.status == 'APPROVED' ? 'badge bg-success' : 'badge bg-warning'}"
+                            th:text="${l.status}"></span>
+                    </td>
+                    <td th:text="${l.approvedBy}"></td>
+                    <td>
+                        <a th:if="${l.status == 'PENDING'}" th:href="@{/admin/leaves/approve/{id}(id=${l.id})}"
+                            class="btn btn-sm btn-outline-primary">Duyệt</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
