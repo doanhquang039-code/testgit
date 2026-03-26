@@ -2,6 +2,9 @@ package com.example.hr.controllers;
 
 import com.example.hr.models.User;
 import com.example.hr.repository.*;
+
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -25,20 +28,15 @@ public class User1Controller {
     @Autowired
     private TaskAssignmentRepository taskAssignmentRepository;
 
-    @GetMapping("/dashboard")
-    public String dashboard(Authentication auth, Model model) {
-        User user = userRepository.findByEmail(auth.getName());
-
-        if (user == null)
-            return "redirect:/login";
-
-        model.addAttribute("user", user);
-        model.addAttribute("myTasks", taskAssignmentRepository.findByUser(user));
-
-        // Bổ sung thêm để nhân viên xem được lương và đơn nghỉ của mình
-        model.addAttribute("myPayrolls", payrollRepository.findByUser(user));
-        model.addAttribute("myLeaves", leaveRepository.findByUser(user));
-
-        return "user1/dashboard";
-    }
+   @GetMapping("/dashboard") // Hoặc endpoint tương ứng của bạn
+public String dashboard(Principal principal, Model model) {
+    // Lấy username từ người dùng đang đăng nhập
+    String username = principal.getName(); 
+    
+    // Sau đó mới dùng biến username này để tìm kiếm và dùng .orElse(null)
+    User user = userRepository.findByUsername(username).orElse(null);
+    
+    model.addAttribute("user", user);
+    return "user/dashboard";
+}
 }

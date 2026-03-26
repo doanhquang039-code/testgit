@@ -1,21 +1,24 @@
 package com.example.hr.repository;
 
 import java.util.Optional;
-import java.util.List; // PHẢI dùng java.util để chứa dữ liệu từ Database
-
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.example.hr.enums.UserStatus;
 import com.example.hr.models.User;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+    
+    // Hàm dùng cho Login
+    Optional<User> findByEmail(String email);
+
+    // Hàm dùng cho các Controller khác (Hiring, Contract, Task...)
     Optional<User> findByUsername(String username);
 
-    // Bây giờ List<User> sẽ được Spring Data JPA hiểu là danh sách thực thể
+    // Hàm lấy danh sách theo trạng thái (Hết lỗi findByStatus)
     List<User> findByStatus(UserStatus status);
 
-    User findByEmail(String email);
-
+    // Hàm tìm kiếm theo tên (Hết lỗi findByFullNameContainingAndStatus)
     List<User> findByFullNameContainingAndStatus(String fullName, UserStatus status);
-
 }
