@@ -9,4 +9,5 @@ import com.example.hr.models.JobPosition;
 
 public interface JobPositionRepository extends JpaRepository<JobPosition, Integer> {
 	List<JobPosition> findByActiveTrue();
+	List<JobPosition> findByTitleContainingIgnoreCase(String title);
 }

@@ -19,10 +19,8 @@ public class User {
 
     @Column(unique = true, nullable = false, length = 50)
     private String username;
-
-    @Column(nullable = false)
-    private String password;
-
+@Column(nullable = false, length = 255) // Đảm bảo đủ chỗ cho chuỗi BCrypt 60 ký tự
+private String password;
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 

@@ -32,10 +32,11 @@ public class SecurityConfig {
                       
                         .requestMatchers("/user1/**", "/user/**").authenticated()
                         .anyRequest().permitAll())
-                .formLogin(login -> login
-                        .loginPage("/login") // Trang login tự chế trong templates
-                        .defaultSuccessUrl("/home", true)
-                        .permitAll())
+               .formLogin(login -> login
+    .loginPage("/login")
+    .passwordParameter("password") 
+    .defaultSuccessUrl("/home", true)
+    .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/logout") 
                         .logoutSuccessUrl("/login?logout") 
