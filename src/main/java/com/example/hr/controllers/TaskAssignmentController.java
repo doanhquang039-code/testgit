@@ -29,8 +29,8 @@ public class TaskAssignmentController {
     private UserRepository userRepository;
 
     // 1. Hiển thị danh sách phân công
-  @GetMapping("/admin/assignments")
-    @Transactional(readOnly = true) // Thêm dòng này
+    @GetMapping
+    @Transactional(readOnly = true)
     public String list(Model model) {
         model.addAttribute("assignments", assignmentRepository.findAll());
         return "admin/assignment-list";

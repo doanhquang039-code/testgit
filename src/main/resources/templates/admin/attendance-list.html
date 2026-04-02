@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Chấm công - HRMS Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .sidebar { height: 100vh; background: #343a40; color: white; padding-top: 20px; position: sticky; top: 0; }
+        .sidebar a { color: white; text-decoration: none; display: block; padding: 10px 20px; }
+        .sidebar a:hover, .sidebar a.active { background: #495057; }
+        .badge-PRESENT    { background-color: #198754; }
+        .badge-LATE       { background-color: #fd7e14; }
+        .badge-EARLY_LEAVE{ background-color: #0dcaf0; color: #000; }
+        .badge-ABSENT     { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block sidebar shadow">
+            <h4 class="text-center py-2 text-uppercase fw-bold">HRMS ADMIN</h4>
+            <hr>
+            <a th:href="@{/admin/dashboard}">📊 Dashboard</a>
+            <a th:href="@{/admin/users}">👤 Nhân viên</a>
+            <a th:href="@{/admin/departments}">🏢 Phòng ban</a>
+            <a th:href="@{/admin/positions}">💼 Chức vụ</a>
+            <hr class="mx-3">
+            <a th:href="@{/admin/contracts}">📜 Hợp đồng</a>
+            <a th:href="@{/admin/payroll}">💰 Bảng lương</a>
+            <a th:href="@{/admin/leaves}">📅 Nghỉ phép</a>
+            <a th:href="@{/admin/attendance}" class="active">📋 Chấm công</a>
+            <a th:href="@{/admin/tasks}">📝 Công việc</a>
+            <form th:action="@{/logout}" method="post" class="px-3 mt-4">
+                <button type="submit" class="btn btn-outline-light btn-sm w-100">🚪 Đăng xuất</button>
+            </form>
+        </nav>
+
+        <main class="col-md-10 ms-sm-auto px-md-4 pt-4">
+            <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                <h1 class="h3">📋 Quản lý Chấm công</h1>
+                <a th:href="@{/admin/attendance/add}" class="btn btn-primary">+ Thêm bản ghi</a>
+            </div>
+
+            <!-- Filter form -->
+            <form th:action="@{/admin/attendance}" method="get" class="row g-2 mb-4">
+                <div class="col-md-3">
+                    <input type="text" name="keyword" class="form-control" placeholder="🔍 Tìm theo tên..." th:value="${keyword}">
+                </div>
+                <div class="col-md-2">
+                    <select name="month" class="form-select">
+                        <option th:each="m : ${#numbers.sequence(1,12)}"
+                                th:value="${m}"
+                                th:text="${'Tháng ' + m}"
+                                th:selected="${m == month}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="year" class="form-control" th:value="${year}" min="2020" max="2030">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Lọc</button>
+                </div>
+            </form>
+
+            <!-- Table -->
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Nhân viên</th>
+                                <th>Ngày</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Trạng thái</th>
+                                <th>Ghi chú</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(attendances)}">
+                                <td colspan="8" class="text-center text-muted py-4">Không có dữ liệu chấm công</td>
+                            </tr>
+                            <tr th:each="a, stat : ${attendances}">
+                                <td th:text="${stat.count}">1</td>
+                                <td>
+                                    <strong th:text="${a.user.fullName}">Nguyễn Văn A</strong>
+                                    <small class="d-block text-muted" th:text="${a.user.department != null ? a.user.department.departmentName : 'N/A'}"></small>
+                                </td>
+                                <td th:text="${a.attendanceDate}"></td>
+                                <td th:text="${a.checkInTime != null ? a.checkInTime : '--:--'}"></td>
+                                <td th:text="${a.checkOutTime != null ? a.checkOutTime : '--:--'}"></td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${'badge-' + a.status}"
+                                          th:text="${a.status}"></span>
+                                </td>
+                                <td th:text="${a.note != null ? a.note : ''}"></td>
+                                <td>
+                                    <a th:href="@{/admin/attendance/delete/{id}(id=${a.id})}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Xóa bản ghi này?')">Xóa</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Summary stats -->
+            <div class="row mt-4" th:if="${!#lists.isEmpty(attendances)}">
+                <div class="col-md-3">
+                    <div class="card border-success text-center p-3">
+                        <h6 class="text-success">✅ Đúng giờ</h6>
+                        <h4 th:text="${#lists.size(attendances.?[status.name() == 'PRESENT'])}">0</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-warning text-center p-3">
+                        <h6 class="text-warning">⏰ Đi muộn</h6>
+                        <h4 th:text="${#lists.size(attendances.?[status.name() == 'LATE'])}">0</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-info text-center p-3">
+                        <h6 class="text-info">🏃 Về sớm</h6>
+                        <h4 th:text="${#lists.size(attendances.?[status.name() == 'EARLY_LEAVE'])}">0</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-danger text-center p-3">
+                        <h6 class="text-danger">❌ Vắng mặt</h6>
+                        <h4 th:text="${#lists.size(attendances.?[status.name() == 'ABSENT'])}">0</h4>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>
