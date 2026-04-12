@@ -17,6 +17,7 @@ import com.example.hr.models.Attendance;
 import com.example.hr.models.User;
 import com.example.hr.repository.AttendanceRepository;
 import com.example.hr.repository.UserRepository;
+import com.example.hr.service.AuthUserHelper;
 
 @Controller
 public class AttendanceController {
@@ -26,6 +27,9 @@ public class AttendanceController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AuthUserHelper authUserHelper;
 
     // ==================== ADMIN VIEWS ====================
 
@@ -81,8 +85,8 @@ public class AttendanceController {
                                  @RequestParam(required = false) Integer year,
                                  Authentication auth,
                                  Model model) {
-        User currentUser = userRepository.findByUsername(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+        User currentUser = authUserHelper.getCurrentUser(auth);
+        if (currentUser == null) throw new RuntimeException("Người dùng không tồn tại");
 
         int currentMonth = (month != null) ? month : LocalDate.now().getMonthValue();
         int currentYear  = (year  != null) ? year  : LocalDate.now().getYear();
@@ -105,8 +109,8 @@ public class AttendanceController {
 
     @PostMapping("/user/attendance/checkin")
     public String checkIn(Authentication auth) {
-        User currentUser = userRepository.findByUsername(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+        User currentUser = authUserHelper.getCurrentUser(auth);
+        if (currentUser == null) throw new RuntimeException("Người dùng không tồn tại");
 
         LocalDate today = LocalDate.now();
         Optional<Attendance> existing = attendanceRepository
@@ -131,8 +135,8 @@ public class AttendanceController {
 
     @PostMapping("/user/attendance/checkout")
     public String checkOut(Authentication auth) {
-        User currentUser = userRepository.findByUsername(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+        User currentUser = authUserHelper.getCurrentUser(auth);
+        if (currentUser == null) throw new RuntimeException("Người dùng không tồn tại");
 
         Optional<Attendance> existing = attendanceRepository
                 .findByUserAndAttendanceDate(currentUser, LocalDate.now());

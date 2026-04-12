@@ -14,5 +14,8 @@ public class WebConfig implements WebMvcConfigurer {
         // Ánh xạ URL /test1/** vào thư mục vật lý public/test1/
         registry.addResourceHandler("/test1/**")
                 .addResourceLocations("file:public/test1/");
+        // Also map /uploads/** to the same directory for profile images
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:public/test1/");
     }
 }

@@ -1,20 +1,561 @@
-<table class="table">
-    <thead>
-        <tr>
-            <th>Tên công việc</th>
-            <th>Loại</th>
-            <th>Trạng thái</th>
-            <th>Ngày giao</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:each="assignment : ${myTasks}">
-            <td th:text="${assignment.task.taskName}"></td>
-            <td th:text="${assignment.task.taskType}"></td>
-            <td>
-                <span class="badge bg-info" th:text="${assignment.status}"></span>
-            </td>
-            <td th:text="${assignment.assignedDate}"></td>
-        </tr>
-    </tbody>
-</table>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Nhân viên - HRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f0f4f8; min-height: 100vh; margin: 0; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            position: fixed;
+            left: 0; top: 0;
+            z-index: 100;
+            padding-top: 0;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+        }
+        .sidebar-brand {
+            padding: 24px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .sidebar-brand .brand-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .sidebar-brand .brand-name {
+            color: white; font-weight: 700; font-size: 1rem; line-height: 1.2;
+        }
+        .sidebar-brand .brand-sub {
+            color: #64748b; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase;
+        }
+        .sidebar-user {
+            padding: 16px 20px;
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(99, 102, 241, 0.1);
+            margin: 16px 12px;
+            border-radius: 12px;
+        }
+        .sidebar-user-avatar {
+            width: 42px; height: 42px; border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(99, 102, 241, 0.5);
+        }
+        .sidebar-user-name { color: white; font-weight: 600; font-size: 0.85rem; }
+        .sidebar-user-role { color: #94a3b8; font-size: 0.72rem; }
+
+        .sidebar-section-label {
+            color: #475569; font-size: 0.65rem; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            padding: 12px 20px 4px;
+        }
+        .sidebar nav a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 20px; color: #94a3b8;
+            text-decoration: none; font-size: 0.875rem; font-weight: 500;
+            transition: all 0.2s; border-left: 3px solid transparent;
+            margin: 2px 0;
+        }
+        .sidebar nav a:hover {
+            color: white;
+            background: rgba(255,255,255,0.06);
+            border-left-color: #6366f1;
+        }
+        .sidebar nav a.active {
+            color: white;
+            background: rgba(99, 102, 241, 0.15);
+            border-left-color: #6366f1;
+        }
+        .sidebar nav a i { font-size: 1rem; width: 20px; }
+        .sidebar-logout {
+            padding: 20px; margin-top: auto;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            position: absolute; bottom: 0; width: 100%;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            margin-left: 260px;
+            padding: 28px 32px;
+            min-height: 100vh;
+        }
+
+        /* ===== TOPBAR ===== */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 28px;
+        }
+        .topbar h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; margin: 0; }
+        .topbar .date-badge {
+            background: white; border-radius: 10px;
+            padding: 8px 16px; font-size: 0.85rem; color: #64748b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* ===== STAT CARDS ===== */
+        .stat-card {
+            background: white; border-radius: 16px;
+            padding: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer; text-decoration: none; display: block;
+            border: 1px solid rgba(0,0,0,0.04);
+            height: 100%;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        .stat-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; margin-bottom: 14px;
+        }
+        .stat-icon.purple { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+        .stat-icon.green  { background: linear-gradient(135deg, #10b981, #34d399); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+        .stat-icon.red    { background: linear-gradient(135deg, #ef4444, #f87171); }
+        .stat-icon.cyan   { background: linear-gradient(135deg, #06b6d4, #22d3ee); }
+        .stat-label { color: #64748b; font-size: 0.78rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { color: #0f172a; font-size: 1.8rem; font-weight: 700; line-height: 1.2; margin-top: 4px; }
+        .stat-sub { color: #94a3b8; font-size: 0.75rem; margin-top: 4px; }
+
+        /* ===== CARDS ===== */
+        .content-card {
+            background: white; border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.04);
+            overflow: hidden; margin-bottom: 24px;
+        }
+        .card-header-custom {
+            padding: 18px 22px; border-bottom: 1px solid #f1f5f9;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .card-header-custom h6 {
+            font-weight: 700; color: #0f172a; margin: 0; font-size: 0.95rem;
+        }
+        .card-body-custom { padding: 20px 22px; }
+
+        /* ===== ATTENDANCE MINI ===== */
+        .checkin-box {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 16px; padding: 24px; color: white;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .checkin-box h5 { font-weight: 700; font-size: 1rem; margin: 0 0 6px; }
+        .checkin-box .time { font-size: 2rem; font-weight: 800; line-height: 1; }
+        .checkin-box .date { opacity: 0.8; font-size: 0.85rem; margin-top: 4px; }
+        .btn-checkin {
+            background: white; color: #6366f1;
+            border: none; border-radius: 12px;
+            padding: 12px 22px; font-weight: 700; font-size: 0.9rem;
+            transition: all 0.2s; cursor: pointer;
+        }
+        .btn-checkin:hover { background: #f0f4f8; transform: scale(1.04); }
+        .btn-checkout {
+            background: rgba(255,255,255,0.2); color: white;
+            border: 2px solid rgba(255,255,255,0.5); border-radius: 12px;
+            padding: 12px 22px; font-weight: 700; font-size: 0.9rem;
+            transition: all 0.2s; cursor: pointer;
+        }
+        .btn-checkout:hover { background: rgba(255,255,255,0.3); }
+
+        /* ===== TASKS ===== */
+        .task-item {
+            padding: 14px 0; border-bottom: 1px solid #f1f5f9;
+            display: flex; align-items: center; gap: 14px;
+        }
+        .task-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .task-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .task-dot.pending  { background: #f59e0b; }
+        .task-dot.progress { background: #6366f1; }
+        .task-dot.done     { background: #10b981; }
+        .task-name { font-weight: 600; font-size: 0.88rem; color: #1e293b; }
+        .task-meta { color: #94a3b8; font-size: 0.76rem; margin-top: 2px; }
+        .task-badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+        .badge-pending  { background: #fff7ed; color: #c2410c; }
+        .badge-progress { background: #ede9fe; color: #7c3aed; }
+        .badge-done     { background: #d1fae5; color: #065f46; }
+
+        /* ===== LEAVE ===== */
+        .leave-item {
+            padding: 12px 0; border-bottom: 1px solid #f1f5f9;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .leave-item:last-child { border-bottom: none; }
+        .leave-type { font-weight: 600; font-size: 0.85rem; color: #1e293b; }
+        .leave-dates { color: #64748b; font-size: 0.78rem; margin-top: 2px; }
+
+        /* ===== ATTENDANCE HISTORY ===== */
+        .att-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f8fafc; }
+        .att-row:last-child { border-bottom: none; }
+        .att-date { color: #0f172a; font-weight: 600; font-size: 0.82rem; min-width: 90px; }
+        .att-time { color: #64748b; font-size: 0.8rem; }
+        .status-pill { font-size: 0.7rem; padding: 2px 10px; border-radius: 20px; font-weight: 600; }
+        .pill-PRESENT     { background: #d1fae5; color: #065f46; }
+        .pill-LATE        { background: #ffedd5; color: #c2410c; }
+        .pill-EARLY_LEAVE { background: #dbeafe; color: #1e40af; }
+        .pill-ABSENT      { background: #fee2e2; color: #991b1b; }
+
+        /* ===== QUICK ACTIONS ===== */
+        .quick-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 8px; padding: 18px 12px; background: white; border-radius: 14px;
+            border: 1px solid #e2e8f0; text-decoration: none; color: #1e293b;
+            font-size: 0.8rem; font-weight: 600; transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04); text-align: center;
+        }
+        .quick-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); color: #1e293b; }
+        .quick-btn .q-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+        }
+
+        /* ===== PAYROLL PREVIEW ===== */
+        .pay-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .pay-row:last-child { border-bottom: none; }
+        .pay-label { color: #64748b; font-size: 0.85rem; }
+        .pay-value { font-weight: 700; font-size: 0.9rem; color: #0f172a; }
+        .pay-value.net { color: #10b981; font-size: 1.1rem; }
+
+        /* ===== SCROLLABLE ===== */
+        .scroll-content { max-height: 320px; overflow-y: auto; }
+        .scroll-content::-webkit-scrollbar { width: 4px; }
+        .scroll-content::-webkit-scrollbar-track { background: transparent; }
+        .scroll-content::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
+        /* ===== PROGRESS BAR ===== */
+        .progress-bar-custom { background: #f1f5f9; border-radius: 8px; height: 8px; overflow: hidden; margin-top: 6px; }
+        .progress-fill { height: 100%; border-radius: 8px; transition: width 0.5s ease; }
+
+        /* ===== CLOCK ===== */
+        #live-clock { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">⚡</div>
+        <div>
+            <div class="brand-name">HRMS</div>
+            <div class="brand-sub">HR Platform</div>
+        </div>
+    </div>
+
+    <div class="sidebar-user">
+        <img class="sidebar-user-avatar"
+             th:src="@{'/uploads/' + ${user.profileImage}}"
+             onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('NV') + '&background=6366f1&color=fff&size=42'"
+             th:alt="${user.fullName}"
+             alt="Avatar">
+        <div>
+            <div class="sidebar-user-name" th:text="${user.fullName}">Nhân viên</div>
+            <div class="sidebar-user-role" th:text="${user.position != null ? user.position.positionName : user.role}">Employee</div>
+        </div>
+    </div>
+
+    <div class="sidebar-section-label">Cá nhân</div>
+    <nav>
+        <a href="/user1/dashboard" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="/user1/profile"><i class="bi bi-person-circle"></i> Hồ sơ cá nhân</a>
+        <a href="/user/attendance"><i class="bi bi-clipboard-check"></i> Chấm công</a>
+        <a href="/user/leaves"><i class="bi bi-calendar-x"></i> Nghỉ phép</a>
+        <a href="/user1/payroll"><i class="bi bi-cash-coin"></i> Phiếu lương</a>
+        <a href="/user1/tasks"><i class="bi bi-list-task"></i> Công việc của tôi</a>
+    </nav>
+
+    <div class="sidebar-section-label">Hỗ trợ</div>
+    <nav>
+        <a href="/videos"><i class="bi bi-play-circle"></i> Video đào tạo</a>
+    </nav>
+
+    <div class="sidebar-logout">
+        <form action="/logout" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-outline-light btn-sm w-100" style="border-radius:10px;">
+                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div>
+            <h1>👋 Chào, <span th:text="${user.fullName}">Nhân viên</span>!</h1>
+            <div style="color:#64748b;font-size:0.88rem;margin-top:4px;" th:text="${'Phòng ban: ' + (user.department != null ? user.department.departmentName : 'Chưa gán')}"></div>
+        </div>
+        <div class="date-badge">
+            <i class="bi bi-calendar3"></i>
+            <span th:text="${today}">01/01/2025</span>
+            &nbsp;|&nbsp;
+            <i class="bi bi-clock"></i>
+            <span id="live-clock">--:--:--</span>
+        </div>
+    </div>
+
+    <!-- CHECK-IN BOX -->
+    <div class="checkin-box">
+        <div>
+            <h5>📍 Chấm công hôm nay</h5>
+            <div class="time" th:if="${todayAttendance != null}" th:text="${todayAttendance.checkInTime}">08:00</div>
+            <div class="time" th:if="${todayAttendance == null}">Chưa check-in</div>
+            <div class="date" th:text="${today}"></div>
+            <div style="margin-top:10px;font-size:0.82rem;opacity:0.85;" th:if="${todayAttendance != null}">
+                Trạng thái: <strong th:text="${todayAttendance.status}">PRESENT</strong>
+                <span th:if="${todayAttendance.checkOutTime != null}">
+                    &nbsp;| Ra: <strong th:text="${todayAttendance.checkOutTime}">17:00</strong>
+                </span>
+            </div>
+        </div>
+        <div>
+            <div th:if="${todayAttendance == null}">
+                <form action="/user/attendance/checkin" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn-checkin">✅ Check-in</button>
+                </form>
+            </div>
+            <div th:if="${todayAttendance != null and todayAttendance.checkOutTime == null}">
+                <form action="/user/attendance/checkout" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn-checkout">🏁 Check-out</button>
+                </form>
+            </div>
+            <div th:if="${todayAttendance != null and todayAttendance.checkOutTime != null}" style="text-align:center;">
+                <i class="bi bi-check-circle-fill" style="font-size:2.5rem;opacity:0.9;"></i>
+                <div style="font-size:0.85rem;opacity:0.8;margin-top:4px;">Đã hoàn thành ca</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <a href="/user/attendance" class="stat-card">
+                <div class="stat-icon purple">📋</div>
+                <div class="stat-label">Ngày công tháng này</div>
+                <div class="stat-value" th:text="${attendanceDays}">0</div>
+                <div class="stat-sub">ngày đã chấm công</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="/user/leaves" class="stat-card">
+                <div class="stat-icon orange">📅</div>
+                <div class="stat-label">Đơn nghỉ phép</div>
+                <div class="stat-value" th:text="${pendingLeaves}">0</div>
+                <div class="stat-sub">đang chờ duyệt</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="/user1/tasks" class="stat-card">
+                <div class="stat-icon cyan">📝</div>
+                <div class="stat-label">Công việc của tôi</div>
+                <div class="stat-value" th:text="${totalTasks}">0</div>
+                <div class="stat-sub">tổng công việc được giao</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="/user1/payroll" class="stat-card">
+                <div class="stat-icon green">💰</div>
+                <div class="stat-label">Phiếu lương</div>
+                <div class="stat-value" th:text="${latestSalary != null ? '#' + latestPayrollMonth : 'N/A'}">N/A</div>
+                <div class="stat-sub">tháng gần nhất</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN 2-COL GRID -->
+    <div class="row g-4">
+
+        <!-- LEFT: Tasks + Leave -->
+        <div class="col-lg-8">
+
+            <!-- Công việc của tôi -->
+            <div class="content-card mb-4">
+                <div class="card-header-custom">
+                    <h6>📝 Công việc đang thực hiện</h6>
+                    <a href="/user1/tasks" style="font-size:0.8rem;color:#6366f1;text-decoration:none;">Xem tất cả →</a>
+                </div>
+                <div class="card-body-custom scroll-content">
+                    <div th:if="${#lists.isEmpty(myTasks)}" style="text-align:center;color:#94a3b8;padding:30px 0;">
+                        <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+                        Chưa có công việc nào được giao
+                    </div>
+                    <div th:each="a : ${myTasks}" class="task-item">
+                        <div th:switch="${a.status.name()}"
+                             th:class="${a.status.name() == 'DONE' ? 'task-dot done' : (a.status.name() == 'IN_PROGRESS' ? 'task-dot progress' : 'task-dot pending')}">
+                        </div>
+                        <div style="flex:1;">
+                            <div class="task-name" th:text="${a.task.taskName}">Tên công việc</div>
+                            <div class="task-meta">
+                                <i class="bi bi-tag"></i> <span th:text="${a.task.taskType}">Loại</span>
+                                &nbsp;·&nbsp;
+                                <i class="bi bi-calendar"></i> <span th:text="${a.assignedDate}">01/01</span>
+                            </div>
+                        </div>
+                        <span th:class="${a.status.name() == 'DONE' ? 'task-badge badge-done' : (a.status.name() == 'IN_PROGRESS' ? 'task-badge badge-progress' : 'task-badge badge-pending')}"
+                              th:text="${a.status}">PENDING</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Đơn nghỉ phép gần đây -->
+            <div class="content-card">
+                <div class="card-header-custom">
+                    <h6>📅 Đơn nghỉ phép gần đây</h6>
+                    <a href="/user/leaves" style="font-size:0.8rem;color:#6366f1;text-decoration:none;">Xin nghỉ →</a>
+                </div>
+                <div class="card-body-custom">
+                    <div th:if="${#lists.isEmpty(myLeaves)}" style="text-align:center;color:#94a3b8;padding:20px 0;">
+                        Chưa có đơn nghỉ phép nào
+                    </div>
+                    <div th:each="lr : ${myLeaves}" class="leave-item">
+                        <div>
+                            <div class="leave-type" th:text="${lr.leaveType}">ANNUAL</div>
+                            <div class="leave-dates">
+                                <i class="bi bi-arrow-right"></i>
+                                <span th:text="${lr.startDate}"></span> đến <span th:text="${lr.endDate}"></span>
+                            </div>
+                        </div>
+                        <span class="badge"
+                              th:classappend="${lr.status.name() == 'APPROVED' ? 'bg-success' : (lr.status.name() == 'REJECTED' ? 'bg-danger' : 'bg-warning text-dark')}"
+                              th:text="${lr.status}">PENDING</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Attendance + Payroll + Quick Actions -->
+        <div class="col-lg-4">
+
+            <!-- Chấm công tháng này -->
+            <div class="content-card mb-4">
+                <div class="card-header-custom">
+                    <h6>📊 Chấm công tháng này</h6>
+                </div>
+                <div class="card-body-custom">
+                    <!-- Progress -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:#64748b;margin-bottom:4px;">
+                            <span>Hiệu suất đi làm</span>
+                            <span style="font-weight:700;color:#10b981;" th:text="${attendanceRate + '%'}">0%</span>
+                        </div>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill" style="background:linear-gradient(90deg,#10b981,#34d399);"
+                                 th:style="'width:' + ${attendanceRate} + '%'"></div>
+                        </div>
+                    </div>
+                    <div class="scroll-content" style="max-height:240px;">
+                        <div th:each="a : ${recentAttendance}" class="att-row">
+                            <div class="att-date" th:text="${a.attendanceDate}">01/01</div>
+                            <div class="att-time">
+                                <span th:text="${a.checkInTime != null ? a.checkInTime : '--:--'}">08:00</span>
+                                <span style="color:#cbd5e1;"> – </span>
+                                <span th:text="${a.checkOutTime != null ? a.checkOutTime : '--:--'}">17:00</span>
+                            </div>
+                            <span th:class="'status-pill pill-' + ${a.status}" th:text="${a.status}">OK</span>
+                        </div>
+                        <div th:if="${#lists.isEmpty(recentAttendance)}" style="text-align:center;color:#94a3b8;padding:16px 0;font-size:0.85rem;">
+                            Chưa có dữ liệu
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phiếu lương mới nhất -->
+            <div class="content-card mb-4" th:if="${latestSalary != null}">
+                <div class="card-header-custom">
+                    <h6>💰 Lương tháng <span th:text="${latestPayrollMonth}">1</span>/<span th:text="${latestPayrollYear}">2025</span></h6>
+                    <a href="/user1/payroll" style="font-size:0.8rem;color:#6366f1;text-decoration:none;">Chi tiết →</a>
+                </div>
+                <div class="card-body-custom">
+                    <div class="pay-row">
+                        <div class="pay-label">Lương cơ bản</div>
+                        <div class="pay-value" th:text="${#numbers.formatDecimal(latestSalary.baseSalary,1,'COMMA',0,'POINT') + ' ₫'}">0 ₫</div>
+                    </div>
+                    <div class="pay-row">
+                        <div class="pay-label">Thưởng/phụ cấp</div>
+                        <div class="pay-value" style="color:#6366f1;" th:text="${'+' + #numbers.formatDecimal(latestSalary.bonus,1,'COMMA',0,'POINT') + ' ₫'}">+0 ₫</div>
+                    </div>
+                    <div class="pay-row">
+                        <div class="pay-label">Khấu trừ</div>
+                        <div class="pay-value" style="color:#ef4444;" th:text="${'-' + #numbers.formatDecimal(latestSalary.deductions,1,'COMMA',0,'POINT') + ' ₫'}">-0 ₫</div>
+                    </div>
+                    <div class="pay-row" style="border-top:2px solid #6366f1;margin-top:8px;padding-top:12px;">
+                        <div class="pay-label" style="font-weight:700;color:#0f172a;">Thực nhận</div>
+                        <div class="pay-value net" th:text="${#numbers.formatDecimal(latestSalary.baseSalary.add(latestSalary.bonus).subtract(latestSalary.deductions),1,'COMMA',0,'POINT') + ' ₫'}">0 ₫</div>
+                    </div>
+                    <div style="margin-top:10px;text-align:right;">
+                        <span class="badge" th:classappend="${latestSalary.paymentStatus.name() == 'PAID' ? 'bg-success' : 'bg-warning text-dark'}"
+                              th:text="${latestSalary.paymentStatus}">PENDING</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="content-card">
+                <div class="card-header-custom"><h6>⚡ Truy cập nhanh</h6></div>
+                <div class="card-body-custom">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="/user/attendance" class="quick-btn">
+                                <div class="q-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">📋</div>
+                                Chấm công
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="/user/leaves" class="quick-btn">
+                                <div class="q-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">📅</div>
+                                Xin nghỉ phép
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="/user1/payroll" class="quick-btn">
+                                <div class="q-icon" style="background:linear-gradient(135deg,#10b981,#34d399);">💰</div>
+                                Phiếu lương
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="/user1/profile" class="quick-btn">
+                                <div class="q-icon" style="background:linear-gradient(135deg,#06b6d4,#22d3ee);">👤</div>
+                                Hồ sơ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+// Live clock
+function updateClock() {
+    const now = new Date();
+    document.getElementById('live-clock').textContent =
+        now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+}
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>

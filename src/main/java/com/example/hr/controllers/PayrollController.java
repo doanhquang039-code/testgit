@@ -17,7 +17,8 @@ import com.example.hr.repository.PayrollRepository;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.repository.ContractRepository;
 
-// ... (các import giữ nguyên)
+import com.example.hr.enums.NotificationType;
+import com.example.hr.service.NotificationService;
 
 @Controller
 @RequestMapping("/admin/payroll")
@@ -29,6 +30,8 @@ public class PayrollController {
     private UserRepository userRepository;
     @Autowired
     private ContractRepository contractRepository;
+    @Autowired
+    private NotificationService notificationService;
 
   @GetMapping
 public String list(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
@@ -73,6 +76,13 @@ public String list(@RequestParam(name = "keyword", required = false) String keyw
         payroll.setPaymentStatus(com.example.hr.enums.PaymentStatus.PENDING);
 
         payrollRepository.save(payroll);
+        // Notify employee about new payroll
+        notificationService.createNotification(
+            user,
+            "💰 Phíiếu lương tháng " + payroll.getMonth() + "/" + payroll.getYear() + " đã được tạo. Hãy kiểm tra ngay!",
+            NotificationType.PAYROLL,
+            "/user1/payroll"
+        );
         return "redirect:/admin/payroll";
     }
 
@@ -81,6 +91,15 @@ public String list(@RequestParam(name = "keyword", required = false) String keyw
         Payroll payroll = payrollRepository.findById(id).orElseThrow();
         payroll.setPaymentStatus(PaymentStatus.PAID);
         payrollRepository.save(payroll);
+        // Notify employee about payment
+        if (payroll.getUser() != null) {
+            notificationService.createNotification(
+                payroll.getUser(),
+                "✅ Lương tháng " + payroll.getMonth() + "/" + payroll.getYear() + " đã được thanh toán toàn bộ!",
+                NotificationType.SUCCESS,
+                "/user1/payroll"
+            );
+        }
         return "redirect:/admin/payroll";
     }
 

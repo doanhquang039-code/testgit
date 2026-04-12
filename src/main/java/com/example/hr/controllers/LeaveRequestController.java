@@ -8,11 +8,13 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.hr.enums.LeaveStatus;
 import com.example.hr.enums.LeaveType;
+import com.example.hr.enums.NotificationType;
 import com.example.hr.enums.UserStatus;
 import com.example.hr.models.LeaveRequest;
 import com.example.hr.models.User;
 import com.example.hr.repository.LeaveRequestRepository;
 import com.example.hr.repository.UserRepository;
+import com.example.hr.service.NotificationService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,6 +26,8 @@ public class LeaveRequestController {
     private LeaveRequestRepository leaveRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     // ==================== ADMIN ====================
 
@@ -61,13 +65,23 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/admin/leaves/approve/{id}")
-    public String approve(@PathVariable Integer id) {
+    public String approve(@PathVariable Integer id, Authentication auth) {
         LeaveRequest lr = leaveRepository.findById(id).orElseThrow();
         lr.setStatus(LeaveStatus.APPROVED);
-        User approver = userRepository.findById(2)
-                .orElseThrow(() -> new RuntimeException("Người duyệt không tồn tại"));
-        lr.setApprovedBy(approver);
+        // Dùng người đang login làm approver
+        if (auth != null) {
+            userRepository.findByUsername(auth.getName()).ifPresent(lr::setApprovedBy);
+        }
         leaveRepository.save(lr);
+        // Gửi thông báo cho nhân viên
+        if (lr.getUser() != null) {
+            notificationService.createNotification(
+                lr.getUser(),
+                "✅ Đơn nghỉ phép " + lr.getLeaveType() + " từ " + lr.getStartDate() + " đến " + lr.getEndDate() + " đã được DUYỆT!",
+                NotificationType.SUCCESS,
+                "/user/leaves"
+            );
+        }
         return "redirect:/admin/leaves";
     }
 
@@ -76,6 +90,15 @@ public class LeaveRequestController {
         LeaveRequest lr = leaveRepository.findById(id).orElseThrow();
         lr.setStatus(LeaveStatus.REJECTED);
         leaveRepository.save(lr);
+        // Gửi thông báo từ chối
+        if (lr.getUser() != null) {
+            notificationService.createNotification(
+                lr.getUser(),
+                "❌ Đơn nghỉ phép " + lr.getLeaveType() + " từ " + lr.getStartDate() + " đã bị TỪ CHỐI.",
+                NotificationType.DANGER,
+                "/user/leaves"
+            );
+        }
         return "redirect:/admin/leaves";
     }
 
@@ -104,7 +127,7 @@ public class LeaveRequestController {
                               @RequestParam String reason,
                               Authentication auth) {
         User currentUser = userRepository.findByUsername(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+                .orElseGet(() -> userRepository.findByEmail(auth.getName()).orElseThrow());
 
         LeaveRequest lr = new LeaveRequest();
         lr.setUser(currentUser);
@@ -115,6 +138,15 @@ public class LeaveRequestController {
         lr.setStatus(LeaveStatus.PENDING);
 
         leaveRepository.save(lr);
+
+        // Thông báo xác nhận cho nhân viên
+        notificationService.createNotification(
+            currentUser,
+            "📅 Đơn xin nghỉ " + leaveType + " từ " + startDate + " đến " + endDate + " đã được gửi, đang chờ duyệt.",
+            NotificationType.LEAVE_REQUEST,
+            "/user/leaves"
+        );
+
         return "redirect:/user/leaves";
     }
 }

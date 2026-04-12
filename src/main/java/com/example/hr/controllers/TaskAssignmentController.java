@@ -9,11 +9,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.hr.enums.NotificationType;
 import com.example.hr.enums.UserStatus;
 import com.example.hr.models.TaskAssignment;
 import com.example.hr.repository.TaskAssignmentRepository;
 import com.example.hr.repository.TaskRepository;
 import com.example.hr.repository.UserRepository;
+import com.example.hr.service.NotificationService;
 import org.springframework.transaction.annotation.Transactional;
 @Controller
 @RequestMapping("/admin/assignments")
@@ -21,12 +23,12 @@ public class TaskAssignmentController {
 
     @Autowired
     private TaskAssignmentRepository assignmentRepository;
-
     @Autowired
     private TaskRepository taskRepository;
-
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     // 1. Hiển thị danh sách phân công
     @GetMapping
@@ -49,8 +51,16 @@ public class TaskAssignmentController {
     // 3. Lưu phân công
     @PostMapping("/save")
     public String save(@ModelAttribute("assignment") TaskAssignment assignment) {
-        // Có thể thêm logic tự động gán ngày giao là ngày hiện tại
         assignmentRepository.save(assignment);
+        // Notify employee about new task
+        if (assignment.getUser() != null && assignment.getTask() != null) {
+            notificationService.createNotification(
+                assignment.getUser(),
+                "📝 Bạn được giao công việc mới: \"" + assignment.getTask().getTaskName() + "\". Hãy xắtỷ buổi hôm nay!",
+                NotificationType.TASK_ASSIGNED,
+                "/user1/tasks"
+            );
+        }
         return "redirect:/admin/assignments";
     }
 
