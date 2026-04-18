@@ -1,6 +1,7 @@
 package com.example.hr.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +20,7 @@ import org.springframework.data.domain.Sort;
 
 @Controller
 @RequestMapping({ "/admin/contracts", "/manager/contracts" })
-
+@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
 public class ContractController {
     @Autowired
     private ContractRepository contractRepository;

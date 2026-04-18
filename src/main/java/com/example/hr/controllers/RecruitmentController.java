@@ -1,6 +1,7 @@
 package com.example.hr.controllers;
 
 import com.example.hr.models.Candidate;
+import com.example.hr.enums.Role;
 import com.example.hr.models.JobPosting;
 import com.example.hr.models.User;
 import com.example.hr.enums.UserStatus;
@@ -10,6 +11,7 @@ import com.example.hr.repository.JobPostingRepository;
 import com.example.hr.repository.JobPositionRepository;
 import com.example.hr.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/hiring")
+@PreAuthorize("hasAnyRole('ADMIN','HIRING','MANAGER')")
 public class RecruitmentController {
 
     @Autowired private JobPostingRepository jobPostingRepository;
@@ -216,7 +219,7 @@ public class RecruitmentController {
         newEmployee.setUsername(username);
         // Mật khẩu mặc định = 123456 (BCrypt)
         newEmployee.setPassword("$2a$10$hqVbLomRjVdJbGhyByGAeOYPaLYzGDxMIjilh3juV6.ZYc07DNkAu");
-        newEmployee.setRole("USER");
+        newEmployee.setRole(Role.USER);
         newEmployee.setStatus(UserStatus.ACTIVE);
         // Gán phòng ban từ job posting nếu có
         if (c.getJobPosting() != null && c.getJobPosting().getDepartment() != null) {

@@ -1,6 +1,7 @@
 package com.example.hr.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,6 +33,7 @@ public class LeaveRequestController {
     // ==================== ADMIN ====================
 
     @GetMapping("/admin/leaves")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String listAll(@RequestParam(required = false) String keyword,
                           @RequestParam(required = false) String status,
                           Model model) {
@@ -53,6 +55,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/admin/leaves/add")
+    @PreAuthorize("hasRole('ADMIN')")
     public String showAddForm(Model model) {
         model.addAttribute("leaveRequest", new LeaveRequest());
         model.addAttribute("users", userRepository.findByStatus(UserStatus.ACTIVE));
@@ -61,6 +64,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/admin/leaves/edit/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public String showEditForm(@PathVariable Integer id, Model model) {
         LeaveRequest lr = leaveRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("ID không tồn tại: " + id));
@@ -71,6 +75,7 @@ public class LeaveRequestController {
     }
 
     @PostMapping("/admin/leaves/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public String save(@ModelAttribute("leaveRequest") LeaveRequest lr) {
         if (lr.getId() == null && lr.getStatus() == null) {
             lr.setStatus(LeaveStatus.PENDING);
@@ -80,6 +85,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/admin/leaves/approve/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String approve(@PathVariable Integer id, Authentication auth) {
         LeaveRequest lr = leaveRepository.findById(id).orElseThrow();
         lr.setStatus(LeaveStatus.APPROVED);
@@ -101,6 +107,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/admin/leaves/reject/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String reject(@PathVariable Integer id) {
         LeaveRequest lr = leaveRepository.findById(id).orElseThrow();
         lr.setStatus(LeaveStatus.REJECTED);
@@ -118,6 +125,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/admin/leaves/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public String delete(@PathVariable Integer id) {
         leaveRepository.deleteById(id);
         return "redirect:/admin/leaves";
@@ -126,6 +134,7 @@ public class LeaveRequestController {
     // ==================== USER SELF-SERVICE ====================
 
     @GetMapping("/user/leaves")
+    @PreAuthorize("isAuthenticated()")
     public String userLeaves(Authentication auth, Model model) {
         User currentUser = userRepository.findByUsername(auth.getName())
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
@@ -136,6 +145,7 @@ public class LeaveRequestController {
     }
 
     @PostMapping("/user/leaves/submit")
+    @PreAuthorize("isAuthenticated()")
     public String submitLeave(@RequestParam String leaveType,
                               @RequestParam String startDate,
                               @RequestParam String endDate,
@@ -164,4 +174,4 @@ public class LeaveRequestController {
 
         return "redirect:/user/leaves";
     }
-}
+}

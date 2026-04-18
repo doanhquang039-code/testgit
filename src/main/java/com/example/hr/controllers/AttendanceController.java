@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,6 +35,7 @@ public class AttendanceController {
     // ==================== ADMIN VIEWS ====================
 
     @GetMapping("/admin/attendance")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String adminList(@RequestParam(required = false) String keyword,
                             @RequestParam(required = false) Integer month,
                             @RequestParam(required = false) Integer year,
@@ -59,6 +61,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/admin/attendance/add")
+    @PreAuthorize("hasRole('ADMIN')")
     public String showAddForm(Model model) {
         model.addAttribute("attendance", new Attendance());
         model.addAttribute("users", userRepository.findAll());
@@ -67,12 +70,14 @@ public class AttendanceController {
     }
 
     @PostMapping("/admin/attendance/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public String saveAttendance(@ModelAttribute Attendance attendance) {
         attendanceRepository.save(attendance);
         return "redirect:/admin/attendance";
     }
 
     @GetMapping("/admin/attendance/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public String deleteAttendance(@PathVariable Integer id) {
         attendanceRepository.deleteById(id);
         return "redirect:/admin/attendance";
@@ -81,6 +86,7 @@ public class AttendanceController {
     // ==================== USER VIEWS ====================
 
     @GetMapping("/user/attendance")
+    @PreAuthorize("isAuthenticated()")
     public String userAttendance(@RequestParam(required = false) Integer month,
                                  @RequestParam(required = false) Integer year,
                                  Authentication auth,
@@ -108,6 +114,7 @@ public class AttendanceController {
     }
 
     @PostMapping("/user/attendance/checkin")
+    @PreAuthorize("isAuthenticated()")
     public String checkIn(Authentication auth) {
         User currentUser = authUserHelper.getCurrentUser(auth);
         if (currentUser == null) throw new RuntimeException("Người dùng không tồn tại");
@@ -134,6 +141,7 @@ public class AttendanceController {
     }
 
     @PostMapping("/user/attendance/checkout")
+    @PreAuthorize("isAuthenticated()")
     public String checkOut(Authentication auth) {
         User currentUser = authUserHelper.getCurrentUser(auth);
         if (currentUser == null) throw new RuntimeException("Người dùng không tồn tại");

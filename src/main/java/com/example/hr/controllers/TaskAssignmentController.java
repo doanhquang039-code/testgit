@@ -1,6 +1,7 @@
 package com.example.hr.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import com.example.hr.service.NotificationService;
 import org.springframework.transaction.annotation.Transactional;
 @Controller
 @RequestMapping("/admin/assignments")
+@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
 public class TaskAssignmentController {
 
     @Autowired

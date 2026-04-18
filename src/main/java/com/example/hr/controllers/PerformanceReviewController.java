@@ -9,6 +9,7 @@ import com.example.hr.repository.UserRepository;
 import com.example.hr.service.AuthUserHelper;
 import com.example.hr.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,6 +30,7 @@ public class PerformanceReviewController {
     // ==================== ADMIN ====================
 
     @GetMapping("/admin/reviews")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String adminList(@RequestParam(required = false) String period, Model model) {
         List<PerformanceReview> reviews = (period != null && !period.isBlank())
                 ? reviewRepository.findByPeriod(period)
@@ -41,6 +43,7 @@ public class PerformanceReviewController {
     }
 
     @GetMapping("/admin/reviews/add")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String showAddForm(Model model) {
         model.addAttribute("review", new PerformanceReview());
         model.addAttribute("users", userRepository.findByStatus(UserStatus.ACTIVE));
@@ -50,6 +53,7 @@ public class PerformanceReviewController {
     }
 
     @GetMapping("/admin/reviews/edit/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String showEditForm(@PathVariable Integer id, Model model) {
         PerformanceReview review = reviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Review không tồn tại: " + id));
@@ -61,6 +65,7 @@ public class PerformanceReviewController {
     }
 
     @PostMapping("/admin/reviews/save")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String save(@ModelAttribute PerformanceReview review,
                        Authentication auth,
                        RedirectAttributes redirectAttributes) {
@@ -82,6 +87,7 @@ public class PerformanceReviewController {
     }
 
     @GetMapping("/admin/reviews/approve/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String approve(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
         PerformanceReview review = reviewRepository.findById(id).orElseThrow();
         review.setStatus(ReviewStatus.APPROVED);
@@ -91,6 +97,7 @@ public class PerformanceReviewController {
     }
 
     @GetMapping("/admin/reviews/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String delete(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
         reviewRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("successMsg", "🗑️ Đã xoá đánh giá!");
@@ -100,6 +107,7 @@ public class PerformanceReviewController {
     // ==================== USER VIEW ====================
 
     @GetMapping("/user1/reviews")
+    @PreAuthorize("isAuthenticated()")
     public String userReviews(Authentication auth, Model model) {
         User user = authUserHelper.getCurrentUser(auth);
         if (user == null) return "redirect:/login";
