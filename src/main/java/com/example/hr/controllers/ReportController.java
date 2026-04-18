@@ -1,63 +1,102 @@
 package com.example.hr.controllers;
 
-import com.example.hr.enums.AttendanceStatus;
-import com.example.hr.enums.UserStatus;
-import com.example.hr.models.Attendance;
-import com.example.hr.models.Department;
-import com.example.hr.models.PerformanceReview;
-import com.example.hr.models.Payroll;
-import com.example.hr.models.User;
-import com.example.hr.repository.*;
+import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.example.hr.enums.AttendanceStatus;
+import com.example.hr.enums.UserStatus;
+import com.example.hr.models.Attendance;
+import com.example.hr.models.Department;
+import com.example.hr.models.Payroll;
+import com.example.hr.models.PerformanceReview;
+import com.example.hr.models.User;
+import com.example.hr.repository.AttendanceRepository;
+import com.example.hr.repository.DepartmentRepository;
+import com.example.hr.repository.LeaveRequestRepository;
+import com.example.hr.repository.PayrollRepository;
+import com.example.hr.repository.PerformanceReviewRepository;
+import com.example.hr.repository.UserRepository;
 
 @Controller
 @RequestMapping("/admin/reports")
 public class ReportController {
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private DepartmentRepository departmentRepository;
-    @Autowired private AttendanceRepository attendanceRepository;
-    @Autowired private PayrollRepository payrollRepository;
-    @Autowired private PerformanceReviewRepository reviewRepository;
-    @Autowired private LeaveRequestRepository leaveRepository;
+    private static final BigDecimal ZERO = BigDecimal.ZERO;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private AttendanceRepository attendanceRepository;
+
+    @Autowired
+    private PayrollRepository payrollRepository;
+
+    @Autowired
+    private PerformanceReviewRepository reviewRepository;
+
+    @Autowired
+    private LeaveRequestRepository leaveRepository;
 
     @GetMapping
     public String reportDashboard(Model model) {
         LocalDate today = LocalDate.now();
+        YearMonth currentPeriod = YearMonth.from(today);
+        int currentMonth = currentPeriod.getMonthValue();
+        int currentYear = currentPeriod.getYear();
+
         List<User> activeUsers = userRepository.findByStatus(UserStatus.ACTIVE);
         long totalEmployees = activeUsers.size();
+        List<Attendance> allAttendance = attendanceRepository.findAll();
+        List<Payroll> allPayrolls = payrollRepository.findAll();
+        List<PerformanceReview> allReviews = reviewRepository.findAll();
 
-        // ===== CHART 1: Chấm công 12 tháng gần nhất (Theo tháng) =====
         List<String> monthLabels = new ArrayList<>();
         List<Integer> monthPresent = new ArrayList<>();
         List<Integer> monthLate = new ArrayList<>();
         List<Integer> monthAbsent = new ArrayList<>();
 
         for (int i = 5; i >= 0; i--) {
-            LocalDate monthStart = today.minusMonths(i).withDayOfMonth(1);
-            LocalDate monthEnd = monthStart.withDayOfMonth(monthStart.lengthOfMonth());
-            monthLabels.add(monthStart.format(DateTimeFormatter.ofPattern("MM/yyyy")));
+            YearMonth period = currentPeriod.minusMonths(i);
+            LocalDate monthStart = period.atDay(1);
+            LocalDate monthEnd = period.atEndOfMonth();
 
-            List<Attendance> monthAtt = attendanceRepository.findByAttendanceDateBetween(monthStart, monthEnd);
-            long present = monthAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.PRESENT).count();
-            long late = monthAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.LATE).count();
-            // Ước tính số ngày vắng = (nhân viên * ngày làm việc trong tháng) - check in
-            long workDays = monthStart.until(monthEnd).getDays() * 5 / 7 + 1;
-            long absent = Math.max(0, (totalEmployees * workDays) - monthAtt.size());
+            List<Attendance> monthAttendance = allAttendance.stream()
+                    .filter(attendance -> isWithinMonth(attendance.getAttendanceDate(), period))
+                    .toList();
 
+            long present = monthAttendance.stream()
+                    .filter(attendance -> attendance.getStatus() == AttendanceStatus.PRESENT)
+                    .count();
+            long late = monthAttendance.stream()
+                    .filter(attendance -> attendance.getStatus() == AttendanceStatus.LATE)
+                    .count();
+            long expectedAttendances = totalEmployees * countWeekdays(monthStart, monthEnd);
+            long absent = Math.max(0, expectedAttendances - present - late);
+
+            monthLabels.add(period.format(DateTimeFormatter.ofPattern("MM/yyyy")));
             monthPresent.add((int) present);
             monthLate.add((int) late);
-            monthAbsent.add((int) Math.min(absent, totalEmployees * workDays));
+            monthAbsent.add((int) Math.min(absent, expectedAttendances));
         }
 
         model.addAttribute("monthLabels", monthLabels);
@@ -65,40 +104,38 @@ public class ReportController {
         model.addAttribute("monthLate", monthLate);
         model.addAttribute("monthAbsent", monthAbsent);
 
-        // ===== CHART 2: Phân bổ lương theo phòng ban =====
-        List<Department> depts = departmentRepository.findAll();
+        Map<Integer, Payroll> payrollByUserThisMonth = allPayrolls.stream()
+                .filter(payroll -> payroll.getUser() != null && payroll.getUser().getId() != null)
+                .filter(payroll -> payroll.getMonth() != null && payroll.getYear() != null)
+                .filter(payroll -> payroll.getMonth() == currentMonth && payroll.getYear() == currentYear)
+                .collect(Collectors.toMap(
+                        payroll -> payroll.getUser().getId(),
+                        payroll -> payroll,
+                        this::pickPreferredPayroll));
+
         List<String> deptSalaryNames = new ArrayList<>();
         List<Double> deptAvgSalary = new ArrayList<>();
         List<Long> deptHeadcount = new ArrayList<>();
 
-        List<Payroll> allPayrolls = payrollRepository.findAll();
-        int currentMonth = today.getMonthValue();
-        int currentYear = today.getYear();
-
-        for (Department d : depts) {
+        for (Department department : departmentRepository.findAll()) {
             List<User> deptUsers = activeUsers.stream()
-                    .filter(u -> u.getDepartment() != null && u.getDepartment().getId().equals(d.getId()))
-                    .collect(Collectors.toList());
-            if (deptUsers.isEmpty()) continue;
+                    .filter(user -> user.getDepartment() != null && Objects.equals(user.getDepartment().getId(), department.getId()))
+                    .toList();
+            if (deptUsers.isEmpty()) {
+                continue;
+            }
 
-            // Lấy bảng lương tháng hiện tại của phòng ban
             double avgSalary = deptUsers.stream()
-                    .flatMap(u -> allPayrolls.stream()
-                            .filter(p -> p.getUser() != null && p.getUser().getId().equals(u.getId())
-                                    && p.getMonth() == currentMonth && p.getYear() == currentYear))
-                    .mapToDouble(p -> {
-                        if (p.getBaseSalary() != null) {
-                            BigDecimal net = p.getBaseSalary()
-                                    .add(p.getBonus() != null ? p.getBonus() : BigDecimal.ZERO)
-                                    .subtract(p.getDeductions() != null ? p.getDeductions() : BigDecimal.ZERO);
-                            return net.doubleValue();
-                        }
-                        return 0.0;
-                    })
-                    .average().orElse(0.0);
+                    .map(User::getId)
+                    .map(payrollByUserThisMonth::get)
+                    .filter(Objects::nonNull)
+                    .map(this::calculateNetSalary)
+                    .mapToDouble(BigDecimal::doubleValue)
+                    .average()
+                    .orElse(0.0);
 
-            deptSalaryNames.add(d.getDepartmentName());
-            deptAvgSalary.add(avgSalary / 1_000_000); // đơn vị triệu
+            deptSalaryNames.add(department.getDepartmentName());
+            deptAvgSalary.add(avgSalary / 1_000_000);
             deptHeadcount.add((long) deptUsers.size());
         }
 
@@ -106,52 +143,55 @@ public class ReportController {
         model.addAttribute("deptAvgSalary", deptAvgSalary);
         model.addAttribute("deptHeadcount", deptHeadcount);
 
-        // ===== CHART 3: Phân phối điểm KPI (Histogram) =====
-        List<PerformanceReview> allReviews = reviewRepository.findAll();
-        int[] kpiDistribution = new int[5]; // [Yếu, TB, Khá, Tốt, Xuất sắc]
-        for (PerformanceReview r : allReviews) {
-            if (r.getOverallScore() == null) continue;
-            double score = r.getOverallScore().doubleValue();
-            if (score < 50) kpiDistribution[0]++;
-            else if (score < 60) kpiDistribution[1]++;
-            else if (score < 75) kpiDistribution[2]++;
-            else if (score < 90) kpiDistribution[3]++;
-            else kpiDistribution[4]++;
+        int[] kpiDistribution = new int[5];
+        for (PerformanceReview review : allReviews) {
+            if (review.getOverallScore() == null) {
+                continue;
+            }
+            double score = review.getOverallScore().doubleValue();
+            if (score < 50) {
+                kpiDistribution[0]++;
+            } else if (score < 60) {
+                kpiDistribution[1]++;
+            } else if (score < 75) {
+                kpiDistribution[2]++;
+            } else if (score < 90) {
+                kpiDistribution[3]++;
+            } else {
+                kpiDistribution[4]++;
+            }
         }
-        model.addAttribute("kpiDistribution", Arrays.asList(
-                kpiDistribution[0], kpiDistribution[1], kpiDistribution[2], kpiDistribution[3], kpiDistribution[4]));
+        model.addAttribute("kpiDistribution",
+                Arrays.asList(kpiDistribution[0], kpiDistribution[1], kpiDistribution[2], kpiDistribution[3], kpiDistribution[4]));
 
-        // ===== CHART 4: Task completion rate =====
-        // (dữ liệu đơn giản - sẽ hiển thị dạng doughnut)
-        // leave request này tháng
         long leaveThisMonth = leaveRepository.findAll().stream()
-                .filter(l -> l.getStartDate() != null
-                        && l.getStartDate().getMonthValue() == currentMonth
-                        && l.getStartDate().getYear() == currentYear)
+                .filter(leave -> leave.getStartDate() != null)
+                .filter(leave -> leave.getStartDate().getMonthValue() == currentMonth)
+                .filter(leave -> leave.getStartDate().getYear() == currentYear)
                 .count();
 
-        // ===== SUMMARY KPIs =====
         double avgOverallScore = allReviews.stream()
-                .filter(r -> r.getOverallScore() != null)
-                .mapToDouble(r -> r.getOverallScore().doubleValue())
-                .average().orElse(0.0);
+                .filter(review -> review.getOverallScore() != null)
+                .mapToDouble(review -> review.getOverallScore().doubleValue())
+                .average()
+                .orElse(0.0);
 
-        BigDecimal totalPayrollThisMonth = allPayrolls.stream()
-                .filter(p -> p.getMonth() == currentMonth && p.getYear() == currentYear)
-                .map(p -> {
-                    if (p.getBaseSalary() == null) return BigDecimal.ZERO;
-                    return p.getBaseSalary()
-                            .add(p.getBonus() != null ? p.getBonus() : BigDecimal.ZERO)
-                            .subtract(p.getDeductions() != null ? p.getDeductions() : BigDecimal.ZERO);
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalPayrollThisMonth = payrollByUserThisMonth.values().stream()
+                .map(this::calculateNetSalary)
+                .reduce(ZERO, BigDecimal::add);
 
-        // Top performers
         List<PerformanceReview> topPerformers = allReviews.stream()
-                .filter(r -> r.getOverallScore() != null)
-                .sorted((a, b) -> b.getOverallScore().compareTo(a.getOverallScore()))
+                .filter(review -> review.getUser() != null && review.getUser().getId() != null)
+                .filter(review -> review.getOverallScore() != null)
+                .collect(Collectors.toMap(
+                        review -> review.getUser().getId(),
+                        review -> review,
+                        this::pickBetterReview))
+                .values().stream()
+                .sorted(Comparator.comparing(PerformanceReview::getOverallScore, Comparator.reverseOrder())
+                        .thenComparing(PerformanceReview::getReviewDate, Comparator.nullsLast(Comparator.reverseOrder())))
                 .limit(5)
-                .collect(Collectors.toList());
+                .toList();
 
         model.addAttribute("totalEmployees", totalEmployees);
         model.addAttribute("avgKpiScore", String.format("%.1f", avgOverallScore));
@@ -162,5 +202,79 @@ public class ReportController {
         model.addAttribute("currentMonthYear", today.format(DateTimeFormatter.ofPattern("MM/yyyy")));
 
         return "admin/report-dashboard";
+    }
+
+    private boolean isWithinMonth(LocalDate date, YearMonth period) {
+        return date != null && YearMonth.from(date).equals(period);
+    }
+
+    private long countWeekdays(LocalDate start, LocalDate end) {
+        long total = 0;
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            DayOfWeek dayOfWeek = date.getDayOfWeek();
+            if (dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY) {
+                total++;
+            }
+        }
+        return total;
+    }
+
+    private BigDecimal calculateNetSalary(Payroll payroll) {
+        if (payroll == null) {
+            return ZERO;
+        }
+        if (payroll.getNetSalary() != null) {
+            return payroll.getNetSalary();
+        }
+
+        BigDecimal baseSalary = payroll.getBaseSalary() != null ? payroll.getBaseSalary() : ZERO;
+        BigDecimal bonus = payroll.getBonus() != null ? payroll.getBonus() : ZERO;
+        BigDecimal deductions = payroll.getDeductions() != null ? payroll.getDeductions() : ZERO;
+        return baseSalary.add(bonus).subtract(deductions);
+    }
+
+    private Payroll pickPreferredPayroll(Payroll left, Payroll right) {
+        if (left.getPaymentStatus() == right.getPaymentStatus()) {
+            return higherId(left, right);
+        }
+        if (left.getPaymentStatus() == null) {
+            return right;
+        }
+        if (right.getPaymentStatus() == null) {
+            return left;
+        }
+        if (left.getPaymentStatus().ordinal() != right.getPaymentStatus().ordinal()) {
+            return left.getPaymentStatus().ordinal() > right.getPaymentStatus().ordinal() ? left : right;
+        }
+        return higherId(left, right);
+    }
+
+    private Payroll higherId(Payroll left, Payroll right) {
+        Integer leftId = left.getId();
+        Integer rightId = right.getId();
+        if (leftId == null) {
+            return right;
+        }
+        if (rightId == null) {
+            return left;
+        }
+        return leftId >= rightId ? left : right;
+    }
+
+    private PerformanceReview pickBetterReview(PerformanceReview left, PerformanceReview right) {
+        int scoreCompare = left.getOverallScore().compareTo(right.getOverallScore());
+        if (scoreCompare != 0) {
+            return scoreCompare > 0 ? left : right;
+        }
+
+        LocalDate leftDate = left.getReviewDate();
+        LocalDate rightDate = right.getReviewDate();
+        if (leftDate == null) {
+            return right;
+        }
+        if (rightDate == null) {
+            return left;
+        }
+        return leftDate.isAfter(rightDate) ? left : right;
     }
 }
