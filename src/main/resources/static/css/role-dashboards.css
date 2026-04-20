@@ -1,0 +1,87 @@
+.role-shell {
+  min-height: 100vh;
+  background: #f3f6fb;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.role-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: linear-gradient(180deg, #0f172a, #1e293b);
+  color: #fff;
+  padding: 16px 0;
+}
+
+.role-brand {
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 0 18px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.role-nav-link {
+  display: block;
+  color: #a6b0c3;
+  text-decoration: none;
+  padding: 10px 18px;
+  border-left: 3px solid transparent;
+}
+
+.role-nav-link:hover,
+.role-nav-link.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: #6366f1;
+}
+
+.role-main {
+  padding: 24px;
+}
+
+.role-stat-card {
+  border-radius: 14px;
+  padding: 16px;
+  color: #fff;
+  text-decoration: none;
+  display: block;
+  min-height: 118px;
+}
+
+.role-stat-card h6 {
+  opacity: 0.9;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.role-stat-card h3 {
+  margin: 8px 0 0;
+  font-size: 1.9rem;
+}
+
+.role-panel {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e8edf5;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.role-panel-header {
+  border-bottom: 1px solid #eef2f7;
+  padding: 14px 16px;
+  font-weight: 600;
+}
+
+.role-panel-body {
+  padding: 14px 16px;
+}
+
+.role-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.role-item:last-child {
+  border-bottom: 0;
+}

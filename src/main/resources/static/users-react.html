@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HRMS React User Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+<div id="root" class="container py-4"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+    const { useEffect, useState } = React;
+
+    const emptyForm = {
+        username: "",
+        employeeCode: "",
+        password: "",
+        fullName: "",
+        email: "",
+        phoneNumber: "",
+        gender: "",
+        dateOfBirth: "",
+        hireDate: "",
+        address: "",
+        departmentId: "",
+        positionId: "",
+        role: "USER",
+        status: "ACTIVE",
+    };
+
+    function App() {
+        const [users, setUsers] = useState([]);
+        const [keyword, setKeyword] = useState("");
+        const [form, setForm] = useState(emptyForm);
+        const [editingId, setEditingId] = useState(null);
+        const [error, setError] = useState("");
+        const [success, setSuccess] = useState("");
+        const [loading, setLoading] = useState(false);
+
+        useEffect(() => {
+            loadUsers();
+        }, []);
+
+        const loadUsers = async (search = "") => {
+            setLoading(true);
+            setError("");
+            try {
+                const query = search ? `?keyword=${encodeURIComponent(search)}&status=ACTIVE` : "?status=ACTIVE";
+                const res = await fetch(`/api/users${query}`, { credentials: "include" });
+                if (!res.ok) {
+                    throw new Error("Không thể tải danh sách nhân viên");
+                }
+                setUsers(await res.json());
+            } catch (e) {
+                setError(e.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const onChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+        const onEdit = (u) => {
+            setEditingId(u.id);
+            setForm({
+                username: u.username || "",
+                employeeCode: u.employeeCode || "",
+                password: "",
+                fullName: u.fullName || "",
+                email: u.email || "",
+                phoneNumber: u.phoneNumber || "",
+                gender: u.gender || "",
+                dateOfBirth: u.dateOfBirth || "",
+                hireDate: u.hireDate || "",
+                address: u.address || "",
+                departmentId: u.departmentId || "",
+                positionId: u.positionId || "",
+                role: u.role || "USER",
+                status: u.status || "ACTIVE",
+            });
+            setSuccess("");
+            setError("");
+        };
+
+        const resetForm = () => {
+            setEditingId(null);
+            setForm(emptyForm);
+        };
+
+        const onSubmit = async (e) => {
+            e.preventDefault();
+            setError("");
+            setSuccess("");
+
+            if (!editingId && !form.password) {
+                setError("Mật khẩu là bắt buộc khi tạo mới");
+                return;
+            }
+
+            const payload = {
+                ...form,
+                departmentId: form.departmentId ? Number(form.departmentId) : null,
+                positionId: form.positionId ? Number(form.positionId) : null,
+            };
+            if (editingId && !payload.password) {
+                delete payload.password;
+            }
+
+            const url = editingId ? `/api/users/${editingId}` : "/api/users";
+            const method = editingId ? "PUT" : "POST";
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify(payload),
+                });
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.message || "Lưu nhân viên thất bại");
+                }
+
+                setSuccess(editingId ? "Cập nhật nhân viên thành công" : "Tạo nhân viên thành công");
+                resetForm();
+                loadUsers(keyword);
+            } catch (e2) {
+                setError(e2.message);
+            }
+        };
+
+        const deactivateUser = async (id) => {
+            if (!confirm("Bạn chắc chắn muốn chuyển nhân viên sang INACTIVE?")) return;
+            try {
+                const res = await fetch(`/api/users/${id}/deactivate`, {
+                    method: "PATCH",
+                    credentials: "include",
+                });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.message || "Thao tác thất bại");
+                }
+                loadUsers(keyword);
+            } catch (e) {
+                setError(e.message);
+            }
+        };
+
+        return (
+            <div className="row g-4">
+                <div className="col-lg-7">
+                    <div className="card shadow-sm">
+                        <div className="card-body">
+                            <h4 className="mb-3">React User Manager</h4>
+                            <div className="d-flex gap-2 mb-3">
+                                <input
+                                    className="form-control"
+                                    placeholder="Tìm theo tên, email, mã NV"
+                                    value={keyword}
+                                    onChange={(e) => setKeyword(e.target.value)}
+                                />
+                                <button className="btn btn-primary" onClick={() => loadUsers(keyword)}>Tìm</button>
+                            </div>
+                            {loading && <div className="text-muted mb-2">Đang tải...</div>}
+                            <div className="table-responsive">
+                                <table className="table table-sm table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Mã NV</th>
+                                        <th>Tên</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {users.map((u) => (
+                                        <tr key={u.id}>
+                                            <td>{u.id}</td>
+                                            <td>{u.employeeCode || "-"}</td>
+                                            <td>{u.fullName}</td>
+                                            <td>{u.email}</td>
+                                            <td>{u.role}</td>
+                                            <td className="text-end">
+                                                <button className="btn btn-sm btn-outline-primary me-2" onClick={() => onEdit(u)}>Sửa</button>
+                                                <button className="btn btn-sm btn-outline-danger" onClick={() => deactivateUser(u.id)}>Ẩn</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-lg-5">
+                    <div className="card shadow-sm">
+                        <div className="card-body">
+                            <h5>{editingId ? `Cập nhật nhân viên #${editingId}` : "Tạo nhân viên mới"}</h5>
+                            {error && <div className="alert alert-danger py-2">{error}</div>}
+                            {success && <div className="alert alert-success py-2">{success}</div>}
+                            <form onSubmit={onSubmit}>
+                                <input className="form-control mb-2" name="username" placeholder="Username" value={form.username} onChange={onChange} required />
+                                <input className="form-control mb-2" name="employeeCode" placeholder="Mã nhân viên" value={form.employeeCode} onChange={onChange} />
+                                <input className="form-control mb-2" name="fullName" placeholder="Họ tên" value={form.fullName} onChange={onChange} required />
+                                <input className="form-control mb-2" type="email" name="email" placeholder="Email" value={form.email} onChange={onChange} />
+                                <input className="form-control mb-2" name="phoneNumber" placeholder="SĐT" value={form.phoneNumber} onChange={onChange} />
+                                <select className="form-select mb-2" name="gender" value={form.gender} onChange={onChange}>
+                                    <option value="">-- Gender --</option>
+                                    <option value="MALE">MALE</option>
+                                    <option value="FEMALE">FEMALE</option>
+                                    <option value="OTHER">OTHER</option>
+                                </select>
+                                <input className="form-control mb-2" type="date" name="dateOfBirth" value={form.dateOfBirth} onChange={onChange} />
+                                <input className="form-control mb-2" type="date" name="hireDate" value={form.hireDate} onChange={onChange} />
+                                <input className="form-control mb-2" name="address" placeholder="Địa chỉ" value={form.address} onChange={onChange} />
+                                <input className="form-control mb-2" type="number" name="departmentId" placeholder="Department ID" value={form.departmentId} onChange={onChange} />
+                                <input className="form-control mb-2" type="number" name="positionId" placeholder="Position ID" value={form.positionId} onChange={onChange} />
+                                <select className="form-select mb-2" name="role" value={form.role} onChange={onChange}>
+                                    <option value="ADMIN">ADMIN</option>
+                                    <option value="MANAGER">MANAGER</option>
+                                    <option value="HIRING">HIRING</option>
+                                    <option value="USER">USER</option>
+                                </select>
+                                <input
+                                    className="form-control mb-3"
+                                    type="password"
+                                    name="password"
+                                    placeholder={editingId ? "Mật khẩu mới (để trống nếu giữ nguyên)" : "Mật khẩu"}
+                                    value={form.password}
+                                    onChange={onChange}
+                                />
+                                <div className="d-flex gap-2">
+                                    <button className="btn btn-success" type="submit">{editingId ? "Cập nhật" : "Tạo mới"}</button>
+                                    <button className="btn btn-secondary" type="button" onClick={resetForm}>Làm mới</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
