@@ -2,7 +2,6 @@ package com.example.hr.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,36 +11,66 @@ import java.util.Map;
 @Service
 public class CloudinaryService {
 
-    @Autowired
-    private Cloudinary cloudinary;
+    private final Cloudinary cloudinary;
 
-    /**
-     * Upload raw result (compatible with legacy callers).
-     */
-    public Map<?, ?> upload(MultipartFile file) throws IOException {
-        String resourceType = file.getContentType() != null && file.getContentType().startsWith("video")
-                ? "video"
-                : "auto";
-
-        return cloudinary.uploader().upload(file.getBytes(),
-                ObjectUtils.asMap(
-                        "resource_type", resourceType
-                ));
+    public CloudinaryService(Cloudinary cloudinary) {
+        this.cloudinary = cloudinary;
     }
 
-    public String uploadFile(MultipartFile file, String folderName) throws IOException {
-        // Xác định loại resource (video hoặc image)
-        String resourceType = file.getContentType() != null && file.getContentType().startsWith("video")
-                ? "video"
-                : "auto";
-        
-        Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                ObjectUtils.asMap(
-                    "resource_type", resourceType,
-                    "folder", folderName
-                ));
-        
-        // Trả về URL của file sau khi upload thành công
-        return uploadResult.get("secure_url").toString();
+    /** Upload ảnh/file thông thường, trả về URL */
+    public String uploadFile(MultipartFile file, String folder) throws IOException {
+        String resourceType = isVideo(file) ? "video" : "auto";
+        Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(),
+                ObjectUtils.asMap("resource_type", resourceType, "folder", folder));
+        return result.get("secure_url").toString();
+    }
+
+    /** Upload video — trả về full Map để lấy public_id, duration, secure_url */
+    public Map<?, ?> uploadVideo(MultipartFile file, String folder) throws IOException {
+        // Dùng uploadLarge với InputStream để tránh OutOfMemoryError với video lớn
+        try (java.io.InputStream is = file.getInputStream()) {
+            return cloudinary.uploader().uploadLarge(is,
+                    ObjectUtils.asMap(
+                            "resource_type", "video",
+                            "folder", folder,
+                            "chunk_size", 6_000_000   // 6MB per chunk
+                    ));
+        }
+    }
+
+    /** Upload ảnh (avatar, thumbnail...) */
+    public Map<?, ?> upload(MultipartFile file) throws IOException {
+        String resourceType = isVideo(file) ? "video" : "auto";
+        return cloudinary.uploader().upload(file.getBytes(),
+                ObjectUtils.asMap("resource_type", resourceType));
+    }
+
+    /** Xóa video trên Cloudinary theo public_id */
+    public void deleteVideo(String publicId) throws IOException {
+        cloudinary.uploader().destroy(publicId,
+                ObjectUtils.asMap("resource_type", "video"));
+    }
+
+    /** Xóa ảnh trên Cloudinary theo public_id */
+    public void deleteImage(String publicId) throws IOException {
+        cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+    }
+
+    /**
+     * Tạo URL thumbnail từ video public_id.
+     * Cloudinary tự generate frame đầu tiên của video.
+     */
+    public String generateVideoThumbnail(String videoPublicId) {
+        // Thay đổi extension thành .jpg để lấy thumbnail
+        return cloudinary.url()
+                .resourceType("video")
+                .format("jpg")
+                .transformation(new com.cloudinary.Transformation()
+                        .width(640).height(360).crop("fill").quality("auto"))
+                .generate(videoPublicId);
+    }
+
+    private boolean isVideo(MultipartFile file) {
+        return file.getContentType() != null && file.getContentType().startsWith("video");
     }
 }

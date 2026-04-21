@@ -1,27 +1,62 @@
 package com.example.hr.controllers;
 
-// Import các thư viện của Spring
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.hr.models.TrainingVideo;
+import com.example.hr.service.VideoService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-// Import các class trong project của bạn
-import com.example.hr.repository.TrainingVideoRepository;
-import com.example.hr.models.TrainingVideo;
+import java.util.List;
 
+/**
+ * User-facing controller — xem thư viện video đào tạo.
+ */
 @Controller
 @RequestMapping("/videos")
 public class TrainingVideoController {
 
-    @Autowired
-    private TrainingVideoRepository videoRepository;
+    private final VideoService videoService;
 
+    public TrainingVideoController(VideoService videoService) {
+        this.videoService = videoService;
+    }
+
+    /** Thư viện video — tất cả mọi người đều xem được */
     @GetMapping
-    public String listVideos(Model model) {
-        // Gửi danh sách video từ DB sang file HTML
-        model.addAttribute("videos", videoRepository.findAll());
-        return "video-list"; 
+    public String library(@RequestParam(required = false) String keyword,
+                           @RequestParam(required = false) String category,
+                           Model model) {
+        List<TrainingVideo> videos = videoService.searchVideos(keyword, category);
+        model.addAttribute("videos", videos);
+        model.addAttribute("categories", videoService.findDistinctCategories());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedCategory", category);
+        return "videos/library";
+    }
+
+    /** Xem chi tiết + player */
+    @GetMapping("/{id}")
+    public String watch(@PathVariable Integer id, Model model) {
+        TrainingVideo video = videoService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Video không tồn tại"));
+
+        if (!Boolean.TRUE.equals(video.getIsPublished())) {
+            return "redirect:/videos";
+        }
+
+        // Tăng lượt xem
+        videoService.incrementView(id);
+
+        // Video liên quan (cùng category)
+        List<TrainingVideo> related = videoService.searchVideos(null, video.getCategory())
+                .stream()
+                .filter(v -> !v.getId().equals(id))
+                .limit(6)
+                .toList();
+
+        model.addAttribute("video", video);
+        model.addAttribute("related", related);
+        return "videos/watch";
     }
 }

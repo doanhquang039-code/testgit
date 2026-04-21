@@ -171,10 +171,16 @@ public class UserController {
     public String saveUser(@ModelAttribute("user") User user,
                            @RequestParam("image") MultipartFile file,
                            @RequestParam(value = "departmentId", required = false) Integer departmentId,
-                           @RequestParam(value = "positionId", required = false) Integer positionId)
+                           @RequestParam(value = "positionId", required = false) Integer positionId,
+                           @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
+                           @RequestParam(value = "gender", required = false) String gender,
+                           @RequestParam(value = "dateOfBirth", required = false) String dateOfBirth,
+                           @RequestParam(value = "address", required = false) String address,
+                           @RequestParam(value = "employeeCode", required = false) String employeeCode,
+                           @RequestParam(value = "hireDate", required = false) String hireDate)
             throws IOException {
 
-        // Resolve department & position từ ID (form gửi id, không phải entity)
+        // Resolve department & position từ ID
         if (departmentId != null) {
             departmentRepository.findById(departmentId).ifPresent(user::setDepartment);
         } else {
@@ -184,6 +190,18 @@ public class UserController {
             positionRepository.findById(positionId).ifPresent(user::setPosition);
         } else {
             user.setPosition(null);
+        }
+
+        // Gán các fields mới
+        user.setPhoneNumber(phoneNumber);
+        user.setGender(gender);
+        user.setAddress(address);
+        user.setEmployeeCode(employeeCode != null && !employeeCode.isBlank() ? employeeCode : null);
+        if (dateOfBirth != null && !dateOfBirth.isBlank()) {
+            try { user.setDateOfBirth(java.time.LocalDate.parse(dateOfBirth)); } catch (Exception ignored) {}
+        }
+        if (hireDate != null && !hireDate.isBlank()) {
+            try { user.setHireDate(java.time.LocalDate.parse(hireDate)); } catch (Exception ignored) {}
         }
 
         // Xử lý ảnh

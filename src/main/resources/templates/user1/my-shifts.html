@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ca Làm Việc - HRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f0f4f8; min-height: 100vh; margin: 0; }
+        .sidebar { width: 260px; min-height: 100vh; background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); position: fixed; left: 0; top: 0; z-index: 100; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+        .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px; }
+        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .brand-name { color: white; font-weight: 700; font-size: 1rem; }
+        .brand-sub { color: #64748b; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; }
+        .sidebar-section-label { color: #475569; font-size: 0.65rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 12px 20px 4px; }
+        .sidebar nav a { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #94a3b8; text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
+        .sidebar nav a:hover, .sidebar nav a.active { color: white; background: rgba(99,102,241,0.15); border-left-color: #6366f1; }
+        .sidebar nav a i { font-size: 1rem; width: 20px; }
+        .sidebar-logout { padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .user-card { padding: 16px 20px; display: flex; align-items: center; gap: 12px; background: rgba(99,102,241,0.1); margin: 16px 12px; border-radius: 12px; }
+        .user-av { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+        .main-content { margin-left: 260px; padding: 28px 32px; }
+        .page-header { margin-bottom: 26px; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; }
+        .today-card { background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 20px; padding: 24px 28px; color: white; margin-bottom: 24px; }
+        .today-card h4 { font-weight: 800; margin: 0 0 6px; }
+        .shift-row { background: white; border-radius: 14px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 10px; display: flex; align-items: center; gap: 16px; border-left: 4px solid #e2e8f0; }
+        .shift-row.scheduled { border-left-color: #6366f1; }
+        .shift-row.completed { border-left-color: #10b981; }
+        .shift-row.absent { border-left-color: #ef4444; }
+        .shift-date { font-size: 0.78rem; font-weight: 700; color: #64748b; min-width: 80px; }
+        .shift-name { font-weight: 700; font-size: 0.95rem; color: #0f172a; }
+        .shift-time { font-size: 0.8rem; color: #64748b; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .filter-card { background: white; border-radius: 14px; padding: 14px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">⚡</div>
+        <div>
+            <div class="brand-name">HRMS</div>
+            <div class="brand-sub">HR Platform</div>
+        </div>
+    </div>
+    <div class="user-card" th:if="${currentUser != null}">
+        <div class="user-av" th:text="${#strings.substring(currentUser.fullName, 0, 1)}">N</div>
+        <div>
+            <div style="color:white;font-weight:600;font-size:0.85rem;" th:text="${currentUser.fullName}">Nhân viên</div>
+            <div style="color:#94a3b8;font-size:0.72rem;" th:text="${currentUser.role}">USER</div>
+        </div>
+    </div>
+    <div class="sidebar-section-label">Cá nhân</div>
+    <nav>
+        <a href="/user1/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="/user1/profile"><i class="bi bi-person-circle"></i> Hồ sơ</a>
+        <a href="/user/attendance"><i class="bi bi-clipboard-check"></i> Chấm công</a>
+        <a href="/user1/my-shifts" class="active"><i class="bi bi-clock"></i> Ca làm việc</a>
+        <a href="/user/leaves"><i class="bi bi-calendar-x"></i> Nghỉ phép</a>
+        <a href="/user1/payroll"><i class="bi bi-cash-coin"></i> Phiếu lương</a>
+        <a href="/user1/tasks"><i class="bi bi-list-task"></i> Công việc</a>
+        <a href="/user1/kpi"><i class="bi bi-bullseye"></i> KPI Goals</a>
+        <a href="/user1/expenses"><i class="bi bi-receipt"></i> Chi phí</a>
+        <a href="/user1/skills"><i class="bi bi-mortarboard"></i> Kỹ năng</a>
+        <a href="/notifications"><i class="bi bi-bell"></i> Thông báo</a>
+    </nav>
+    <div class="sidebar-logout">
+        <form action="/logout" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-outline-light btn-sm w-100" style="border-radius:10px;">
+                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1><i class="bi bi-clock me-2 text-primary"></i>Ca Làm Việc Của Tôi</h1>
+        <div style="color:#64748b;font-size:0.85rem;margin-top:4px;">Xem lịch ca làm việc được phân công</div>
+    </div>
+
+    <!-- Ca hôm nay -->
+    <div th:if="${todayShift != null}" class="today-card">
+        <div style="font-size:0.8rem;opacity:0.8;margin-bottom:4px;">📅 Hôm nay</div>
+        <h4 th:text="${todayShift.shift.shiftName}">Ca Sáng</h4>
+        <div style="font-size:1rem;opacity:0.9;">
+            🕐 <span th:text="${todayShift.shift.startTime + ' - ' + todayShift.shift.endTime}"></span>
+            &nbsp;·&nbsp;
+            <span th:text="${todayShift.status.name()}"></span>
+        </div>
+        <div th:if="${todayShift.shift.allowance != null and todayShift.shift.allowance.compareTo(java.math.BigDecimal.ZERO) > 0}"
+             style="margin-top:8px;font-size:0.85rem;opacity:0.85;">
+            💰 Phụ cấp: <span th:text="${#numbers.formatDecimal(todayShift.shift.allowance,0,'COMMA',0,'POINT')} + ' ₫'"></span>
+        </div>
+    </div>
+    <div th:unless="${todayShift != null}"
+         style="background:white;border-radius:16px;padding:20px 24px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);color:#64748b;font-size:0.9rem;">
+        <i class="bi bi-calendar-x me-2"></i>Hôm nay bạn không có ca làm việc nào được phân công.
+    </div>
+
+    <!-- Filter tháng -->
+    <div class="filter-card">
+        <form th:action="@{/user1/my-shifts}" method="get">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label style="font-size:0.8rem;color:#64748b;font-weight:600;" class="form-label">Tháng</label>
+                    <select name="month" class="form-select form-select-sm">
+                        <option th:each="m : ${#numbers.sequence(1,12)}" th:value="${m}"
+                                th:text="'Tháng ' + ${m}" th:selected="${m == month}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label style="font-size:0.8rem;color:#64748b;font-weight:600;" class="form-label">Năm</label>
+                    <input type="number" name="year" class="form-control form-control-sm" th:value="${year}" min="2020" max="2030"/>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-search me-1"></i>Xem
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Danh sách ca -->
+    <div th:if="${#lists.isEmpty(myShifts)}"
+         style="background:white;border-radius:16px;padding:50px;text-align:center;color:#94a3b8;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
+        <i class="bi bi-calendar-x" style="font-size:3rem;display:block;margin-bottom:12px;"></i>
+        <div style="font-weight:600;">Không có ca làm việc nào trong tháng này</div>
+    </div>
+
+    <div th:each="s : ${myShifts}"
+         class="shift-row"
+         th:classappend="${s.status.name() == 'COMPLETED' ? ' completed' : (s.status.name() == 'ABSENT' ? ' absent' : ' scheduled')}">
+        <div class="shift-date" th:text="${s.workDate}"></div>
+        <div style="flex:1;">
+            <div class="shift-name" th:text="${s.shift != null ? s.shift.shiftName : '—'}"></div>
+            <div class="shift-time" th:text="${s.shift != null ? s.shift.startTime + ' - ' + s.shift.endTime : ''}"></div>
+        </div>
+        <div th:if="${s.actualCheckIn != null}" style="font-size:0.8rem;color:#64748b;text-align:right;">
+            <div>In: <strong th:text="${s.actualCheckIn}"></strong></div>
+            <div th:if="${s.actualCheckOut != null}">Out: <strong th:text="${s.actualCheckOut}"></strong></div>
+        </div>
+        <div>
+            <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;"
+                  th:style="'background:' + (s.status.name() == 'COMPLETED' ? '#d1fae5' : (s.status.name() == 'ABSENT' ? '#fee2e2' : '#dbeafe')) + ';color:' + (s.status.name() == 'COMPLETED' ? '#065f46' : (s.status.name() == 'ABSENT' ? '#991b1b' : '#1e40af'))"
+                  th:text="${s.status.name()}"></span>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

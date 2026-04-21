@@ -187,6 +187,32 @@ public class User1Controller {
         return "redirect:/user1/profile";
     }
 
+    @PostMapping("/profile/update-info")
+    public String updateInfo(@RequestParam(required = false) String fullName,
+                             @RequestParam(required = false) String email,
+                             @RequestParam(required = false) String phoneNumber,
+                             @RequestParam(required = false) String address,
+                             @RequestParam(required = false) String dateOfBirth,
+                             Authentication authentication,
+                             RedirectAttributes redirectAttributes) {
+        User user = getCurrentUser(authentication);
+        if (user == null) return "redirect:/login";
+
+        if (fullName != null && !fullName.isBlank()) user.setFullName(fullName.trim());
+        if (email != null && !email.isBlank()) user.setEmail(email.trim());
+        if (phoneNumber != null) user.setPhoneNumber(phoneNumber.trim());
+        if (address != null) user.setAddress(address.trim());
+        if (dateOfBirth != null && !dateOfBirth.isBlank()) {
+            try {
+                user.setDateOfBirth(LocalDate.parse(dateOfBirth));
+            } catch (Exception ignored) {}
+        }
+
+        userRepository.save(user);
+        redirectAttributes.addFlashAttribute("successMsg", "✅ Cập nhật thông tin thành công!");
+        return "redirect:/user1/profile";
+    }
+
     // ==================== PAYROLL ====================
 
     @GetMapping("/payroll")

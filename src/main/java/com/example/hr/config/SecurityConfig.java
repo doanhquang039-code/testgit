@@ -66,6 +66,7 @@ public class SecurityConfig {
                 ).hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/hiring/**").hasAnyRole("ADMIN", "HIRING", "MANAGER")
+                .requestMatchers("/admin/videos/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/videos/**").permitAll()
                 .requestMatchers("/user1/**", "/user/**", "/notifications/**").authenticated()

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Đào Tạo - HRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f0f4f8; min-height: 100vh; margin: 0; }
+        .sidebar { width: 260px; min-height: 100vh; background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); position: fixed; left: 0; top: 0; z-index: 100; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+        .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px; }
+        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .brand-name { color: white; font-weight: 700; font-size: 1rem; }
+        .brand-sub { color: #64748b; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; }
+        .sidebar-section-label { color: #475569; font-size: 0.65rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 12px 20px 4px; }
+        .sidebar nav a { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #94a3b8; text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
+        .sidebar nav a:hover, .sidebar nav a.active { color: white; background: rgba(99,102,241,0.15); border-left-color: #6366f1; }
+        .sidebar nav a i { font-size: 1rem; width: 20px; }
+        .sidebar-logout { padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .main-content { margin-left: 260px; padding: 28px 32px; }
+        .page-header { margin-bottom: 26px; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; }
+
+        /* Hero banner */
+        .hero-banner { background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%); border-radius: 20px; padding: 32px 36px; color: white; margin-bottom: 28px; display: flex; align-items: center; gap: 24px; }
+        .hero-icon { font-size: 3.5rem; flex-shrink: 0; }
+        .hero-title { font-size: 1.6rem; font-weight: 800; margin: 0; }
+        .hero-sub { opacity: 0.85; font-size: 0.9rem; margin-top: 6px; }
+
+        /* Category pills */
+        .cat-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .cat-pill { padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; text-decoration: none; border: 1.5px solid #e2e8f0; background: white; color: #475569; transition: all 0.2s; }
+        .cat-pill:hover, .cat-pill.active { background: #7c3aed; color: white; border-color: #7c3aed; }
+
+        /* Search */
+        .search-bar { background: white; border-radius: 14px; padding: 14px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+
+        /* Video grid */
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .video-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.07); transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
+        .video-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.13); }
+        .video-thumb { position: relative; aspect-ratio: 16/9; overflow: hidden; background: #1e293b; }
+        .video-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .video-card:hover .video-thumb img { transform: scale(1.05); }
+        .play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); opacity: 0; transition: opacity 0.2s; }
+        .video-card:hover .play-overlay { opacity: 1; }
+        .play-overlay i { font-size: 3rem; color: white; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+        .duration-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.75); color: white; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+        .video-info { padding: 14px 16px 16px; }
+        .video-title { font-weight: 700; font-size: 0.9rem; color: #0f172a; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 8px; }
+        .video-meta { display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: #64748b; }
+        .cat-tag { background: #ede9fe; color: #7c3aed; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 0.72rem; }
+        .empty-state { background: white; border-radius: 16px; padding: 60px; text-align: center; color: #94a3b8; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">⚡</div>
+        <div>
+            <div class="brand-name">HRMS</div>
+            <div class="brand-sub">HR Platform</div>
+        </div>
+    </div>
+    <div class="sidebar-section-label">Cá nhân</div>
+    <nav>
+        <a href="/user1/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="/user1/profile"><i class="bi bi-person-circle"></i> Hồ sơ</a>
+        <a href="/user/attendance"><i class="bi bi-clipboard-check"></i> Chấm công</a>
+        <a href="/user/leaves"><i class="bi bi-calendar-x"></i> Nghỉ phép</a>
+        <a href="/user1/payroll"><i class="bi bi-cash-coin"></i> Phiếu lương</a>
+        <a href="/user1/tasks"><i class="bi bi-list-task"></i> Công việc</a>
+        <a href="/user1/kpi"><i class="bi bi-bullseye"></i> KPI Goals</a>
+        <a href="/user1/expenses"><i class="bi bi-receipt"></i> Chi phí</a>
+        <a href="/user1/skills"><i class="bi bi-mortarboard"></i> Kỹ năng</a>
+    </nav>
+    <div class="sidebar-section-label">Đào tạo</div>
+    <nav>
+        <a href="/videos" class="active"><i class="bi bi-collection-play"></i> Video đào tạo</a>
+    </nav>
+    <div class="sidebar-logout">
+        <form action="/logout" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-outline-light btn-sm w-100" style="border-radius:10px;">
+                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="main-content">
+    <!-- Hero -->
+    <div class="hero-banner">
+        <div class="hero-icon">🎬</div>
+        <div>
+            <div class="hero-title">Thư Viện Video Đào Tạo</div>
+            <div class="hero-sub">Nâng cao kỹ năng với các video đào tạo nội bộ</div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+        <form th:action="@{/videos}" method="get">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text" style="border-radius:10px 0 0 10px;border:1.5px solid #e5e7eb;background:white;">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" name="keyword" class="form-control"
+                               style="border-radius:0 10px 10px 0;border:1.5px solid #e5e7eb;border-left:none;"
+                               placeholder="Tìm kiếm video..." th:value="${keyword}"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-select" style="border-radius:10px;border:1.5px solid #e5e7eb;">
+                        <option value="">Tất cả danh mục</option>
+                        <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"
+                                th:selected="${c == selectedCategory}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn w-100 fw-600"
+                            style="background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;border-radius:10px;">
+                        Tìm
+                    </button>
+                </div>
+                <div class="col-md-1">
+                    <a th:href="@{/videos}" class="btn btn-outline-secondary w-100" style="border-radius:10px;">✕</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Category pills -->
+    <div class="cat-pills" th:if="${!#lists.isEmpty(categories)}">
+        <a th:href="@{/videos}" class="cat-pill" th:classappend="${selectedCategory == null ? ' active' : ''}">
+            Tất cả
+        </a>
+        <a th:each="c : ${categories}"
+           th:href="@{/videos(category=${c})}"
+           class="cat-pill"
+           th:classappend="${c == selectedCategory ? ' active' : ''}"
+           th:text="${c}"></a>
+    </div>
+
+    <!-- Count -->
+    <div style="font-size:0.85rem;color:#64748b;margin-bottom:16px;" th:if="${!#lists.isEmpty(videos)}">
+        <span th:text="${videos.size()} + ' video'"></span>
+        <span th:if="${keyword != null and !#strings.isEmpty(keyword)}"> cho "<strong th:text="${keyword}"></strong>"</span>
+    </div>
+
+    <!-- Grid -->
+    <div th:if="${#lists.isEmpty(videos)}" class="empty-state">
+        <i class="bi bi-collection-play" style="font-size:3.5rem;display:block;margin-bottom:16px;"></i>
+        <div style="font-size:1rem;font-weight:600;">Không tìm thấy video nào</div>
+        <div style="font-size:0.85rem;margin-top:6px;">Thử tìm kiếm với từ khóa khác</div>
+    </div>
+
+    <div class="video-grid" th:unless="${#lists.isEmpty(videos)}">
+        <a th:each="v : ${videos}" th:href="@{/videos/{id}(id=${v.id})}" class="video-card">
+            <div class="video-thumb">
+                <img th:src="${v.thumbnailOrDefault}" th:alt="${v.title}"
+                     onerror="this.src='https://placehold.co/320x180/1e293b/94a3b8?text=Video'"/>
+                <div class="play-overlay"><i class="bi bi-play-circle-fill"></i></div>
+                <div class="duration-badge" th:if="${v.durationSec != null and v.durationSec > 0}"
+                     th:text="${v.formattedDuration}"></div>
+            </div>
+            <div class="video-info">
+                <div class="video-title" th:text="${v.title}"></div>
+                <div class="video-meta">
+                    <span th:if="${v.category}" class="cat-tag" th:text="${v.category}"></span>
+                    <span><i class="bi bi-eye me-1"></i><span th:text="${v.viewCount != null ? v.viewCount : 0}"></span></span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
