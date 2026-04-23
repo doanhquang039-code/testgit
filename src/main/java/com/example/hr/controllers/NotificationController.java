@@ -64,4 +64,30 @@ public class NotificationController {
         if (user == null) return 0;
         return notificationService.countUnread(user);
     }
+
+    /**
+     * API endpoint to get notification list (for dropdown panel)
+     */
+    @GetMapping("/api/list")
+    @ResponseBody
+    public List<Notification> getNotificationList(
+            @RequestParam(defaultValue = "10") int limit,
+            Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user == null) return List.of();
+        return notificationService.getAll(user).stream()
+                .limit(limit)
+                .toList();
+    }
+
+    /**
+     * API mark all read (AJAX)
+     */
+    @PutMapping("/api/mark-all-read")
+    @ResponseBody
+    public java.util.Map<String, Object> markAllReadApi(Authentication auth) {
+        User user = getCurrentUser(auth);
+        if (user != null) notificationService.markAllRead(user);
+        return java.util.Map.of("success", true);
+    }
 }

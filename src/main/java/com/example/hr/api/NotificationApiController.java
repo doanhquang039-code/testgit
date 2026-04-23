@@ -3,10 +3,13 @@ package com.example.hr.api;
 import com.example.hr.models.User;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.service.CloudStorageFacade;
+import com.example.hr.service.NotificationService;
+import com.example.hr.service.AuthUserHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -19,11 +22,37 @@ public class NotificationApiController {
 
     private final UserRepository userRepository;
     private final CloudStorageFacade cloudStorageFacade;
+    private final NotificationService notificationService;
+    private final AuthUserHelper authUserHelper;
 
     public NotificationApiController(UserRepository userRepository,
-                                      CloudStorageFacade cloudStorageFacade) {
+                                      CloudStorageFacade cloudStorageFacade,
+                                      NotificationService notificationService,
+                                      AuthUserHelper authUserHelper) {
         this.userRepository = userRepository;
         this.cloudStorageFacade = cloudStorageFacade;
+        this.notificationService = notificationService;
+        this.authUserHelper = authUserHelper;
+    }
+
+    /** Unread count — dùng cho badge polling */
+    @GetMapping("/unread-count")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Lấy số thông báo chưa đọc")
+    public ResponseEntity<Map<String, Object>> getUnreadCount(Authentication auth) {
+        User user = authUserHelper.getCurrentUser(auth);
+        long count = user != null ? notificationService.countUnread(user) : 0;
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    /** Mark all read via API */
+    @PutMapping("/mark-all-read")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Đánh dấu tất cả đã đọc")
+    public ResponseEntity<Map<String, String>> markAllRead(Authentication auth) {
+        User user = authUserHelper.getCurrentUser(auth);
+        if (user != null) notificationService.markAllRead(user);
+        return ResponseEntity.ok(Map.of("status", "ok"));
     }
 
     /**

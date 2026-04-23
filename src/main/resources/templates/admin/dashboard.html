@@ -102,6 +102,15 @@
               <small class="text-muted" th:text="'Hôm nay: ' + today"></small>
             </div>
             <div class="d-flex align-items-center gap-3">
+              <!-- Global Search Button -->
+              <button onclick="HRMS.search.open()"
+                      class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2"
+                      title="Global Search (Ctrl+K)"
+                      style="border-radius:10px;padding:6px 14px;border-color:rgba(255,255,255,0.15);color:#94a3b8;background:rgba(255,255,255,0.05);">
+                <i class="bi bi-search"></i>
+                <span style="font-size:0.82rem;">Search...</span>
+                <kbd style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:1px 6px;font-size:0.7rem;color:#64748b;">Ctrl+K</kbd>
+              </button>
               <a th:href="@{/admin/leaves}" class="btn btn-sm btn-outline-warning position-relative" title="Đơn nghỉ phép chờ duyệt">
                 <i class="bi bi-bell"></i>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
@@ -385,5 +394,9 @@
     })();
   </script>
   <script th:src="@{/js/lang-toggle.js}"></script>
+<script th:src="@{/js/hrms-settings.js}"></script>
+<script th:src="@{/js/hrms-search.js}"></script>
+<script th:src="@{/js/hrms-notifications.js}"></script>
+<script th:src="@{/js/hrms-ui.js}"></script>
 </body>
 </html>
