@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý cấu hình hệ thống - HRMS</title>
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); border-radius: 0.5rem; }
+        .setting-label { font-weight: 600; color: #2c3e50; font-family: monospace; font-size: 1.1em; }
+        .setting-desc { font-size: 0.85em; color: #64748b; }
+    </style>
+</head>
+<body>
+    <!-- Tạm thời dùng layout th:replace nếu dự án bạn có fragment, nếu không thì hiển thị độc lập -->
+    <div th:replace="~{fragments/header :: header} ?: ~{}"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <nav th:replace="~{fragments/sidebar :: sidebar} ?: ~{}"></nav>
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+                    <h1 class="h2"><i class="bi bi-gear"></i> Cấu hình hệ thống</h1>
+                </div>
+
+                <!-- Thông báo -->
+                <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMsg}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <!-- Danh sách cấu hình -->
+                <form th:action="@{/admin/settings/update}" method="post">
+                    <div class="card mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 text-primary"><i class="bi bi-sliders"></i> Các thông số hiện tại</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4" style="width: 30%">Mã cấu hình (Key)</th>
+                                            <th style="width: 40%">Giá trị (Value)</th>
+                                            <th class="pe-4" style="width: 30%">Mô tả</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="setting : ${settings}">
+                                            <td class="ps-4"><span class="setting-label text-primary" th:text="${setting.settingKey}"></span></td>
+                                            <td><input type="text" class="form-control" th:name="${setting.settingKey}" th:value="${setting.settingValue}"></td>
+                                            <td class="pe-4"><span class="setting-desc" th:text="${setting.description}"></span></td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(settings)}">
+                                            <td colspan="3" class="text-center py-4 text-muted">Hệ thống chưa có cấu hình nào.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white text-end py-3">
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save"></i> Lưu tất cả thay đổi</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Thêm mới cấu hình -->
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white py-3">
+                        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Mở rộng: Thêm cấu hình mới</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/settings/add}" method="post" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Mã cấu hình (Key)</label>
+                                <input type="text" name="settingKey" class="form-control" required placeholder="VD: THEME_COLOR">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Giá trị</label>
+                                <input type="text" name="settingValue" class="form-control" required placeholder="VD: #4CAF50">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Mô tả</label>
+                                <input type="text" name="description" class="form-control" placeholder="Màu sắc chủ đạo">
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success w-100"><i class="bi bi-plus-lg"></i> Thêm</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

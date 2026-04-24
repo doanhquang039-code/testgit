@@ -20,7 +20,6 @@ public class HomeController {
         // Spring Boot tự động nhận diện file index trong static là trang chủ
         return "forward:/index.html";
     }
-
     @GetMapping("/home")
     public String dashboard(Authentication authentication) {
         if (authentication == null) {
