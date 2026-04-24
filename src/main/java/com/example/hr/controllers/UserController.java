@@ -1,52 +1,55 @@
 package com.example.hr.controllers;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
-
+import com.example.hr.models.User;
+import com.example.hr.repository.DepartmentRepository;
+import com.example.hr.repository.JobPositionRepository;
+import com.example.hr.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.hr.enums.UserStatus;
-import com.example.hr.models.User;
-import com.example.hr.repository.*;
-import com.example.hr.service.CloudinaryService;
-
-import jakarta.servlet.http.HttpServletResponse;
-
-// CHỈ IMPORT NHỮNG THỨ KHÔNG GÂY XUNG ĐỘT
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.data.domain.Sort;
 import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
-import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin/users")
 public class UserController {
 
+    private static final String UPLOAD_DIR = "public/test1/";
+
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
+
     @Autowired
     private DepartmentRepository departmentRepository;
+
     @Autowired
     private JobPositionRepository positionRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private CloudinaryService cloudinaryService;
-
-    private final String UPLOAD_DIR = "public/test1/";
 
     @GetMapping
     public String listUsers(@RequestParam(name = "keyword", required = false) String keyword,
@@ -54,47 +57,7 @@ public class UserController {
                             @RequestParam(name = "role", required = false) String role,
                             @RequestParam(name = "sortBy", defaultValue = "fullName") String sortBy,
                             Model model) {
-        List<User> users = userRepository.findByStatus(UserStatus.ACTIVE);
-
-        // Filter by keyword
-        if (keyword != null && !keyword.isEmpty()) {
-            String kw = keyword.toLowerCase();
-            users = users.stream()
-                    .filter(u -> u.getFullName().toLowerCase().contains(kw)
-                            || (u.getEmail() != null && u.getEmail().toLowerCase().contains(kw))
-                            || (u.getEmployeeCode() != null && u.getEmployeeCode().toLowerCase().contains(kw)))
-                    .collect(java.util.stream.Collectors.toList());
-        }
-
-        // Filter by department
-        if (deptId != null) {
-            users = users.stream()
-                    .filter(u -> u.getDepartment() != null && u.getDepartment().getId().equals(deptId))
-                    .collect(java.util.stream.Collectors.toList());
-        }
-
-        // Filter by role
-        if (role != null && !role.isEmpty()) {
-            users = users.stream()
-                    .filter(u -> u.getRole() != null && u.getRole().name().equals(role))
-                    .collect(java.util.stream.Collectors.toList());
-        }
-
-        // Sort
-        if ("createdAt".equals(sortBy)) {
-            users.sort((a, b) -> b.getCreatedAt() != null && a.getCreatedAt() != null
-                    ? b.getCreatedAt().compareTo(a.getCreatedAt()) : 0);
-        } else if ("department".equals(sortBy)) {
-            users.sort((a, b) -> {
-                String da = a.getDepartment() != null ? a.getDepartment().getDepartmentName() : "";
-                String db = b.getDepartment() != null ? b.getDepartment().getDepartmentName() : "";
-                return da.compareTo(db);
-            });
-        } else {
-            users.sort((a, b) -> a.getFullName().compareToIgnoreCase(b.getFullName()));
-        }
-
-        model.addAttribute("users", users);
+        model.addAttribute("users", userService.findAdminUsers(keyword, deptId, role, sortBy));
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedDeptId", deptId);
         model.addAttribute("selectedRole", role);
@@ -108,14 +71,12 @@ public class UserController {
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=employees_full_report.xlsx");
 
-        List<User> users = userRepository.findByStatus(UserStatus.ACTIVE);
+        List<User> users = userService.getActiveUsers();
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Full Report");
-
-        // Sử dụng Full Path để tránh lỗi "defined by single-type-import"
         org.apache.poi.ss.usermodel.Drawing<?> drawing = sheet.createDrawingPatriarch();
 
-        String[] headers = { "ID", "User", "Pass", "Name", "Email", "Role", "Dept", "Pos", "Status", "Photo" };
+        String[] headers = {"ID", "User", "Pass", "Name", "Email", "Role", "Dept", "Pos", "Status", "Photo"};
         org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(0);
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
@@ -132,8 +93,7 @@ public class UserController {
             row.createCell(3).setCellValue(user.getFullName());
             row.createCell(4).setCellValue(user.getEmail());
             row.createCell(5).setCellValue(user.getRole().toString());
-            row.createCell(6)
-                    .setCellValue(user.getDepartment() != null ? user.getDepartment().getDepartmentName() : "N/A");
+            row.createCell(6).setCellValue(user.getDepartment() != null ? user.getDepartment().getDepartmentName() : "N/A");
             row.createCell(7).setCellValue(user.getPosition() != null ? user.getPosition().getPositionName() : "N/A");
             row.createCell(8).setCellValue(user.getStatus().toString());
 
@@ -142,17 +102,15 @@ public class UserController {
                 try (InputStream is = new FileInputStream(path.toFile())) {
                     byte[] bytes = org.apache.poi.util.IOUtils.toByteArray(is);
                     int picIdx = workbook.addPicture(bytes, Workbook.PICTURE_TYPE_PNG);
-
                     org.apache.poi.ss.usermodel.CreationHelper helper = workbook.getCreationHelper();
                     org.apache.poi.ss.usermodel.ClientAnchor anchor = helper.createClientAnchor();
                     anchor.setCol1(9);
                     anchor.setRow1(rowIdx);
-
                     org.apache.poi.ss.usermodel.Picture pict = drawing.createPicture(anchor, picIdx);
                     pict.resize(0.5, 0.5);
                 }
             } else {
-                row.createCell(9).setCellValue("Không có ảnh");
+                row.createCell(9).setCellValue("Khong co anh");
             }
             rowIdx++;
         }
@@ -165,7 +123,7 @@ public class UserController {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=employees_full_report.pdf");
 
-        List<User> users = userRepository.findByStatus(UserStatus.ACTIVE);
+        List<User> users = userService.getActiveUsers();
         Document document = new Document(PageSize.A4.rotate());
         PdfWriter.getInstance(document, response.getOutputStream());
 
@@ -176,28 +134,29 @@ public class UserController {
         table.setWidthPercentage(100);
         table.setSpacingBefore(10f);
 
-        String[] headers = { "ID", "User", "Pass", "Name", "Email", "Role", "Dept", "Pos", "Stat", "Photo" };
-        for (String h : headers)
+        String[] headers = {"ID", "User", "Pass", "Name", "Email", "Role", "Dept", "Pos", "Stat", "Photo"};
+        for (String h : headers) {
             table.addCell(new Phrase(h));
+        }
 
-        for (User u : users) {
-            table.addCell(String.valueOf(u.getId()));
-            table.addCell(u.getUsername());
+        for (User user : users) {
+            table.addCell(String.valueOf(user.getId()));
+            table.addCell(user.getUsername());
             table.addCell("****");
-            table.addCell(u.getFullName());
-            table.addCell(u.getEmail());
-            table.addCell(u.getRole().toString());
-            table.addCell(u.getDepartment() != null ? u.getDepartment().getDepartmentName() : "");
-            table.addCell(u.getPosition() != null ? u.getPosition().getPositionName() : "");
-            table.addCell(u.getStatus().toString());
+            table.addCell(user.getFullName());
+            table.addCell(user.getEmail());
+            table.addCell(user.getRole().toString());
+            table.addCell(user.getDepartment() != null ? user.getDepartment().getDepartmentName() : "");
+            table.addCell(user.getPosition() != null ? user.getPosition().getPositionName() : "");
+            table.addCell(user.getStatus().toString());
 
-            Path imgPath = Paths.get(UPLOAD_DIR + u.getProfileImage());
+            Path imgPath = Paths.get(UPLOAD_DIR + user.getProfileImage());
             if (Files.exists(imgPath)) {
                 com.lowagie.text.Image pdfImg = com.lowagie.text.Image.getInstance(imgPath.toAbsolutePath().toString());
                 pdfImg.scaleToFit(40, 40);
                 table.addCell(new PdfPCell(pdfImg, false));
             } else {
-                table.addCell("Không");
+                table.addCell("Khong");
             }
         }
         document.add(table);
@@ -222,79 +181,14 @@ public class UserController {
                            @RequestParam(value = "dateOfBirth", required = false) String dateOfBirth,
                            @RequestParam(value = "address", required = false) String address,
                            @RequestParam(value = "employeeCode", required = false) String employeeCode,
-                           @RequestParam(value = "hireDate", required = false) String hireDate)
-            throws IOException {
-
-        // Resolve department & position từ ID
-        if (departmentId != null) {
-            departmentRepository.findById(departmentId).ifPresent(user::setDepartment);
-        } else {
-            user.setDepartment(null);
-        }
-        if (positionId != null) {
-            positionRepository.findById(positionId).ifPresent(user::setPosition);
-        } else {
-            user.setPosition(null);
-        }
-
-        // Gán các fields mới
-        user.setPhoneNumber(phoneNumber);
-        user.setGender(gender);
-        user.setAddress(address);
-        user.setEmployeeCode(employeeCode != null && !employeeCode.isBlank() ? employeeCode : null);
-        if (dateOfBirth != null && !dateOfBirth.isBlank()) {
-            try { user.setDateOfBirth(java.time.LocalDate.parse(dateOfBirth)); } catch (Exception ignored) {}
-        }
-        if (hireDate != null && !hireDate.isBlank()) {
-            try { user.setHireDate(java.time.LocalDate.parse(hireDate)); } catch (Exception ignored) {}
-        }
-
-        // Xử lý ảnh — upload lên Cloudinary
-        if (!file.isEmpty()) {
-            String ct = file.getContentType();
-            if (ct != null && ct.startsWith("image/")) {
-                try {
-                    java.util.Map<?, ?> result = cloudinaryService.uploadAvatar(file, "hr_avatars");
-                    user.setProfileImage(result.get("secure_url").toString());
-                } catch (Exception e) {
-                    // fallback: giữ ảnh cũ
-                    if (user.getId() != null) {
-                        userRepository.findById(user.getId())
-                                .ifPresent(existing -> user.setProfileImage(existing.getProfileImage()));
-                    }
-                }
-            }
-        } else if (user.getId() != null) {
-            // Giữ ảnh cũ
-            userRepository.findById(user.getId())
-                    .ifPresent(existing -> user.setProfileImage(existing.getProfileImage()));
-        }
-
-        // Xử lý password: chỉ encode khi tạo mới hoặc khi user nhập password mới
-        if (user.getId() == null) {
-            // Tạo mới: bắt buộc có password
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-        } else {
-            String rawPwd = user.getPassword();
-            if (rawPwd != null && !rawPwd.isBlank()) {
-                // Đổi password mới
-                user.setPassword(passwordEncoder.encode(rawPwd));
-            } else {
-                // Giữ password cũ
-                userRepository.findById(user.getId())
-                        .ifPresent(existing -> user.setPassword(existing.getPassword()));
-            }
-        }
-
-        userRepository.save(user);
+                           @RequestParam(value = "hireDate", required = false) String hireDate) throws IOException {
+        userService.saveAdminUser(user, file, departmentId, positionId, phoneNumber, gender, dateOfBirth, address, employeeCode, hireDate);
         return "redirect:/admin/users";
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable("id") Integer id, Model model) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
-        model.addAttribute("user", user);
+        model.addAttribute("user", userService.getUserById(id));
         model.addAttribute("departments", departmentRepository.findAll());
         model.addAttribute("positions", positionRepository.findByActiveTrue());
         return "admin/user-form";
@@ -302,29 +196,21 @@ public class UserController {
 
     @GetMapping("/delete/{id}")
     public String deleteUser(@PathVariable("id") Integer id) {
-        User user = userRepository.findById(id).orElseThrow();
-        user.setStatus(UserStatus.INACTIVE);
-        userRepository.save(user);
+        userService.softDeleteUser(id);
         return "redirect:/admin/users";
     }
+
     @GetMapping("/user/list")
-public String listUsers(
-        @RequestParam(required = false) String keyword,
-        @RequestParam(defaultValue = "id") String sortBy,
-        @RequestParam(defaultValue = "asc") String direction,
-        Model model) {
-    
-    Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-    List<User> users;
+    public String listAllUsers(@RequestParam(required = false) String keyword,
+                               @RequestParam(defaultValue = "id") String sortBy,
+                               @RequestParam(defaultValue = "asc") String direction,
+                               Model model) {
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
 
-    if (keyword != null && !keyword.isEmpty()) {
-        users = userRepository.findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, sort);
-    } else {
-        users = userRepository.findAll(sort);
+        model.addAttribute("users", userService.searchUsers(keyword, sort));
+        model.addAttribute("keyword", keyword);
+        return "user_list";
     }
-
-    model.addAttribute("users", users);
-    model.addAttribute("keyword", keyword);
-    return "user_list";
-}
 }

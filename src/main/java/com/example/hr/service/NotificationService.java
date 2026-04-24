@@ -4,21 +4,23 @@ import com.example.hr.enums.NotificationType;
 import com.example.hr.models.Notification;
 import com.example.hr.models.User;
 import com.example.hr.repository.NotificationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 public class NotificationService {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private final NotificationRepository notificationRepository;
 
-    /**
-     * Tạo thông báo mới cho một user
-     */
+    public NotificationService(NotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
+    }
+
     public void createNotification(User user, String message, NotificationType type, String link) {
         Notification notif = new Notification();
         notif.setUser(user);
@@ -30,45 +32,36 @@ public class NotificationService {
         notificationRepository.save(notif);
     }
 
-    /**
-     * Tạo thông báo INFO đơn giản
-     */
     public void notify(User user, String message) {
         createNotification(user, message, NotificationType.INFO, null);
     }
 
-    /**
-     * Lấy tất cả thông báo của user
-     */
+    @Transactional(readOnly = true)
     public List<Notification> getAll(User user) {
         return notificationRepository.findByUserOrderByCreatedAtDesc(user);
     }
 
-    /**
-     * Lấy thông báo chưa đọc
-     */
+    @Transactional(readOnly = true)
     public List<Notification> getUnread(User user) {
         return notificationRepository.findByUserAndReadFalseOrderByCreatedAtDesc(user);
     }
 
-    /**
-     * Đếm số thông báo chưa đọc
-     */
+    @Transactional(readOnly = true)
+    public List<Notification> getRecent(User user, int limit) {
+        int boundedLimit = Math.max(1, Math.min(limit, 50));
+        return notificationRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, boundedLimit));
+    }
+
+    @Transactional(readOnly = true)
     public long countUnread(User user) {
         return notificationRepository.countByUserAndReadFalse(user);
     }
 
-    /**
-     * Đánh dấu tất cả đã đọc
-     */
     public void markAllRead(User user) {
         notificationRepository.markAllReadByUser(user);
     }
 
-    /**
-     * Đánh dấu một thông báo đã đọc
-     */
-    public void markRead(Integer id) {
-        notificationRepository.markReadById(id);
+    public boolean markRead(Integer id, User user) {
+        return notificationRepository.markReadByIdAndUser(id, user) > 0;
     }
 }

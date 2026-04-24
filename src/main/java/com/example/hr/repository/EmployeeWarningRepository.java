@@ -2,6 +2,7 @@ package com.example.hr.repository;
 
 import com.example.hr.enums.WarningLevel;
 import com.example.hr.models.EmployeeWarning;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -48,4 +49,6 @@ public interface EmployeeWarningRepository extends JpaRepository<EmployeeWarning
            "WHERE w.warningLevel IN ('FINAL', 'TERMINATION') " +
            "AND (w.expiryDate IS NULL OR w.expiryDate >= :today)")
     long countEmployeesWithSevereWarnings(@Param("today") LocalDate today);
+
+    List<EmployeeWarning> findAllByOrderByIssuedDateDesc(Pageable pageable);
 }

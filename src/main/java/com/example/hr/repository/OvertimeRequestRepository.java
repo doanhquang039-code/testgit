@@ -2,6 +2,8 @@ package com.example.hr.repository;
 
 import com.example.hr.enums.OvertimeStatus;
 import com.example.hr.models.OvertimeRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -53,4 +55,7 @@ public interface OvertimeRequestRepository extends JpaRepository<OvertimeRequest
     long countByUserAndDate(@Param("userId") Integer userId, @Param("date") LocalDate date);
 
     long countByStatus(OvertimeStatus status);
+
+    @EntityGraph(attributePaths = "user")
+    List<OvertimeRequest> findAllByOrderByCreatedAtDesc(Pageable pageable);
 }

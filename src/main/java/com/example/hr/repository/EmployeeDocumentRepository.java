@@ -35,6 +35,8 @@ public interface EmployeeDocumentRepository extends JpaRepository<EmployeeDocume
     @Query("SELECT COUNT(d) FROM EmployeeDocument d WHERE d.user.id = :userId AND d.isVerified = true")
     long countVerifiedByUserId(@Param("userId") Integer userId);
 
+    long countByExpiryDateBetween(LocalDate start, LocalDate end);
+
     @Query("SELECT d.documentType, COUNT(d) FROM EmployeeDocument d GROUP BY d.documentType")
     List<Object[]> countByDocumentType();
 

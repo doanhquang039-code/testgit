@@ -1,13 +1,18 @@
 package com.example.hr.repository;
 
-import java.util.Optional;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
+
 import com.example.hr.enums.Role;
 import com.example.hr.enums.UserStatus;
 import com.example.hr.models.User;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
     
@@ -41,4 +46,17 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             UserStatus s1, String name,
             UserStatus s2, String email,
             UserStatus s3, String code);
+
+    long countByCreatedAtGreaterThanEqual(LocalDateTime createdAt);
+
+    long countByStatus(UserStatus status);
+
+    @Query("""
+            SELECT COALESCE(d.departmentName, 'Unassigned'), COUNT(u)
+            FROM User u
+            LEFT JOIN u.department d
+            WHERE u.status = :status
+            GROUP BY d.departmentName
+            """)
+    List<Object[]> countByDepartmentForStatus(@Param("status") UserStatus status);
 }

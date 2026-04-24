@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -6,84 +6,172 @@
     <title>Thông báo - HRMS</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
-        body { background: #f0f4f8; min-height: 100vh; }
-        .sidebar { width: 260px; min-height: 100vh; background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); position: fixed; left: 0; top: 0; z-index: 100; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
-        .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px; }
-        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .brand-name { color: white; font-weight: 700; font-size: 1rem; }
-        .brand-sub { color: #64748b; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; }
-        .sidebar-user { padding: 16px 20px; display: flex; align-items: center; gap: 12px; background: rgba(99,102,241,0.1); margin: 16px 12px; border-radius: 12px; }
-        .sidebar-user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(99,102,241,0.5); }
-        .sidebar-user-name { color: white; font-weight: 600; font-size: 0.85rem; }
-        .sidebar-user-role { color: #94a3b8; font-size: 0.72rem; }
-        .sidebar-section-label { color: #475569; font-size: 0.65rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 12px 20px 4px; }
-        .sidebar nav a { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #94a3b8; text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
-        .sidebar nav a:hover, .sidebar nav a.active { color: white; background: rgba(99,102,241,0.15); border-left-color: #6366f1; }
-        .sidebar nav a i { font-size: 1rem; width: 20px; }
-        .sidebar-logout { padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); position: absolute; bottom: 0; width: 100%; }
-        .main-content { margin-left: 260px; padding: 28px 32px; }
-
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
-        .page-header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; margin: 0; }
-
+        body { margin: 0; background: linear-gradient(180deg, #edf3f8 0%, #f8fafc 100%); color: #0f172a; }
+        .sidebar {
+            width: 260px; min-height: 100vh; position: fixed; left: 0; top: 0; z-index: 100;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            box-shadow: 4px 0 20px rgba(0,0,0,.24);
+        }
+        .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: 12px; }
+        .brand-icon {
+            width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #0ea5e9, #14b8a6); color: white; font-size: 1.1rem;
+        }
+        .brand-name { color: white; font-weight: 800; font-size: 1rem; }
+        .brand-sub { color: #64748b; font-size: .7rem; letter-spacing: 2px; text-transform: uppercase; }
+        .sidebar-user {
+            padding: 16px 20px; margin: 16px 12px; border-radius: 16px; display: flex; align-items: center; gap: 12px;
+            background: linear-gradient(135deg, rgba(14,165,233,.15), rgba(20,184,166,.12));
+        }
+        .sidebar-user-avatar {
+            width: 44px; height: 44px; border-radius: 14px; object-fit: cover; border: 2px solid rgba(125,211,252,.35);
+        }
+        .sidebar-user-name { color: white; font-weight: 700; font-size: .86rem; }
+        .sidebar-user-role { color: #94a3b8; font-size: .73rem; }
+        .sidebar-section-label {
+            color: #475569; font-size: .66rem; font-weight: 700; letter-spacing: 2px;
+            text-transform: uppercase; padding: 12px 20px 4px;
+        }
+        .sidebar nav a {
+            display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #94a3b8; text-decoration: none;
+            font-size: .875rem; font-weight: 600; transition: all .2s; border-left: 3px solid transparent;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active { color: white; background: rgba(20,184,166,.12); border-left-color: #14b8a6; }
+        .sidebar nav a i { width: 20px; font-size: 1rem; }
+        .sidebar-logout { padding: 18px 20px; border-top: 1px solid rgba(255,255,255,.08); position: absolute; bottom: 0; width: 100%; }
+        .main-content { margin-left: 260px; padding: 28px 30px 56px; }
+        .page-hero {
+            display: grid; grid-template-columns: 1.5fr .8fr; gap: 18px; margin-bottom: 22px;
+        }
+        .hero-panel, .stats-panel, .toolbar-panel, .feed-panel {
+            background: rgba(255,255,255,.94); border: 1px solid rgba(148,163,184,.18);
+            box-shadow: 0 16px 36px rgba(15,23,42,.08); border-radius: 24px;
+        }
+        .hero-panel {
+            padding: 26px 28px;
+            background:
+                radial-gradient(circle at top left, rgba(20,184,166,.13), transparent 32%),
+                linear-gradient(135deg, #ffffff, #f8fafc);
+        }
+        .hero-pill {
+            display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
+            background: #ecfeff; color: #0f766e; font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+        }
+        .hero-panel h1 { margin: 14px 0 8px; font-size: 2rem; font-weight: 800; }
+        .hero-panel p { margin: 0; color: #64748b; max-width: 620px; line-height: 1.6; }
+        .hero-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 18px; }
+        .hero-chip {
+            display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 14px;
+            background: #f8fafc; color: #334155; font-size: .86rem; font-weight: 600;
+        }
+        .stats-panel {
+            padding: 22px; color: white;
+            background: linear-gradient(160deg, #134e4a, #0f172a);
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .stats-label { color: #99f6e4; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+        .stats-value { font-size: 2.5rem; font-weight: 800; line-height: 1; margin: 8px 0 10px; }
+        .stats-sub { color: #ccfbf1; font-size: .9rem; }
+        .toolbar-panel {
+            padding: 18px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        .toolbar-title h2 { margin: 0; font-size: 1rem; font-weight: 800; }
+        .toolbar-title p { margin: 4px 0 0; color: #64748b; font-size: .84rem; }
+        .chip-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .status-chip {
+            display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 999px;
+            background: #f8fafc; color: #475569; font-size: .82rem; font-weight: 700; border: 1px solid #e2e8f0;
+        }
+        .btn-mark-all {
+            border: none; border-radius: 14px; padding: 11px 18px; font-weight: 700; color: white;
+            background: linear-gradient(135deg, #14b8a6, #0ea5e9); transition: transform .2s, box-shadow .2s;
+        }
+        .btn-mark-all:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(14,165,233,.24); }
+        .feed-panel { padding: 14px; }
+        .feed-title {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 8px 8px 14px; border-bottom: 1px solid #eef2f7; margin-bottom: 10px;
+        }
+        .feed-title h3 { margin: 0; font-size: 1rem; font-weight: 800; }
+        .feed-title span { color: #64748b; font-size: .84rem; }
         .notif-card {
-            background: white; border-radius: 14px; padding: 18px 20px;
-            margin-bottom: 12px; display: flex; align-items: flex-start; gap: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;
-            transition: all 0.2s; cursor: pointer;
+            position: relative; display: grid; grid-template-columns: auto 1fr auto; gap: 16px;
+            padding: 18px; border-radius: 20px; border: 1px solid #edf2f7; background: white; margin-bottom: 12px;
+            transition: transform .2s, box-shadow .2s, border-color .2s;
         }
-        .notif-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
-        .notif-card.unread { border-left: 4px solid #6366f1; background: #fdfcff; }
+        .notif-card:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(15,23,42,.08); }
+        .notif-card.unread {
+            border-color: rgba(20,184,166,.25);
+            background: linear-gradient(135deg, rgba(240,253,250,.88), white);
+        }
         .notif-icon {
-            width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+            width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem; flex-shrink: 0;
         }
-        .icon-INFO         { background: #dbeafe; }
-        .icon-SUCCESS      { background: #d1fae5; }
-        .icon-WARNING      { background: #fff7ed; }
-        .icon-DANGER       { background: #fee2e2; }
-        .icon-LEAVE_REQUEST { background: #fef3c7; }
-        .icon-TASK_ASSIGNED { background: #ede9fe; }
-        .icon-PAYROLL      { background: #d1fae5; }
-        .icon-ATTENDANCE   { background: #dbeafe; }
-        .notif-msg { font-weight: 500; font-size: 0.88rem; color: #1e293b; margin-bottom: 4px; }
-        .notif-time { font-size: 0.75rem; color: #94a3b8; }
-        .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: #6366f1; margin-left: auto; flex-shrink: 0; margin-top: 6px; }
-
-        .btn-mark-all { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
-        .btn-mark-all:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99,102,241,0.4); }
-
-        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .empty-state i { font-size: 3.5rem; color: #cbd5e1; display: block; margin-bottom: 16px; }
-
-        .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; }
-        .filter-chip { padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 2px solid #e2e8f0; background: white; color: #64748b; text-decoration: none; }
-        .filter-chip.active { background: #6366f1; color: white; border-color: #6366f1; }
-
-      /* ===== LANGUAGE TOGGLE ===== */
-      .lang-btn { background:rgba(255,255,255,0.08)!important;border:1px solid rgba(255,255,255,0.15)!important;color:#94a3b8!important;border-radius:8px!important;padding:4px 10px!important;font-size:0.75rem!important;font-weight:600!important;cursor:pointer!important;transition:all 0.2s!important; }
-      .lang-btn:hover { background:rgba(255,255,255,0.18)!important;color:white!important; }
-      .lang-btn.active { background:#6366f1!important;border-color:#6366f1!important;color:white!important; }
+        .icon-INFO { background: #e0f2fe; color: #0369a1; }
+        .icon-SUCCESS { background: #dcfce7; color: #15803d; }
+        .icon-WARNING { background: #fef3c7; color: #b45309; }
+        .icon-DANGER { background: #fee2e2; color: #b91c1c; }
+        .icon-LEAVE_REQUEST { background: #ede9fe; color: #6d28d9; }
+        .icon-TASK_ASSIGNED { background: #dbeafe; color: #1d4ed8; }
+        .icon-PAYROLL { background: #ccfbf1; color: #0f766e; }
+        .icon-ATTENDANCE { background: #e2e8f0; color: #334155; }
+        .notif-head {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px;
+        }
+        .notif-type {
+            display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 999px;
+            background: #f8fafc; color: #64748b; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+        }
+        .notif-msg { font-weight: 700; font-size: .94rem; color: #0f172a; margin-bottom: 8px; }
+        .notif-time { font-size: .8rem; color: #64748b; display: flex; align-items: center; gap: 8px; }
+        .notif-link {
+            margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+            color: #0f766e; font-weight: 700; font-size: .84rem;
+        }
+        .unread-dot {
+            width: 11px; height: 11px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #0ea5e9);
+            box-shadow: 0 0 0 5px rgba(20,184,166,.12); margin-top: 6px;
+        }
+        .empty-state {
+            text-align: center; padding: 64px 22px; background: white; border-radius: 24px;
+            border: 1px dashed #dbe2ea; color: #64748b;
+        }
+        .empty-state i { display: block; font-size: 3.2rem; color: #cbd5e1; margin-bottom: 14px; }
+        .lang-btn {
+            background: rgba(255,255,255,.08)!important; border: 1px solid rgba(255,255,255,.15)!important;
+            color: #94a3b8!important; border-radius: 8px!important; padding: 4px 10px!important; font-size: .75rem!important; font-weight: 600!important;
+        }
+        .lang-btn.active { background: #14b8a6!important; border-color: #14b8a6!important; color: white!important; }
+        @media (max-width: 1100px) { .page-hero { grid-template-columns: 1fr; } }
+        @media (max-width: 991px) {
+            .sidebar { position: relative; width: 100%; min-height: auto; }
+            .main-content { margin-left: 0; padding: 20px 16px 40px; }
+        }
+        @media (max-width: 767px) {
+            .hero-panel, .stats-panel, .toolbar-panel, .feed-panel, .empty-state { border-radius: 18px; }
+            .notif-card { grid-template-columns: auto 1fr; }
+            .unread-dot { grid-column: 2; justify-self: end; }
+        }
     </style>
 </head>
 <body>
-
-<!-- SIDEBAR -->
 <div class="sidebar">
     <div class="sidebar-brand">
-        <div class="brand-icon">⚡</div>
+        <div class="brand-icon"><i class="bi bi-lightning-charge-fill"></i></div>
         <div>
             <div class="brand-name">HRMS</div>
             <div class="brand-sub">HR Platform</div>
         </div>
     </div>
     <div class="sidebar-user">
-        <img class="sidebar-user-avatar" th:src="@{'/uploads/' + ${user.profileImage}}"
-             onerror="this.src='https://ui-avatars.com/api/?name=NV&background=6366f1&color=fff&size=42'"
-             th:alt="${user.fullName}" alt="Avatar">
+        <img class="sidebar-user-avatar"
+             th:src="${user.profileImage != null and #strings.startsWith(user.profileImage, 'http') ? user.profileImage : '/uploads/' + user.profileImage}"
+             onerror="this.src='https://ui-avatars.com/api/?name=NV&background=14b8a6&color=fff&size=44'"
+             alt="Avatar">
         <div>
             <div class="sidebar-user-name" th:text="${user.fullName}">Nhân viên</div>
             <div class="sidebar-user-role" th:text="${user.role}">USER</div>
@@ -97,27 +185,21 @@
         <a href="/user/leaves"><i class="bi bi-calendar-x"></i> Nghỉ phép</a>
         <a href="/user1/payroll"><i class="bi bi-cash-coin"></i> Phiếu lương</a>
         <a href="/user1/tasks"><i class="bi bi-list-task"></i> Công việc của tôi</a>
-        <a href="/notifications" class="active"><i class="bi bi-bell"></i> Thông báo
-            <span class="badge bg-danger ms-auto" style="font-size:0.65rem;" th:if="${unreadCount > 0}" th:text="${unreadCount}"></span>
+        <a href="/notifications" class="active">
+            <i class="bi bi-bell"></i> Thông báo
+            <span class="badge bg-danger ms-auto" style="font-size:.65rem;" th:if="${unreadCount > 0}" th:text="${unreadCount}"></span>
         </a>
     </nav>
     <div class="sidebar-logout">
-          <!-- Language Toggle -->
-          <div class="lang-toggle-wrap" style="padding:8px 16px;border-top:1px solid rgba(255,255,255,0.08);margin-top:4px;">
-            <div class="lang-toggle" style="display:flex;align-items:center;gap:6px;justify-content:center;">
-              <button class="lang-btn" data-lang="vi"
-                      style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:8px;padding:4px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
-                &#127475;&#127483; VI
-              </button>
-              <span style="color:rgba(255,255,255,0.2);font-size:0.7rem;">|</span>
-              <button class="lang-btn" data-lang="en"
-                      style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:8px;padding:4px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
-                &#127468;&#127463; EN
-              </button>
+        <div class="lang-toggle-wrap" style="padding:8px 16px;border-top:1px solid rgba(255,255,255,.08);margin-top:4px;">
+            <div class="d-flex align-items-center justify-content-center gap-2">
+                <button class="lang-btn" data-lang="vi">&#127475;&#127483; VI</button>
+                <span style="color:rgba(255,255,255,.2);font-size:.7rem;">|</span>
+                <button class="lang-btn" data-lang="en">&#127468;&#127463; EN</button>
             </div>
-          </div>
+        </div>
         <form action="/logout" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button type="submit" class="btn btn-outline-light btn-sm w-100" style="border-radius:10px;">
                 <i class="bi bi-box-arrow-right"></i> Đăng xuất
             </button>
@@ -125,58 +207,95 @@
     </div>
 </div>
 
-<!-- MAIN -->
-<div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1>🔔 Thông báo</h1>
-            <div style="color:#64748b;font-size:0.88rem;margin-top:4px;">
-                <span th:if="${unreadCount > 0}">
-                    <span th:text="${unreadCount}">0</span> thông báo chưa đọc
-                </span>
-                <span th:if="${unreadCount == 0}">Tất cả đã đọc</span>
+<main class="main-content">
+    <section class="page-hero">
+        <div class="hero-panel">
+            <div class="hero-pill"><i class="bi bi-broadcast-pin"></i> Notification Center</div>
+            <h1>Bạn không bỏ lỡ cập nhật quan trọng nào</h1>
+            <p>Tất cả nhắc việc, trạng thái đơn từ, payroll và các thông báo hệ thống được gom lại thành một dòng thời gian dễ đọc hơn và ít nhiễu hơn.</p>
+            <div class="hero-meta">
+                <div class="hero-chip"><i class="bi bi-bell-fill text-info"></i> Theo dõi realtime các cập nhật cá nhân</div>
+                <div class="hero-chip"><i class="bi bi-clock-history text-warning"></i> Ưu tiên hiển thị theo thời gian mới nhất</div>
             </div>
         </div>
-        <form action="/notifications/mark-all-read" method="post" th:if="${unreadCount > 0}">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <button type="submit" class="btn-mark-all">
-                <i class="bi bi-check-all"></i> Đánh dấu tất cả đã đọc
-            </button>
-        </form>
-    </div>
+        <div class="stats-panel">
+            <div>
+                <div class="stats-label">Thông báo chưa đọc</div>
+                <div class="stats-value" th:text="${unreadCount}">0</div>
+                <div class="stats-sub" th:if="${unreadCount > 0}">Bạn còn các mục cần xem để tránh bỏ sót workflow.</div>
+                <div class="stats-sub" th:if="${unreadCount == 0}">Hộp thư đã sạch, chưa có thông báo nào cần xử lý ngay.</div>
+            </div>
+            <div class="d-flex justify-content-between align-items-end">
+                <small class="text-white-50">Các mục mới sẽ được ghim nổi bật trong feed.</small>
+                <i class="bi bi-envelope-check-fill" style="font-size:2rem;color:#67e8f9;"></i>
+            </div>
+        </div>
+    </section>
+
+    <section class="toolbar-panel">
+        <div class="toolbar-title">
+            <h2><i class="bi bi-layout-text-window-reverse text-info me-2"></i>Dòng thời gian thông báo</h2>
+            <p>Đọc nhanh, lọc bằng mắt tốt hơn và truy cập lại link hành động trực tiếp.</p>
+        </div>
+        <div class="chip-row">
+            <div class="status-chip"><i class="bi bi-collection"></i> Tổng số: <strong th:text="${#lists.size(notifications)}">0</strong></div>
+            <div class="status-chip" th:if="${unreadCount > 0}"><i class="bi bi-dot text-danger"></i> Còn mục chưa đọc</div>
+            <div class="status-chip" th:if="${unreadCount == 0}"><i class="bi bi-check-circle text-success"></i> Đã đọc hết</div>
+            <form action="/notifications/mark-all-read" method="post" th:if="${unreadCount > 0}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="btn-mark-all">
+                    <i class="bi bi-check2-all me-1"></i> Đánh dấu tất cả đã đọc
+                </button>
+            </form>
+        </div>
+    </section>
 
     <div th:if="${#lists.isEmpty(notifications)}" class="empty-state">
         <i class="bi bi-bell-slash"></i>
-        <div style="font-size:1rem;font-weight:600;color:#64748b;">Chưa có thông báo nào</div>
-        <div style="font-size:0.85rem;color:#94a3b8;margin-top:4px;">Các thông báo mới sẽ xuất hiện tại đây</div>
+        <div style="font-size:1.02rem;font-weight:700;">Chưa có thông báo nào</div>
+        <div style="font-size:.86rem;margin-top:4px;">Khi có cập nhật mới từ hệ thống, chúng sẽ xuất hiện tại đây.</div>
     </div>
 
-    <div th:each="n : ${notifications}" th:class="${!n.read ? 'notif-card unread' : 'notif-card'}">
-        <div th:class="'notif-icon icon-' + ${n.type}">
-            <span th:switch="${n.type.name()}">
-                <span th:case="'LEAVE_REQUEST'">📅</span>
-                <span th:case="'TASK_ASSIGNED'">📝</span>
-                <span th:case="'PAYROLL'">💰</span>
-                <span th:case="'ATTENDANCE'">📋</span>
-                <span th:case="'SUCCESS'">✅</span>
-                <span th:case="'WARNING'">⚠️</span>
-                <span th:case="'DANGER'">🚨</span>
-                <span th:case="*">ℹ️</span>
-            </span>
+    <section th:if="${!#lists.isEmpty(notifications)}" class="feed-panel">
+        <div class="feed-title">
+            <h3>Danh sách gần nhất</h3>
+            <span>Sắp xếp theo thời gian tạo mới nhất.</span>
         </div>
-        <div style="flex:1;">
-            <div class="notif-msg" th:text="${n.message}">Thông báo</div>
-            <div class="notif-time">
-                <i class="bi bi-clock"></i>
-                <span th:text="${#temporals.format(n.createdAt, 'dd/MM/yyyy HH:mm')}">01/01 08:00</span>
+
+        <article th:each="n : ${notifications}" th:class="${!n.read ? 'notif-card unread' : 'notif-card'}">
+            <div th:class="'notif-icon icon-' + ${n.type}">
+                <span th:switch="${n.type.name()}">
+                    <span th:case="'LEAVE_REQUEST'"><i class="bi bi-calendar-week"></i></span>
+                    <span th:case="'TASK_ASSIGNED'"><i class="bi bi-list-check"></i></span>
+                    <span th:case="'PAYROLL'"><i class="bi bi-cash-stack"></i></span>
+                    <span th:case="'ATTENDANCE'"><i class="bi bi-clipboard-data"></i></span>
+                    <span th:case="'SUCCESS'"><i class="bi bi-check2-circle"></i></span>
+                    <span th:case="'WARNING'"><i class="bi bi-exclamation-triangle"></i></span>
+                    <span th:case="'DANGER'"><i class="bi bi-shield-exclamation"></i></span>
+                    <span th:case="*"><i class="bi bi-info-circle"></i></span>
+                </span>
             </div>
-            <div th:if="${n.link != null}" style="margin-top:6px;">
-                <a th:href="${n.link}" style="font-size:0.78rem;color:#6366f1;font-weight:600;text-decoration:none;">Xem chi tiết →</a>
+            <div>
+                <div class="notif-head">
+                    <div class="notif-type">
+                        <i class="bi bi-bell"></i>
+                        <span th:text="${n.type}">INFO</span>
+                    </div>
+                </div>
+                <div class="notif-msg" th:text="${n.message}">Thông báo</div>
+                <div class="notif-time">
+                    <i class="bi bi-clock-history"></i>
+                    <span th:text="${#temporals.format(n.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026 08:00</span>
+                </div>
+                <a th:if="${n.link != null}" th:href="${n.link}" class="notif-link">
+                    <i class="bi bi-arrow-up-right-circle"></i> Xem chi tiết
+                </a>
             </div>
-        </div>
-        <div th:if="${!n.read}" class="unread-dot"></div>
-    </div>
-</div>
+            <div th:if="${!n.read}" class="unread-dot"></div>
+        </article>
+    </section>
+</main>
+
 <script th:src="@{/js/lang-toggle.js}"></script>
 <script th:src="@{/js/hrms-settings.js}"></script>
 <script th:src="@{/js/hrms-notifications.js}"></script>
