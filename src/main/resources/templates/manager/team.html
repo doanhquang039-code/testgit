@@ -42,16 +42,25 @@
 <body>
 <div class="sidebar">
     <div class="sidebar-logo">⚡ HRMS MANAGER</div>
-    <a th:href="@{/manager/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a th:href="@{/manager/team}" class="active"><i class="bi bi-people"></i> Nhóm của tôi</a>
-    <a th:href="@{/admin/leaves}"><i class="bi bi-calendar-x"></i> Duyệt nghỉ phép</a>
-    <a th:href="@{/manager/overtime}"><i class="bi bi-clock-history"></i> Duyệt OT</a>
-    <a th:href="@{/admin/attendance}"><i class="bi bi-clipboard-check"></i> Chấm công</a>
-    <a th:href="@{/admin/reviews}"><i class="bi bi-star-half"></i> Đánh giá KPI</a>
-    <a th:href="@{/admin/tasks}"><i class="bi bi-list-task"></i> Công việc</a>
-    <hr/>
-          <!-- Language Toggle -->
-          <div class="lang-toggle-wrap" style="padding:8px 16px;border-top:1px solid rgba(255,255,255,0.08);margin-top:4px;">
+    <div class="sidebar-section" style="color:#475569;font-size:0.62rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:14px 18px 4px;">Quản lý</div>
+    <nav>
+        <a th:href="@{/manager/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a th:href="@{/manager/team}" class="active"><i class="bi bi-people"></i> Nhóm của tôi</a>
+        <a th:href="@{/admin/leaves}"><i class="bi bi-calendar-x"></i> Duyệt nghỉ phép</a>
+        <a th:href="@{/manager/overtime}"><i class="bi bi-clock-history"></i> Duyệt OT</a>
+        <a th:href="@{/admin/attendance}"><i class="bi bi-clipboard-check"></i> Chấm công</a>
+        <a th:href="@{/admin/reviews}"><i class="bi bi-star-half"></i> Đánh giá KPI</a>
+        <a th:href="@{/admin/tasks}"><i class="bi bi-list-task"></i> Công việc</a>
+        <a th:href="@{/admin/assignments}"><i class="bi bi-person-check"></i> Phân công</a>
+    </nav>
+    <div class="sidebar-section" style="color:#475569;font-size:0.62rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:14px 18px 4px;">Nhân sự</div>
+    <nav>
+        <a th:href="@{/admin/users}"><i class="bi bi-people-fill"></i> Danh sách nhân viên</a>
+        <a th:href="@{/admin/departments}"><i class="bi bi-building"></i> Phòng ban</a>
+        <a th:href="@{/admin/contracts}"><i class="bi bi-file-text"></i> Hợp đồng</a>
+    </nav>
+    <hr style="border-color:rgba(255,255,255,0.08);margin:6px 16px"/>
+<div class="lang-toggle-wrap" style="padding:8px 16px;border-top:1px solid rgba(255,255,255,0.08);margin-top:4px;">
             <div class="lang-toggle" style="display:flex;align-items:center;gap:6px;justify-content:center;">
               <button class="lang-btn" data-lang="vi"
                       style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:8px;padding:4px 10px;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;">

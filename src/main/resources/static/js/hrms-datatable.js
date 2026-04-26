@@ -49,6 +49,23 @@
 
   DataTable.prototype.buildToolbar = function () {
     var self = this;
+    // Detect if page has light or dark background
+    var bodyBg = window.getComputedStyle(document.body).backgroundColor;
+    var isLight = true;
+    if (bodyBg) {
+      var m = bodyBg.match(/\d+/g);
+      if (m && m.length >= 3) {
+        isLight = (parseInt(m[0]) + parseInt(m[1]) + parseInt(m[2])) > 380;
+      }
+    }
+    var inputBg = isLight ? '#f8fafc' : '#2a2a3e';
+    var inputBorder = isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)';
+    var inputColor = isLight ? '#1e293b' : 'white';
+    this.isLight = isLight;
+    var selectBg = isLight ? '#f8fafc' : '#2a2a3e';
+    var selectBorder = isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)';
+    var selectColor = isLight ? '#475569' : '#94a3b8';
+
     var toolbar = document.createElement('div');
     toolbar.className = 'hrms-dt-toolbar';
     toolbar.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;';
@@ -59,8 +76,8 @@
     searchWrap.innerHTML = [
       '<span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#64748b;font-size:0.85rem;">🔍</span>',
       '<input type="text" placeholder="Search all columns..." ',
-        'style="width:100%;padding:8px 10px 8px 32px;background:#2a2a3e;border:1px solid rgba(255,255,255,0.1);',
-        'border-radius:10px;color:white;font-size:0.85rem;outline:none;box-sizing:border-box;" ',
+        'style="width:100%;padding:8px 10px 8px 32px;background:' + inputBg + ';border:' + inputBorder + ';',
+        'border-radius:10px;color:' + inputColor + ';font-size:0.85rem;outline:none;box-sizing:border-box;" ',
         'class="hrms-dt-search">',
     ].join('');
     toolbar.appendChild(searchWrap);
@@ -85,7 +102,7 @@
       if (values.size < 2 || values.size > 20) return;
 
       var sel = document.createElement('select');
-      sel.style.cssText = 'padding:8px 12px;background:#2a2a3e;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#94a3b8;font-size:0.82rem;cursor:pointer;max-width:150px;';
+      sel.style.cssText = 'padding:8px 12px;background:' + selectBg + ';border:' + selectBorder + ';border-radius:10px;color:' + selectColor + ';font-size:0.82rem;cursor:pointer;max-width:150px;';
       var defaultOpt = document.createElement('option');
       defaultOpt.value = '';
       defaultOpt.textContent = th.textContent.trim().replace(/[⇅↑↓]/g,'').trim() + ': All';
@@ -106,7 +123,7 @@
 
     // Page size selector
     var pageSel = document.createElement('select');
-    pageSel.style.cssText = 'padding:8px 12px;background:#2a2a3e;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#94a3b8;font-size:0.82rem;cursor:pointer;';
+    pageSel.style.cssText = 'padding:8px 12px;background:' + selectBg + ';border:' + selectBorder + ';border-radius:10px;color:' + selectColor + ';font-size:0.82rem;cursor:pointer;';
     [5, 10, 25, 50, 100].forEach(function (n) {
       var opt = document.createElement('option');
       opt.value = n;
@@ -257,6 +274,7 @@
   };
 
   DataTable.prototype.render = function () {
+    var self = this;
     var total = this.filteredRows.length;
     var pages = Math.max(1, Math.ceil(total / this.pageSize));
     this.currentPage = Math.min(this.currentPage, pages);
@@ -323,12 +341,16 @@
     pag.className = 'hrms-dt-pagination';
     pag.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;flex-wrap:wrap;';
 
-    var btnStyle = 'padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);cursor:pointer;font-size:0.82rem;font-weight:600;transition:all 0.15s;';
+    var isLight = this.isLight || false;
+    var btnBg = isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)';
+    var btnBorder = isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)';
+    var btnColor = isLight ? '#475569' : '#94a3b8';
+    var btnStyle = 'padding:6px 12px;border-radius:8px;border:' + btnBorder + ';cursor:pointer;font-size:0.82rem;font-weight:600;transition:all 0.15s;';
 
     // Prev
     var prev = document.createElement('button');
     prev.textContent = '← Prev';
-    prev.style.cssText = btnStyle + 'background:rgba(255,255,255,0.06);color:#94a3b8;';
+    prev.style.cssText = btnStyle + 'background:' + btnBg + ';color:' + btnColor + ';';
     prev.disabled = this.currentPage === 1;
     if (this.currentPage === 1) prev.style.opacity = '0.4';
     prev.addEventListener('click', function () {
@@ -368,7 +390,7 @@
     // Next
     var next = document.createElement('button');
     next.textContent = 'Next →';
-    next.style.cssText = btnStyle + 'background:rgba(255,255,255,0.06);color:#94a3b8;';
+    next.style.cssText = btnStyle + 'background:' + btnBg + ';color:' + btnColor + ';';
     next.disabled = this.currentPage === pages;
     if (this.currentPage === pages) next.style.opacity = '0.4';
     next.addEventListener('click', function () {
@@ -384,11 +406,15 @@
     var btn = document.createElement('button');
     btn.textContent = n;
     var isActive = n === this.currentPage;
+    var isLight = this.isLight || false;
+    var inactiveBg = isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)';
+    var inactiveBorder = isLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)';
+    var inactiveColor = isLight ? '#475569' : '#94a3b8';
     btn.style.cssText = 'padding:6px 12px;border-radius:8px;border:1px solid ' +
-      (isActive ? '#6366f1' : 'rgba(255,255,255,0.1)') + ';cursor:pointer;font-size:0.82rem;font-weight:' +
+      (isActive ? '#6366f1' : inactiveBorder) + ';cursor:pointer;font-size:0.82rem;font-weight:' +
       (isActive ? '700' : '500') + ';background:' +
-      (isActive ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'rgba(255,255,255,0.06)') +
-      ';color:' + (isActive ? 'white' : '#94a3b8') + ';transition:all 0.15s;';
+      (isActive ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : inactiveBg) +
+      ';color:' + (isActive ? 'white' : inactiveColor) + ';transition:all 0.15s;';
     btn.addEventListener('click', function () {
       self.currentPage = n;
       self.render();

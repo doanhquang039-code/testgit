@@ -1,6 +1,7 @@
 package com.example.hr.controllers;
 
 import com.example.hr.models.Department;
+import com.example.hr.repository.DepartmentRepository;
 import com.example.hr.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/admin/departments")
@@ -18,9 +20,18 @@ public class DepartmentController {
     @Autowired
     private DepartmentService departmentService;
 
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("departments", departmentService.getAllDepartments());
+    public String list(@RequestParam(name = "keyword", required = false) String keyword,
+                       Model model) {
+        if (keyword != null && !keyword.isBlank()) {
+            model.addAttribute("departments", departmentRepository.findByDepartmentNameContainingIgnoreCase(keyword));
+        } else {
+            model.addAttribute("departments", departmentService.getAllDepartments());
+        }
+        model.addAttribute("keyword", keyword);
         return "admin/department-list";
     }
 

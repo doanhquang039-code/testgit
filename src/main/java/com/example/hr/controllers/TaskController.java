@@ -11,6 +11,7 @@ import com.example.hr.models.Task;
 import com.example.hr.repository.TaskRepository;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.enums.UserStatus;
+import com.example.hr.enums.TaskType;
 
 @Controller
 @RequestMapping("/admin/tasks")
@@ -20,17 +21,28 @@ public class TaskController {
     @Autowired private TaskRepository taskRepository;
     @Autowired private UserRepository userRepository;
 
-    // 1. Danh sách & Tìm kiếm công việc
+    // 1. Danh sách & Tìm kiếm công việc — with keyword + taskType filter
     @GetMapping
-    public String list(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
+    public String list(@RequestParam(name = "keyword", required = false) String keyword,
+                       @RequestParam(name = "taskType", required = false) String taskType,
+                       Model model) {
+        TaskType type = null;
+        if (taskType != null && !taskType.isBlank()) {
+            try { type = TaskType.valueOf(taskType); } catch (Exception ignored) {}
+        }
+
         List<Task> tasks;
-        if (keyword != null && !keyword.isEmpty()) {
-            tasks = taskRepository.findByTaskNameContaining(keyword); // Cần thêm hàm này vào Repo
+        if ((keyword != null && !keyword.isBlank()) || type != null) {
+            tasks = taskRepository.searchTasks(
+                    keyword != null && !keyword.isBlank() ? keyword : null,
+                    type);
         } else {
             tasks = taskRepository.findAll();
         }
         model.addAttribute("tasks", tasks);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedTaskType", taskType);
+        model.addAttribute("taskTypes", TaskType.values());
         return "admin/task-list";
     }
 

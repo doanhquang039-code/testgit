@@ -33,9 +33,34 @@ public class ContractController {
     private HrAuditLogService hrAuditLogService;
 
    @GetMapping
-public String list(@RequestParam(name = "keyword", required = false) String keyword, Model model) {
+public String list(@RequestParam(name = "keyword", required = false) String keyword,
+                   @RequestParam(name = "contractType", required = false) String contractType,
+                   @RequestParam(name = "status", required = false) String status,
+                   Model model) {
     List<Contract> contracts = contractRepository.findAllWithUser(keyword);
+
+    // Filter by contract type
+    if (contractType != null && !contractType.isBlank()) {
+        contracts = contracts.stream()
+                .filter(c -> contractType.equals(c.getContractType()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    // Filter by status (active/expired)
+    if ("ACTIVE".equals(status)) {
+        contracts = contracts.stream()
+                .filter(c -> c.getExpiryDate() == null || !c.getExpiryDate().isBefore(java.time.LocalDate.now()))
+                .collect(java.util.stream.Collectors.toList());
+    } else if ("EXPIRED".equals(status)) {
+        contracts = contracts.stream()
+                .filter(c -> c.getExpiryDate() != null && c.getExpiryDate().isBefore(java.time.LocalDate.now()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     model.addAttribute("contracts", contracts);
+    model.addAttribute("keyword", keyword);
+    model.addAttribute("selectedContractType", contractType);
+    model.addAttribute("selectedStatus", status);
     return "admin/contract-list";
 }
 

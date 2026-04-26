@@ -135,7 +135,9 @@ public class ManagerController {
     // ==================== OVERTIME APPROVAL ====================
 
     @GetMapping("/overtime")
-    public String overtimeList(@RequestParam(required = false) String status, Model model) {
+    public String overtimeList(@RequestParam(required = false) String status,
+                               @RequestParam(required = false) String keyword,
+                               Model model) {
         List<OvertimeRequest> requests;
         if (status != null && !status.isBlank()) {
             requests = overtimeService.getAllRequests().stream()
@@ -144,12 +146,22 @@ public class ManagerController {
         } else {
             requests = overtimeService.getAllRequests();
         }
+
+        // Keyword search by employee name
+        if (keyword != null && !keyword.isBlank()) {
+            String kw = keyword.toLowerCase();
+            requests = requests.stream()
+                    .filter(r -> r.getUser() != null && r.getUser().getFullName().toLowerCase().contains(kw))
+                    .collect(Collectors.toList());
+        }
+
         long countPending  = overtimeService.countByStatus(OvertimeStatus.PENDING);
         long countApproved = overtimeService.countByStatus(OvertimeStatus.APPROVED);
         long countRejected = overtimeService.countByStatus(OvertimeStatus.REJECTED);
 
         model.addAttribute("requests", requests);
         model.addAttribute("selectedStatus", status);
+        model.addAttribute("keyword", keyword);
         model.addAttribute("countPending",  countPending);
         model.addAttribute("countApproved", countApproved);
         model.addAttribute("countRejected", countRejected);

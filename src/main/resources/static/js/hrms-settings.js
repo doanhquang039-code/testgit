@@ -48,6 +48,28 @@
       'Lý do': 'Reason', 'Giờ vào': 'Check In', 'Giờ ra': 'Check Out',
       'Lương cơ bản': 'Base Salary', 'Thưởng': 'Bonus', 'Khấu trừ': 'Deductions',
       'Lương thực nhận': 'Net Salary', 'Không có dữ liệu': 'No data',
+      // New sidebar sections
+      'Công việc': 'Tasks', 'Tài chính': 'Finance', 'Đánh giá': 'Reviews',
+      'Tài sản': 'Assets', 'Trợ lý HR': 'HR Assistant',
+      'Danh sách nhân viên': 'Employee List', 'Quản lý': 'Management', 'Nhân sự': 'HR',
+      // Page headings
+      'Thiết Bị & Tài Sản': 'Equipment & Assets', 'Chấm Công': 'Attendance',
+      'Thông Báo Công Ty': 'Company Announcements', 'Yêu Cầu Chi Phí': 'Expense Claims',
+      'Tài Liệu Của Tôi': 'My Documents', 'Ca Làm Việc Của Tôi': 'My Work Shifts',
+      'Đăng Ký Làm Thêm Giờ': 'Overtime Registration', 'Lịch Sử Chấm Công': 'Attendance History',
+      'Duyệt Đơn Làm Thêm Giờ': 'Overtime Approval', 'Nhóm Của Tôi': 'My Team',
+      'Trung Tâm Tuyển Dụng': 'Recruitment Center',
+      // Labels
+      'Tiêu đề': 'Title', 'Danh mục': 'Category', 'Ngày chi': 'Expense Date',
+      'Chứng từ': 'Receipt', 'Nộp Yêu Cầu Mới': 'Submit New Claim',
+      'Lịch Sử Yêu Cầu': 'Claim History', 'Gửi yêu cầu': 'Submit',
+      'Đang sử dụng': 'In Use', 'Đã trả': 'Returned', 'Tổng tài sản': 'Total Assets',
+      'Ngày nhận': 'Received', 'Tình trạng': 'Condition', 'Bàn giao bởi': 'Assigned by',
+      'Chưa check-in': 'Not checked in', 'Đã hoàn thành ca': 'Shift completed',
+      'Xem tất cả': 'View All', 'Thêm nhân viên': 'Add Employee',
+      'Giao việc mới': 'New Assignment', 'Truy cập nhanh': 'Quick Access',
+      'Hành Động Nhanh': 'Quick Actions', 'Xem chấm công': 'View Attendance',
+      'Thêm đánh giá KPI': 'Add KPI Review', 'Đăng tin tuyển dụng': 'Post Job',
     },
     zh: {
       // Navigation
@@ -84,6 +106,17 @@
       'Lý do': '原因', 'Giờ vào': '签到', 'Giờ ra': '签退',
       'Lương cơ bản': '基本工资', 'Thưởng': '奖金', 'Khấu trừ': '扣款',
       'Lương thực nhận': '实发工资', 'Không có dữ liệu': '暂无数据',
+      // New
+      'Tài chính': '财务', 'Đánh giá': '评价', 'Tài sản': '资产', 'Trợ lý HR': 'HR助手',
+      'Danh sách nhân viên': '员工列表', 'Quản lý': '管理', 'Nhân sự': '人事',
+      'Thiết Bị & Tài Sản': '设备与资产', 'Thông Báo Công Ty': '公司公告',
+      'Yêu Cầu Chi Phí': '费用申请', 'Tài Liệu Của Tôi': '我的文件',
+      'Ca Làm Việc Của Tôi': '我的班次', 'Đăng Ký Làm Thêm Giờ': '加班申请',
+      'Tiêu đề': '标题', 'Danh mục': '类别', 'Ngày chi': '消费日期',
+      'Chứng từ': '凭证', 'Đang sử dụng': '使用中', 'Đã trả': '已归还',
+      'Chưa check-in': '未签到', 'Đã hoàn thành ca': '班次已完成',
+      'Xem tất cả': '查看全部', 'Thêm nhân viên': '添加员工',
+      'Giao việc mới': '新分配', 'Truy cập nhanh': '快速访问',
     },
     ja: {
       // Navigation
@@ -120,6 +153,17 @@
       'Lý do': '理由', 'Giờ vào': '出勤', 'Giờ ra': '退勤',
       'Lương cơ bản': '基本給', 'Thưởng': 'ボーナス', 'Khấu trừ': '控除',
       'Lương thực nhận': '手取り', 'Không có dữ liệu': 'データなし',
+      // New
+      'Tài chính': '財務', 'Đánh giá': '評価', 'Tài sản': '資産', 'Trợ lý HR': 'HRアシスタント',
+      'Danh sách nhân viên': '従業員一覧', 'Quản lý': '管理', 'Nhân sự': '人事',
+      'Thiết Bị & Tài Sản': '設備と資産', 'Thông Báo Công Ty': '社内通知',
+      'Yêu Cầu Chi Phí': '経費請求', 'Tài Liệu Của Tôi': '自分の書類',
+      'Ca Làm Việc Của Tôi': '自分のシフト', 'Đăng Ký Làm Thêm Giờ': '残業申請',
+      'Tiêu đề': 'タイトル', 'Danh mục': 'カテゴリ', 'Ngày chi': '支出日',
+      'Chứng từ': '領収書', 'Đang sử dụng': '使用中', 'Đã trả': '返却済み',
+      'Chưa check-in': '未出勤', 'Đã hoàn thành ca': 'シフト完了',
+      'Xem tất cả': 'すべて見る', 'Thêm nhân viên': '従業員追加',
+      'Giao việc mới': '新しい割り当て', 'Truy cập nhanh': 'クイックアクセス',
     }
   };
 
