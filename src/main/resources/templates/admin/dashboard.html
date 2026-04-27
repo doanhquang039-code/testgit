@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
@@ -67,10 +67,19 @@
           <a th:href="@{/admin/attendance}"><i class="bi bi-clipboard-check"></i> Chấm công</a>
           <a th:href="@{/admin/tasks}"><i class="bi bi-list-task"></i> Công việc</a>
           <a th:href="@{/admin/assignments}"><i class="bi bi-person-check"></i> Phân công</a>
+          <a th:href="@{/admin/shifts}"><i class="bi bi-clock-history"></i> Ca làm việc</a>
+          <hr style="border-color:rgba(255,255,255,.1);margin:8px 16px"/>
           <a th:href="@{/admin/reviews}"><i class="bi bi-star-half"></i> Đánh giá KPI</a>
+          <a th:href="@{/admin/kpi-goals}"><i class="bi bi-bullseye"></i> Mục tiêu KPI</a>
+          <a th:href="@{/admin/skills}"><i class="bi bi-tools"></i> Kỹ năng NV</a>
+          <a th:href="@{/admin/training}"><i class="bi bi-mortarboard"></i> Đào tạo</a>
+          <a th:href="@{/admin/videos}"><i class="bi bi-collection-play"></i> Video đào tạo</a>
+          <hr style="border-color:rgba(255,255,255,.1);margin:8px 16px"/>
+          <a th:href="@{/admin/expenses}"><i class="bi bi-receipt"></i> Chi phí</a>
+          <a th:href="@{/admin/assets}"><i class="bi bi-box-seam"></i> Tài sản</a>
+          <a th:href="@{/admin/announcements}"><i class="bi bi-megaphone"></i> Thông báo</a>
           <a th:href="@{/admin/reports}"><i class="bi bi-bar-chart-line"></i> Báo cáo</a>
-          <a th:href="@{/admin/audit-log}"><i class="bi bi-journal-text"></i> Nhật ký hệ thống</a>
-          <a th:href="@{/admin/announcements}"><i class="bi bi-megaphone"></i> Thông báo công ty</a>
+          <a th:href="@{/admin/audit-log}"><i class="bi bi-journal-text"></i> Nhật ký</a>
           <a th:href="@{/hiring}"><i class="bi bi-person-plus"></i> Tuyển dụng</a>
           <!-- Language Toggle -->
           <div class="lang-toggle-wrap">
@@ -80,9 +89,6 @@
               <button class="lang-btn" data-lang="en">&#127468;&#127463; EN</button>
             </div>
           </div>
-          <hr style="border-color:rgba(255,255,255,.1);margin:8px 16px"/>
-          <a th:href="@{/admin/videos}"><i class="bi bi-collection-play"></i> Video đào tạo</a>
-          <a th:href="@{/admin/videos/upload}"><i class="bi bi-cloud-upload"></i> Thêm video mới</a>
           <hr style="border-color:rgba(255,255,255,.1);margin:8px 16px"/>
           <a th:href="@{/admin/cache}"><i class="bi bi-lightning-charge"></i> Cache &amp; Email</a>
           <a th:href="@{/admin/cloud}"><i class="bi bi-cloud"></i> Cloud Storage</a>

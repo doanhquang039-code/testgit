@@ -59,6 +59,7 @@ public class VideoController {
                                 @RequestParam(required = false) String tags,
                                 Authentication auth,
                                 RedirectAttributes ra) {
+        System.out.println(">>> VIDEO UPLOAD POST received! File: " + file.getOriginalFilename() + " Size: " + file.getSize());
         if (file.isEmpty()) {
             ra.addFlashAttribute("error", "Vui lòng chọn file video!");
             return "redirect:/admin/videos/upload";

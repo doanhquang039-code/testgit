@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,7 +19,7 @@ import com.example.hr.repository.UserRepository;
 import com.example.hr.service.HrAuditLogService;
 
 import java.util.List;
-import org.springframework.data.domain.Sort;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping({ "/admin/contracts", "/manager/contracts" })
@@ -28,45 +29,57 @@ public class ContractController {
     private ContractRepository contractRepository;
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private HrAuditLogService hrAuditLogService;
 
-   @GetMapping
-public String list(@RequestParam(name = "keyword", required = false) String keyword,
-                   @RequestParam(name = "contractType", required = false) String contractType,
-                   @RequestParam(name = "status", required = false) String status,
-                   Model model) {
-    List<Contract> contracts = contractRepository.findAllWithUser(keyword);
+    @GetMapping
+    public String list(@RequestParam(name = "keyword", required = false) String keyword,
+                       @RequestParam(name = "contractType", required = false) String contractType,
+                       @RequestParam(name = "status", required = false) String status,
+                       Model model) {
+        List<Contract> contracts = contractRepository.findAllWithUser(keyword);
 
-    // Filter by contract type
-    if (contractType != null && !contractType.isBlank()) {
-        contracts = contracts.stream()
-                .filter(c -> contractType.equals(c.getContractType()))
-                .collect(java.util.stream.Collectors.toList());
+        // Filter by contract type
+        if (contractType != null && !contractType.isBlank()) {
+            contracts = contracts.stream()
+                    .filter(c -> contractType.equals(c.getContractType()))
+                    .collect(Collectors.toList());
+        }
+
+        // Filter by status (active/expired)
+        if ("ACTIVE".equals(status)) {
+            contracts = contracts.stream()
+                    .filter(c -> c.getExpiryDate() == null || !c.getExpiryDate().isBefore(java.time.LocalDate.now()))
+                    .collect(Collectors.toList());
+        } else if ("EXPIRED".equals(status)) {
+            contracts = contracts.stream()
+                    .filter(c -> c.getExpiryDate() != null && c.getExpiryDate().isBefore(java.time.LocalDate.now()))
+                    .collect(Collectors.toList());
+        }
+
+        model.addAttribute("contracts", contracts);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedContractType", contractType);
+        model.addAttribute("selectedStatus", status);
+        return "admin/contract-list";
     }
-
-    // Filter by status (active/expired)
-    if ("ACTIVE".equals(status)) {
-        contracts = contracts.stream()
-                .filter(c -> c.getExpiryDate() == null || !c.getExpiryDate().isBefore(java.time.LocalDate.now()))
-                .collect(java.util.stream.Collectors.toList());
-    } else if ("EXPIRED".equals(status)) {
-        contracts = contracts.stream()
-                .filter(c -> c.getExpiryDate() != null && c.getExpiryDate().isBefore(java.time.LocalDate.now()))
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    model.addAttribute("contracts", contracts);
-    model.addAttribute("keyword", keyword);
-    model.addAttribute("selectedContractType", contractType);
-    model.addAttribute("selectedStatus", status);
-    return "admin/contract-list";
-}
 
     @GetMapping("/add")
-    public String showAddForm(Model model) {
-        model.addAttribute("contract", new Contract());
+    public String showAddForm(@RequestParam(name = "editId", required = false) Integer editId, Model model) {
+        if (editId != null) {
+            Contract contract = contractRepository.findById(editId).orElse(new Contract());
+            model.addAttribute("contract", contract);
+        } else {
+            model.addAttribute("contract", new Contract());
+        }
+        model.addAttribute("users", userRepository.findByStatus(UserStatus.ACTIVE));
+        return "admin/contract-form";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable Integer id, Model model) {
+        Contract contract = contractRepository.findById(id).orElse(new Contract());
+        model.addAttribute("contract", contract);
         model.addAttribute("users", userRepository.findByStatus(UserStatus.ACTIVE));
         return "admin/contract-form";
     }
@@ -83,17 +96,4 @@ public String list(@RequestParam(name = "keyword", required = false) String keyw
                 null);
         return "redirect:/admin/contracts";
     }
-    @GetMapping("/contracts")
-public String listContracts(
-        @RequestParam(required = false) String employeeName,
-        @RequestParam(required = false) String type,
-        @RequestParam(defaultValue = "startDate") String sortBy,
-        Model model) {
-    
-    Sort sort = Sort.by(sortBy).descending();
-    List<Contract> contracts = contractRepository.filterContracts(employeeName, type, null, sort);
-    
-    model.addAttribute("contracts", contracts);
-    return "contract/list";
-}
 }

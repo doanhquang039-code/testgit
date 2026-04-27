@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.hr.enums.NotificationType;
+import com.example.hr.enums.TaskStatus;
 import com.example.hr.enums.UserStatus;
 import com.example.hr.models.TaskAssignment;
 import com.example.hr.repository.TaskAssignmentRepository;
@@ -18,6 +19,7 @@ import com.example.hr.repository.TaskRepository;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.service.NotificationService;
 import org.springframework.transaction.annotation.Transactional;
+
 @Controller
 @RequestMapping("/admin/assignments")
 @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
@@ -37,6 +39,7 @@ public class TaskAssignmentController {
     @Transactional(readOnly = true)
     public String list(Model model) {
         model.addAttribute("assignments", assignmentRepository.findAll());
+        model.addAttribute("statuses", TaskStatus.values());
         return "admin/assignment-list";
     }
 
@@ -44,13 +47,26 @@ public class TaskAssignmentController {
     @GetMapping("/add")
     public String showAddForm(Model model) {
         model.addAttribute("assignment", new TaskAssignment());
-        // Lấy danh sách Task và User để chọn từ Dropdown
         model.addAttribute("tasks", taskRepository.findAll());
         model.addAttribute("users", userRepository.findByStatus(UserStatus.ACTIVE));
+        model.addAttribute("statuses", TaskStatus.values());
         return "admin/assignment-form";
     }
 
-    // 3. Lưu phân công
+    // 3. Form chỉnh sửa phân công
+    @GetMapping("/edit/{id}")
+    @Transactional(readOnly = true)
+    public String showEditForm(@PathVariable Integer id, Model model) {
+        TaskAssignment assignment = assignmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phân công: " + id));
+        model.addAttribute("assignment", assignment);
+        model.addAttribute("tasks", taskRepository.findAll());
+        model.addAttribute("users", userRepository.findByStatus(UserStatus.ACTIVE));
+        model.addAttribute("statuses", TaskStatus.values());
+        return "admin/assignment-form";
+    }
+
+    // 4. Lưu phân công
     @PostMapping("/save")
     public String save(@ModelAttribute("assignment") TaskAssignment assignment) {
         assignmentRepository.save(assignment);
@@ -58,7 +74,7 @@ public class TaskAssignmentController {
         if (assignment.getUser() != null && assignment.getTask() != null) {
             notificationService.createNotification(
                 assignment.getUser(),
-                "📝 Bạn được giao công việc mới: \"" + assignment.getTask().getTaskName() + "\". Hãy xắtỷ buổi hôm nay!",
+                "📝 Bạn được giao công việc mới: \"" + assignment.getTask().getTaskName() + "\".",
                 NotificationType.TASK_ASSIGNED,
                 "/user1/tasks"
             );
@@ -66,7 +82,7 @@ public class TaskAssignmentController {
         return "redirect:/admin/assignments";
     }
 
-    // 4. Xóa phân công (Thu hồi việc)
+    // 5. Xóa phân công (Thu hồi việc)
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Integer id) {
         assignmentRepository.deleteById(id);
