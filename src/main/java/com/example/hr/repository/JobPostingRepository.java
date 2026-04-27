@@ -10,4 +10,7 @@ import java.util.List;
 public interface JobPostingRepository extends JpaRepository<JobPosting, Integer> {
     List<JobPosting> findByStatus(String status);
     List<JobPosting> findByTitleContainingIgnoreCase(String title);
+    
+    // Advanced Analytics methods
+    long countByStatus(String status);
 }

@@ -29,7 +29,7 @@ public class UserService {
     private final JobPositionRepository positionRepository;
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
-
+ 
     public UserService(
             UserRepository userRepository,
             DepartmentRepository departmentRepository,
@@ -47,6 +47,12 @@ public class UserService {
     public void registerNewUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+    }
+    
+    // Get user by username
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
     }
 
     @Transactional(readOnly = true)

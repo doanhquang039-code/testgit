@@ -1,13 +1,14 @@
 package com.example.hr.enums;
 
 public enum LeaveType {
-    ANNUAL("Nghỉ phép năm"),
-    SICK("Nghỉ ốm"),
-    UNPAID("Nghỉ không lương"),
-    BEREAVEMENT("Nghỉ tang"),
-    MATERNITY("Nghỉ thai sản"),
-    PATERNITY("Nghỉ chăm con"),
-    MARRIAGE("Nghỉ cưới");
+    ANNUAL("Annual Leave"),
+    SICK("Sick Leave"),
+    UNPAID("Unpaid Leave"),
+    MATERNITY("Maternity Leave"),
+    PATERNITY("Paternity Leave"),
+    COMPASSIONATE("Compassionate Leave"),
+    STUDY("Study Leave"),
+    COMPENSATORY("Compensatory Leave");
 
     private final String displayName;
 

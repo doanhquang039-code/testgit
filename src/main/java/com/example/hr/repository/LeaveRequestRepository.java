@@ -24,6 +24,15 @@ List<LeaveRequest> findAllWithUser(@Param("keyword") String keyword);
 
    @EntityGraph(attributePaths = "user")
    List<LeaveRequest> findAllByOrderByCreatedAtDesc(Pageable pageable);
+   
+   // Advanced Leave Management methods
+   long countByStatus(String status);
+   long countByStartDateLessThanEqualAndEndDateGreaterThanEqualAndStatus(
+       java.time.LocalDate endDate, java.time.LocalDate startDate, String status);
+   List<LeaveRequest> findByUserAndStatusAndStartDateBetween(
+       User user, String status, java.time.LocalDate startDate, java.time.LocalDate endDate);
+   List<LeaveRequest> findByStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+       String status, java.time.LocalDate endDate, java.time.LocalDate startDate);
+   long countByUserAndStatus(User user, String status);
+   List<LeaveRequest> findTop5ByOrderByCreatedAtDesc();
 }
-
-//

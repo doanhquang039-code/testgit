@@ -12,33 +12,16 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface EmployeeDocumentRepository extends JpaRepository<EmployeeDocument, Integer>,
+public interface EmployeeDocumentRepository extends JpaRepository<EmployeeDocument, Long>,
         JpaSpecificationExecutor<EmployeeDocument> {
 
     List<EmployeeDocument> findByUserId(Integer userId);
 
-    List<EmployeeDocument> findByUserIdAndDocumentType(Integer userId, DocumentType documentType);
+    List<EmployeeDocument> findByUserIdAndDocumentType(Integer userId, String documentType);
 
-    List<EmployeeDocument> findByDocumentType(DocumentType documentType);
+    List<EmployeeDocument> findByDocumentType(String documentType);
 
     long countByUserId(Integer userId);
 
-    @Query("SELECT d FROM EmployeeDocument d WHERE d.isVerified = false ORDER BY d.uploadedAt DESC")
-    List<EmployeeDocument> findUnverifiedDocuments();
-
-    @Query("SELECT d FROM EmployeeDocument d WHERE d.expiryDate IS NOT NULL AND d.expiryDate BETWEEN :start AND :end")
-    List<EmployeeDocument> findExpiringSoon(@Param("start") LocalDate start, @Param("end") LocalDate end);
-
-    @Query("SELECT d FROM EmployeeDocument d WHERE d.expiryDate IS NOT NULL AND d.expiryDate < :today")
-    List<EmployeeDocument> findExpiredDocuments(@Param("today") LocalDate today);
-
-    @Query("SELECT COUNT(d) FROM EmployeeDocument d WHERE d.user.id = :userId AND d.isVerified = true")
-    long countVerifiedByUserId(@Param("userId") Integer userId);
-
-    long countByExpiryDateBetween(LocalDate start, LocalDate end);
-
-    @Query("SELECT d.documentType, COUNT(d) FROM EmployeeDocument d GROUP BY d.documentType")
-    List<Object[]> countByDocumentType();
-
-    boolean existsByUserIdAndDocumentType(Integer userId, DocumentType documentType);
+    boolean existsByUserIdAndDocumentType(Integer userId, String documentType);
 }

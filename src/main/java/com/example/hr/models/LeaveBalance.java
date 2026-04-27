@@ -1,5 +1,6 @@
 package com.example.hr.models;
 
+import com.example.hr.enums.LeaveType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,11 +9,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "employee_documents")
+@Table(name = "leave_balances")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeDocument {
+public class LeaveBalance {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,33 +23,24 @@ public class EmployeeDocument {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String documentType; // PAYSLIP, TAX_DOCUMENT, CERTIFICATE, ID_CARD
-
-    @Column(nullable = false)
-    private String fileName;
+    private LeaveType leaveType;
 
     @Column(nullable = false)
-    private String fileUrl;
+    private Integer year;
 
     @Column(nullable = false)
-    private String fileSize;
+    private Double totalDays = 0.0;
 
     @Column(nullable = false)
-    private String mimeType;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by")
-    private User uploadedBy;
+    private Double usedDays = 0.0;
 
     @Column(nullable = false)
-    private Boolean isVerified = false;
+    private Double remainingDays = 0.0;
 
     @Column(nullable = false)
-    private Boolean isConfidential = false;
+    private Double carriedForward = 0.0;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -62,5 +54,9 @@ public class EmployeeDocument {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void calculateRemaining() {
+        this.remainingDays = this.totalDays + this.carriedForward - this.usedDays;
     }
 }

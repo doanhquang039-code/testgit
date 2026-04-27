@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.hr.enums.AttendanceStatus;
 import com.example.hr.models.Attendance;
 import com.example.hr.models.User;
 
@@ -32,4 +33,11 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
     List<Attendance> findByUserAndYearAndMonth(@Param("user") User user,
                                                @Param("year") int year,
                                                @Param("month") int month);
+    
+    // Advanced Analytics methods
+    long countByAttendanceDateAndStatus(LocalDate date, AttendanceStatus status);
+    long countByAttendanceDateBetweenAndStatus(LocalDate startDate, LocalDate endDate, AttendanceStatus status);
+    boolean existsByUserAndAttendanceDateAndStatus(User user, LocalDate date, AttendanceStatus status);
+    boolean existsByUserAndAttendanceDate(User user, LocalDate date);
+    List<Attendance> findByUserAndAttendanceDateBetweenOrderByAttendanceDateDesc(User user, LocalDate startDate, LocalDate endDate);
 }

@@ -59,4 +59,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             GROUP BY d.departmentName
             """)
     List<Object[]> countByDepartmentForStatus(@Param("status") UserStatus status);
+    
+    // Advanced Analytics methods
+    long countByCreatedAtAfter(LocalDateTime createdAt);
+    long countByCreatedAtBefore(LocalDateTime createdAt);
+    long countByDepartment(com.example.hr.models.Department department);
+    List<User> findByDepartmentAndStatus(com.example.hr.models.Department department, UserStatus status);
+    List<User> findTop5ByOrderByCreatedAtDesc();
 }

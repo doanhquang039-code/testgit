@@ -14,4 +14,7 @@ public interface CandidateRepository extends JpaRepository<Candidate, Integer> {
     List<Candidate> findByFullNameContainingIgnoreCase(String name);
     long countByJobPosting(JobPosting jobPosting);
     long countByStatus(String status);
+    
+    // Advanced Analytics methods
+    long countByAppliedDateAfter(java.time.LocalDate appliedDate);
 }

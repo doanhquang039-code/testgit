@@ -25,4 +25,8 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
 
     @Query("SELECT p FROM PerformanceReview p WHERE p.reviewPeriod = :period")
     List<PerformanceReview> findByPeriod(@Param("period") String period);
+    
+    // Advanced Analytics methods
+    List<PerformanceReview> findTop10ByOrderByOverallScoreDesc();
+    java.util.Optional<PerformanceReview> findTopByUserOrderByReviewDateDesc(User user);
 }

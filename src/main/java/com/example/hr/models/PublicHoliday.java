@@ -5,50 +5,37 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "employee_documents")
+@Table(name = "public_holidays")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeDocument {
+public class PublicHoliday {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false)
+    private String name;
 
     @Column(nullable = false)
-    private String documentType; // PAYSLIP, TAX_DOCUMENT, CERTIFICATE, ID_CARD
+    private LocalDate date;
 
     @Column(nullable = false)
-    private String fileName;
-
-    @Column(nullable = false)
-    private String fileUrl;
-
-    @Column(nullable = false)
-    private String fileSize;
-
-    @Column(nullable = false)
-    private String mimeType;
+    private Integer year;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by")
-    private User uploadedBy;
+    @Column(nullable = false)
+    private Boolean isRecurring = false;
 
     @Column(nullable = false)
-    private Boolean isVerified = false;
-
-    @Column(nullable = false)
-    private Boolean isConfidential = false;
+    private Boolean isActive = true;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -57,6 +44,9 @@ public class EmployeeDocument {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (date != null) {
+            year = date.getYear();
+        }
     }
 
     @PreUpdate

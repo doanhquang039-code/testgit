@@ -90,7 +90,8 @@ public class DashboardService {
         BigDecimal benefitCost = benefitRepository.sumTotalActiveBenefitCost();
         long totalAssets = assetRepository.count();
         long availableAssets = assetRepository.countByStatus(AssetStatus.AVAILABLE);
-        long expiringDocs = documentRepository.countByExpiryDateBetween(today.plusDays(1), today.plusDays(30));
+        // long expiringDocs = documentRepository.countByExpiryDateBetween(today.plusDays(1), today.plusDays(30));
+        long expiringDocs = 0; // Temporary: EmployeeDocument doesn't have expiryDate field
 
         stats.setTotalEmployees(totalEmployees);
         stats.setNewHiresThisMonth(newHires);

@@ -1,5 +1,6 @@
 package com.example.hr.models;
 
+import com.example.hr.enums.NotificationChannel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,11 +9,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "employee_documents")
+@Table(name = "notification_preferences")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeDocument {
+public class NotificationPreference {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,32 +24,14 @@ public class EmployeeDocument {
     private User user;
 
     @Column(nullable = false)
-    private String documentType; // PAYSLIP, TAX_DOCUMENT, CERTIFICATE, ID_CARD
+    private String notificationType; // LEAVE_APPROVED, PAYROLL_GENERATED, etc.
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationChannel channel;
 
     @Column(nullable = false)
-    private String fileName;
-
-    @Column(nullable = false)
-    private String fileUrl;
-
-    @Column(nullable = false)
-    private String fileSize;
-
-    @Column(nullable = false)
-    private String mimeType;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by")
-    private User uploadedBy;
-
-    @Column(nullable = false)
-    private Boolean isVerified = false;
-
-    @Column(nullable = false)
-    private Boolean isConfidential = false;
+    private Boolean enabled = true;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

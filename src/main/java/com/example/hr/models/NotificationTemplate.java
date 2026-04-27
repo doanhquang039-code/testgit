@@ -1,5 +1,6 @@
 package com.example.hr.models;
 
+import com.example.hr.enums.NotificationChannel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,47 +9,37 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "employee_documents")
+@Table(name = "notification_templates")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeDocument {
+public class NotificationTemplate {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false, unique = true)
+    private String code; // LEAVE_APPROVED, PAYROLL_GENERATED
 
     @Column(nullable = false)
-    private String documentType; // PAYSLIP, TAX_DOCUMENT, CERTIFICATE, ID_CARD
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationChannel channel;
 
     @Column(nullable = false)
-    private String fileName;
+    private String subject;
 
-    @Column(nullable = false)
-    private String fileUrl;
-
-    @Column(nullable = false)
-    private String fileSize;
-
-    @Column(nullable = false)
-    private String mimeType;
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String template;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by")
-    private User uploadedBy;
+    private String variables; // JSON array of available variables
 
     @Column(nullable = false)
-    private Boolean isVerified = false;
-
-    @Column(nullable = false)
-    private Boolean isConfidential = false;
+    private Boolean isActive = true;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -18,4 +18,13 @@ public interface PayrollRepository extends JpaRepository<Payroll, Integer> {
 
     @Query("SELECT p FROM Payroll p LEFT JOIN FETCH p.user WHERE (:keyword IS NULL OR p.user.fullName LIKE %:keyword%)")
     List<Payroll> findAllWithUser(@Param("keyword") String keyword);
+    
+    // Advanced Analytics methods
+    @Query("SELECT p FROM Payroll p WHERE (p.year > :startYear OR (p.year = :startYear AND p.month >= :startMonth)) AND (p.year < :endYear OR (p.year = :endYear AND p.month <= :endMonth))")
+    List<Payroll> findByYearMonthBetween(@Param("startYear") int startYear, @Param("startMonth") int startMonth, @Param("endYear") int endYear, @Param("endMonth") int endMonth);
+    
+    List<Payroll> findTop100ByOrderByCreatedAtDesc();
+    
+    @Query("SELECT p FROM Payroll p WHERE p.user = :user AND ((p.year > :startYear OR (p.year = :startYear AND p.month >= :startMonth)) AND (p.year < :endYear OR (p.year = :endYear AND p.month <= :endMonth))) ORDER BY p.year DESC, p.month DESC")
+    List<Payroll> findByUserAndYearMonthBetween(@Param("user") User user, @Param("startYear") int startYear, @Param("startMonth") int startMonth, @Param("endYear") int endYear, @Param("endMonth") int endMonth);
 }
