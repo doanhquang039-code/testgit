@@ -14,6 +14,8 @@ public interface PulseSurveyRepository extends JpaRepository<PulseSurvey, Intege
     
     List<PulseSurvey> findByIsActiveTrue();
     
+    long countByIsActiveTrue();
+    
     @Query("SELECT s FROM PulseSurvey s WHERE s.isActive = true AND :date BETWEEN s.startDate AND s.endDate")
     List<PulseSurvey> findActiveSurveys(@Param("date") LocalDate date);
     

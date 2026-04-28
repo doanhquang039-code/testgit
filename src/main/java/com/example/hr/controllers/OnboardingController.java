@@ -32,7 +32,7 @@ public class OnboardingController {
         model.addAttribute("pending", onboardingService.getPendingItems(user));
         model.addAttribute("completionPercentage", onboardingService.getCompletionPercentage(user));
         
-        return "onboarding/my-checklist";
+        return "user1/my-checklist";
     }
     
     @PostMapping("/checklist/{id}/complete")
@@ -48,6 +48,14 @@ public class OnboardingController {
     }
     
     // ===== Admin Views =====
+    
+    @GetMapping("/admin/checklists")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String adminChecklistList(Model model) {
+        model.addAttribute("checklists", onboardingService.getAllChecklists());
+        model.addAttribute("stats", onboardingService.getChecklistStats());
+        return "admin/checklist-list";
+    }
     
     @GetMapping("/admin/create-checklist")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
@@ -85,7 +93,7 @@ public class OnboardingController {
         model.addAttribute("interview", interview.orElse(null));
         model.addAttribute("hasInterview", interview.isPresent());
         
-        return "onboarding/exit-interview";
+        return "user1/exit-interview";
     }
     
     @PostMapping("/exit-interview/submit")

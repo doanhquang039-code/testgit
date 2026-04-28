@@ -20,6 +20,8 @@ public interface OnboardingChecklistRepository extends JpaRepository<OnboardingC
     
     List<OnboardingChecklist> findByCategory(String category);
     
+    long countByIsCompleted(boolean isCompleted);
+    
     @Query("SELECT COUNT(o) * 100.0 / (SELECT COUNT(o2) FROM OnboardingChecklist o2 WHERE o2.user = :user) FROM OnboardingChecklist o WHERE o.user = :user AND o.isCompleted = true")
     Double getCompletionPercentage(@Param("user") User user);
     

@@ -182,4 +182,46 @@ public class OnboardingOffboardingService {
         long wouldRecommend = exitInterviewRepository.countByWouldRecommend(true);
         return (wouldRecommend * 100.0) / total;
     }
+    
+    // ===== Admin Methods =====
+    
+    /**
+     * Get all checklists
+     */
+    @Transactional(readOnly = true)
+    public List<OnboardingChecklist> getAllChecklists() {
+        return checklistRepository.findAll();
+    }
+    
+    /**
+     * Get checklist statistics
+     */
+    @Transactional(readOnly = true)
+    public ChecklistStats getChecklistStats() {
+        long totalItems = checklistRepository.count();
+        long completedItems = checklistRepository.countByIsCompleted(true);
+        long pendingItems = checklistRepository.countByIsCompleted(false);
+        
+        double completionRate = totalItems > 0 ? 
+            (double) completedItems / totalItems * 100 : 0;
+        
+        return new ChecklistStats(totalItems, completedItems, pendingItems,
+            Math.round(completionRate * 10.0) / 10.0);
+    }
+    
+    // Inner class for stats
+    public static class ChecklistStats {
+        public long totalItems;
+        public long completedItems;
+        public long pendingItems;
+        public double completionRate;
+        
+        public ChecklistStats(long totalItems, long completedItems, 
+                             long pendingItems, double completionRate) {
+            this.totalItems = totalItems;
+            this.completedItems = completedItems;
+            this.pendingItems = pendingItems;
+            this.completionRate = completionRate;
+        }
+    }
 }

@@ -3,179 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${pageTitle}">OKR Management</title>
+    <title>Quản lý OKR - HR System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
-        body { background: #F3F4F6; }
         .okr-card {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: all 0.2s;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            border-left: 5px solid #667eea;
         }
         .okr-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
         }
         .progress-circle {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 18px;
+            font-weight: bold;
+            font-size: 16px;
+            position: relative;
+            background: conic-gradient(#667eea 0deg, #667eea var(--progress), #e5e7eb var(--progress), #e5e7eb 360deg);
+        }
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .progress-circle span {
+            position: relative;
+            z-index: 2;
+            color: #667eea;
         }
         .level-badge {
-            padding: 4px 12px;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 0.8rem;
             font-weight: 600;
         }
-        .level-company { background: #EEF2FF; color: #4F46E5; }
-        .level-department { background: #D1FAE5; color: #059669; }
-        .level-individual { background: #FEF3C7; color: #D97706; }
+        .level-company { background: linear-gradient(45deg, #667eea, #764ba2); color: white; }
+        .level-department { background: linear-gradient(45deg, #43e97b, #38f9d7); color: white; }
+        .level-individual { background: linear-gradient(45deg, #f093fb, #f5576c); color: white; }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <div class="container-fluid py-4">
-        <div class="row mb-4">
-            <div class="col">
-                <h1 class="h3 mb-0"><i class="bi bi-bullseye me-2"></i>OKR Management</h1>
-                <p class="text-muted mb-0">Manage company objectives and key results</p>
-            </div>
-            <div class="col-auto">
-                <a href="/okr/admin/objectives/new" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-2"></i>Create Objective
-                </a>
-            </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form method="get" class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Level</label>
-                        <select name="level" class="form-select">
-                            <option value="">All Levels</option>
-                            <option value="COMPANY">Company</option>
-                            <option value="DEPARTMENT">Department</option>
-                            <option value="INDIVIDUAL">Individual</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            <option value="">All Status</option>
-                            <option th:each="status : ${statuses}" 
-                                    th:value="${status}" 
-                                    th:text="${status.displayName}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary me-2">
-                            <i class="bi bi-funnel me-2"></i>Filter
-                        </button>
-                        <a href="/okr/admin/objectives" class="btn btn-outline-secondary">Reset</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- OKR List -->
-        <div th:if="${objectives.empty}" class="text-center py-5">
-            <i class="bi bi-inbox display-1 text-muted"></i>
-            <p class="text-muted mt-3">No objectives found</p>
-        </div>
-
-        <div th:each="objective : ${objectives}" class="okr-card">
-            <div class="d-flex">
-                <div class="progress-circle me-3" 
-                     th:style="'background: conic-gradient(#10B981 ' + ${objective.progress} + '%, #E5E7EB ' + ${objective.progress} + '%);'">
-                    <span th:text="${#numbers.formatDecimal(objective.progress, 0, 0)} + '%'">0%</span>
-                </div>
-                
-                <div class="flex-grow-1">
-                    <div class="d-flex align-items-start justify-content-between mb-2">
-                        <div>
-                            <h5 class="mb-1">
-                                <a th:href="@{/okr/objectives/{id}(id=${objective.id})}" 
-                                   class="text-decoration-none text-dark" 
-                                   th:text="${objective.title}">Objective Title</a>
-                            </h5>
-                            <p class="text-muted mb-2" th:text="${objective.description}">Description</p>
-                        </div>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
-                                <i class="bi bi-three-dots-vertical"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" th:href="@{/okr/objectives/{id}(id=${objective.id})}">
-                                    <i class="bi bi-eye me-2"></i>View Details
-                                </a></li>
-                                <li><a class="dropdown-item" th:href="@{/okr/admin/objectives/edit/{id}(id=${objective.id})}">
-                                    <i class="bi bi-pencil me-2"></i>Edit
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form th:action="@{/okr/admin/objectives/{id}/status(id=${objective.id})}" method="post" style="display: inline;">
-                                        <input type="hidden" name="status" value="COMPLETED">
-                                        <button type="submit" class="dropdown-item text-success">
-                                            <i class="bi bi-check-circle me-2"></i>Mark Complete
-                                        </button>
-                                    </form>
-                                </li>
-                                <li>
-                                    <form th:action="@{/okr/admin/objectives/{id}/status(id=${objective.id})}" method="post" style="display: inline;">
-                                        <input type="hidden" name="status" value="CANCELLED">
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="bi bi-x-circle me-2"></i>Cancel
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex flex-wrap gap-2 mb-2">
-                        <span class="level-badge" 
-                              th:classappend="${'level-' + #strings.toLowerCase(objective.level)}"
-                              th:text="${objective.level}">COMPANY</span>
-                        
-                        <span class="badge" 
-                              th:classappend="${objective.status.name() == 'ACTIVE' ? 'bg-success' : 
-                                              objective.status.name() == 'COMPLETED' ? 'bg-primary' : 
-                                              objective.status.name() == 'CANCELLED' ? 'bg-danger' : 'bg-secondary'}"
-                              th:text="${objective.status.displayName}">Active</span>
-                        
-                        <span class="badge bg-light text-dark" th:if="${objective.owner}">
-                            <i class="bi bi-person me-1"></i>
-                            <span th:text="${objective.owner.fullName}">Owner</span>
-                        </span>
-                        
-                        <span class="badge bg-light text-dark" th:if="${objective.department}">
-                            <i class="bi bi-building me-1"></i>
-                            <span th:text="${objective.department.name}">Department</span>
-                        </span>
-                    </div>
-                    
-                    <div class="d-flex gap-3 text-muted small">
-                        <span><i class="bi bi-calendar-range me-1"></i>
-                            <span th:text="${#temporals.format(objective.startDate, 'dd/MM/yyyy')}">01/01/2024</span>
-                            - 
-                            <span th:text="${#temporals.format(objective.endDate, 'dd/MM/yyyy')}">31/12/2024</span>
-                        </span>
-                        <span><i class="bi bi-list-check me-1"></i>
-                            <span th:text="${objective.keyResults.size()}">0</span> Key Results
-                        </span>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Include sidebar -->
+            <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="bi bi-bullseye me-2 text-primary"></i>Quản lý OKR</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/okr/admin/objectives/new" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>Tạo mục tiêu mới
+                        </a>
                     </div>
                 </div>
-            </div>
+
+                <!-- Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <h3 th:text="${objectives != null ? #lists.size(objectives) : 0}">0</h3>
+                            <p class="mb-0">Tổng mục tiêu</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <h3>0</h3>
+                            <p class="mb-0">Đang thực hiện</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <h3>0</h3>
+                            <p class="mb-0">Hoàn thành</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <h3>0%</h3>
+                            <p class="mb-0">Tiến độ trung bình</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Bộ lọc</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Cấp độ</label>
+                                <select name="level" class="form-select">
+                                    <option value="">Tất cả cấp độ</option>
+                                    <option value="COMPANY">Công ty</option>
+                                    <option value="DEPARTMENT">Phòng ban</option>
+                                    <option value="INDIVIDUAL">Cá nhân</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Trạng thái</label>
+                                <select name="status" class="form-select">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="DRAFT">Bản nháp</option>
+                                    <option value="ACTIVE">Đang thực hiện</option>
+                                    <option value="COMPLETED">Hoàn thành</option>
+                                    <option value="CANCELLED">Đã hủy</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-search me-1"></i>Lọc
+                                </button>
+                                <a href="/okr/admin/objectives" class="btn btn-outline-secondary">Đặt lại</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- OKR List -->
+                <div th:if="${objectives == null or #lists.isEmpty(objectives)}" class="text-center py-5">
+                    <i class="bi bi-bullseye" style="font-size: 4rem; color: #dee2e6;"></i>
+                    <p class="text-muted mt-3 mb-3">Chưa có mục tiêu nào</p>
+                    <a href="/okr/admin/objectives/new" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Tạo mục tiêu đầu tiên
+                    </a>
+                </div>
+
+                <div th:each="objective : ${objectives}" class="okr-card">
+                    <div class="d-flex">
+                        <div class="progress-circle me-4" 
+                             th:style="'--progress: ' + ${objective.progress != null ? objective.progress * 3.6 : 0} + 'deg'">
+                            <span th:text="${objective.progress != null ? #numbers.formatDecimal(objective.progress, 0, 0) + '%' : '0%'}">0%</span>
+                        </div>
+                        
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-start justify-content-between mb-3">
+                                <div>
+                                    <h5 class="mb-2">
+                                        <a th:href="@{/okr/objectives/{id}(id=${objective.id})}" 
+                                           class="text-decoration-none text-dark" 
+                                           th:text="${objective.title}">Mục tiêu mẫu</a>
+                                    </h5>
+                                    <p class="text-muted mb-0" th:text="${objective.description}">Mô tả mục tiêu</p>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" th:href="@{/okr/objectives/{id}(id=${objective.id})}">
+                                            <i class="bi bi-eye me-2"></i>Xem chi tiết
+                                        </a></li>
+                                        <li><a class="dropdown-item" th:href="@{/okr/admin/objectives/edit/{id}(id=${objective.id})}">
+                                            <i class="bi bi-pencil me-2"></i>Sửa
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <button class="dropdown-item text-success">
+                                                <i class="bi bi-check-circle me-2"></i>Đánh dấu hoàn thành
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item text-danger">
+                                                <i class="bi bi-x-circle me-2"></i>Hủy bỏ
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="level-badge level-company" th:if="${objective.level == 'COMPANY'}">
+                                    <i class="bi bi-building me-1"></i>Công ty
+                                </span>
+                                <span class="level-badge level-department" th:if="${objective.level == 'DEPARTMENT'}">
+                                    <i class="bi bi-people me-1"></i>Phòng ban
+                                </span>
+                                <span class="level-badge level-individual" th:if="${objective.level == 'INDIVIDUAL'}">
+                                    <i class="bi bi-person me-1"></i>Cá nhân
+                                </span>
+                                
+                                <span class="badge bg-success" th:if="${objective.status == 'ACTIVE'}">
+                                    <i class="bi bi-play-circle me-1"></i>Đang thực hiện
+                                </span>
+                                <span class="badge bg-primary" th:if="${objective.status == 'COMPLETED'}">
+                                    <i class="bi bi-check-circle me-1"></i>Hoàn thành
+                                </span>
+                                <span class="badge bg-secondary" th:if="${objective.status == 'DRAFT'}">
+                                    <i class="bi bi-file-text me-1"></i>Bản nháp
+                                </span>
+                                <span class="badge bg-danger" th:if="${objective.status == 'CANCELLED'}">
+                                    <i class="bi bi-x-circle me-1"></i>Đã hủy
+                                </span>
+                                
+                                <span class="badge bg-light text-dark" th:if="${objective.owner}">
+                                    <i class="bi bi-person me-1"></i>
+                                    <span th:text="${objective.owner.fullName}">Người phụ trách</span>
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex gap-4 text-muted small">
+                                <span><i class="bi bi-calendar-range me-1"></i>
+                                    <span th:text="${objective.startDate != null ? #temporals.format(objective.startDate, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</span>
+                                    - 
+                                    <span th:text="${objective.endDate != null ? #temporals.format(objective.endDate, 'dd/MM/yyyy') : 'N/A'}">31/12/2024</span>
+                                </span>
+                                <span><i class="bi bi-list-check me-1"></i>
+                                    <span th:text="${objective.keyResults != null ? #lists.size(objective.keyResults) : 0}">0</span> Key Results
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 

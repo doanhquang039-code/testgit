@@ -26,7 +26,7 @@ public class EngagementController {
     public String socialFeed(Model model) {
         model.addAttribute("posts", engagementService.getPublicPosts());
         model.addAttribute("trending", engagementService.getTrendingPosts());
-        return "engagement/social-feed";
+        return "user1/social-feed";
     }
     
     @PostMapping("/post/create")
@@ -58,7 +58,7 @@ public class EngagementController {
     @GetMapping("/recognition")
     public String recognitionWall(Model model) {
         model.addAttribute("recognitions", engagementService.getPublicRecognitions());
-        return "engagement/recognition-wall";
+        return "user1/recognition-wall";
     }
     
     @GetMapping("/recognition/give")
@@ -104,7 +104,7 @@ public class EngagementController {
     @GetMapping("/surveys")
     public String surveys(Model model) {
         model.addAttribute("surveys", engagementService.getActiveSurveys());
-        return "engagement/surveys";
+        return "user1/surveys";
     }
     
     @GetMapping("/survey/{id}")
@@ -138,6 +138,87 @@ public class EngagementController {
     public String myReferrals(Authentication auth, Model model) {
         User user = authUserHelper.getCurrentUser(auth);
         model.addAttribute("referrals", engagementService.getUserReferrals(user));
-        return "engagement/my-referrals";
+        return "user1/my-referrals";
+    }
+    
+    // ===== ADMIN ROUTES =====
+    
+    @GetMapping("/admin/surveys")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String adminSurveyList(Model model) {
+        model.addAttribute("surveys", engagementService.getAllSurveys());
+        model.addAttribute("stats", engagementService.getSurveyStats());
+        return "admin/survey-list";
+    }
+    
+    @GetMapping("/admin/surveys/create")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String adminSurveyCreateForm(Model model) {
+        model.addAttribute("survey", new PulseSurvey());
+        return "admin/survey-form";
+    }
+    
+    @PostMapping("/admin/surveys/create")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String adminSurveyCreate(@ModelAttribute PulseSurvey survey,
+                                   Authentication auth,
+                                   RedirectAttributes ra) {
+        try {
+            User createdBy = authUserHelper.getCurrentUser(auth);
+            engagementService.createSurvey(
+                survey.getTitle(),
+                survey.getDescription(),
+                survey.getQuestions(),
+                survey.getStartDate(),
+                survey.getEndDate(),
+                survey.getIsAnonymous(),
+                createdBy
+            );
+            ra.addFlashAttribute("success", "Tạo khảo sát thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+        }
+        return "redirect:/engagement/admin/surveys";
+    }
+    
+    @GetMapping("/admin/surveys/{id}/edit")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String adminSurveyEditForm(@PathVariable Integer id, Model model) {
+        model.addAttribute("survey", engagementService.getSurveyById(id));
+        return "admin/survey-form";
+    }
+    
+    @PostMapping("/admin/surveys/{id}/update")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String adminSurveyUpdate(@PathVariable Integer id,
+                                   @ModelAttribute PulseSurvey survey,
+                                   RedirectAttributes ra) {
+        try {
+            engagementService.updateSurvey(id, survey);
+            ra.addFlashAttribute("success", "Cập nhật khảo sát thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+        }
+        return "redirect:/engagement/admin/surveys";
+    }
+    
+    @PostMapping("/admin/surveys/{id}/delete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String adminSurveyDelete(@PathVariable Integer id, RedirectAttributes ra) {
+        try {
+            engagementService.deleteSurvey(id);
+            ra.addFlashAttribute("success", "Xóa khảo sát thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+        }
+        return "redirect:/engagement/admin/surveys";
+    }
+    
+    @GetMapping("/admin/recognition")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String adminRecognitionList(Model model) {
+        model.addAttribute("recognitions", engagementService.getAllRecognitions());
+        model.addAttribute("stats", engagementService.getRecognitionStats());
+        return "admin/recognition-list";
     }
 }

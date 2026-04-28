@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý khóa học - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Include sidebar -->
+            <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="bi bi-book me-2"></i>Quản lý khóa học</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/lms/admin/course/new}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>Tạo khóa học mới
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-white bg-primary">
+                            <div class="card-body">
+                                <h5 class="card-title">Tổng khóa học</h5>
+                                <h2 class="mb-0" th:text="${courses.size()}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-success">
+                            <div class="card-body">
+                                <h5 class="card-title">Đang hoạt động</h5>
+                                <h2 class="mb-0" th:text="${courses.size()}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-warning">
+                            <div class="card-body">
+                                <h5 class="card-title">Bản nháp</h5>
+                                <h2 class="mb-0">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-info">
+                            <div class="card-body">
+                                <h5 class="card-title">Học viên</h5>
+                                <h2 class="mb-0">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Danh sách khóa học</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tiêu đề</th>
+                                        <th>Danh mục</th>
+                                        <th>Cấp độ</th>
+                                        <th>Thời lượng</th>
+                                        <th>Giảng viên</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="course : ${courses}">
+                                        <td th:text="${course.id}">1</td>
+                                        <td>
+                                            <strong th:text="${course.title}">Course Title</strong>
+                                            <br>
+                                            <small class="text-muted" th:text="${course.description}">Description</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary" th:text="${course.category}">Category</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${course.level == 'BEGINNER' ? 'bg-success' : (course.level == 'INTERMEDIATE' ? 'bg-warning' : 'bg-danger')}"
+                                                  th:text="${course.level}">Level</span>
+                                        </td>
+                                        <td th:text="${course.durationMinutes} + ' phút'">60 phút</td>
+                                        <td th:text="${course.instructor}">Instructor</td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${course.isActive ? 'bg-success' : 'bg-secondary'}"
+                                                  th:text="${course.isActive ? 'Hoạt động' : 'Tạm dừng'}">
+                                                Status
+                                            </span>
+                                            <span th:if="${course.isMandatory}" class="badge bg-danger ms-1">Bắt buộc</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/lms/course/{id}(id=${course.id})}" 
+                                               class="btn btn-sm btn-info" title="Xem">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-warning" title="Sửa">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-danger" title="Xóa">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(courses)}">
+                                        <td colspan="8" class="text-center text-muted py-4">
+                                            <i class="bi bi-folder2-open" style="font-size: 3rem;"></i>
+                                            <p class="mt-2">Chưa có khóa học nào</p>
+                                            <a th:href="@{/lms/admin/course/new}" class="btn btn-primary">
+                                                <i class="bi bi-plus-circle me-1"></i>Tạo khóa học đầu tiên
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

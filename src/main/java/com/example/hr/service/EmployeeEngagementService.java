@@ -218,4 +218,110 @@ public class EmployeeEngagementService {
         
         return socialPostRepository.save(post);
     }
+    
+    // ===== Admin Methods =====
+    
+    /**
+     * Get all surveys
+     */
+    @Transactional(readOnly = true)
+    public List<PulseSurvey> getAllSurveys() {
+        return surveyRepository.findAll();
+    }
+    
+    /**
+     * Get survey by ID
+     */
+    @Transactional(readOnly = true)
+    public PulseSurvey getSurveyById(Integer id) {
+        return surveyRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Survey not found"));
+    }
+    
+    /**
+     * Update survey
+     */
+    public PulseSurvey updateSurvey(Integer id, PulseSurvey updatedSurvey) {
+        PulseSurvey survey = getSurveyById(id);
+        survey.setTitle(updatedSurvey.getTitle());
+        survey.setDescription(updatedSurvey.getDescription());
+        survey.setQuestions(updatedSurvey.getQuestions());
+        survey.setStartDate(updatedSurvey.getStartDate());
+        survey.setEndDate(updatedSurvey.getEndDate());
+        survey.setIsAnonymous(updatedSurvey.getIsAnonymous());
+        survey.setIsActive(updatedSurvey.getIsActive());
+        return surveyRepository.save(survey);
+    }
+    
+    /**
+     * Delete survey
+     */
+    public void deleteSurvey(Integer id) {
+        surveyRepository.deleteById(id);
+    }
+    
+    /**
+     * Get survey statistics
+     */
+    @Transactional(readOnly = true)
+    public SurveyStats getSurveyStats() {
+        long totalSurveys = surveyRepository.count();
+        long activeSurveys = surveyRepository.countByIsActiveTrue();
+        long totalResponses = responseRepository.count();
+        
+        double participationRate = totalSurveys > 0 ? 
+            (double) totalResponses / totalSurveys * 100 : 0;
+        
+        return new SurveyStats(totalSurveys, activeSurveys, totalResponses, 
+            Math.round(participationRate * 10.0) / 10.0);
+    }
+    
+    /**
+     * Get all recognitions
+     */
+    @Transactional(readOnly = true)
+    public List<Recognition> getAllRecognitions() {
+        return recognitionRepository.findAll();
+    }
+    
+    /**
+     * Get recognition statistics
+     */
+    @Transactional(readOnly = true)
+    public RecognitionStats getRecognitionStats() {
+        long totalRecognitions = recognitionRepository.count();
+        long thisMonth = recognitionRepository.countThisMonth();
+        Integer totalPoints = recognitionRepository.getTotalPoints();
+        
+        return new RecognitionStats(totalRecognitions, thisMonth, 
+            totalPoints != null ? totalPoints : 0);
+    }
+    
+    // Inner classes for stats
+    public static class SurveyStats {
+        public long totalSurveys;
+        public long activeSurveys;
+        public long totalResponses;
+        public double participationRate;
+        
+        public SurveyStats(long totalSurveys, long activeSurveys, 
+                          long totalResponses, double participationRate) {
+            this.totalSurveys = totalSurveys;
+            this.activeSurveys = activeSurveys;
+            this.totalResponses = totalResponses;
+            this.participationRate = participationRate;
+        }
+    }
+    
+    public static class RecognitionStats {
+        public long totalRecognitions;
+        public long thisMonth;
+        public int totalPoints;
+        
+        public RecognitionStats(long totalRecognitions, long thisMonth, int totalPoints) {
+            this.totalRecognitions = totalRecognitions;
+            this.thisMonth = thisMonth;
+            this.totalPoints = totalPoints;
+        }
+    }
 }

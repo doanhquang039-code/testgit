@@ -42,7 +42,7 @@ public class LMSController {
         model.addAttribute("selectedCategory", category);
         model.addAttribute("searchKeyword", search);
         
-        return "lms/course-catalog";
+        return "user1/course-catalog";
     }
     
     @GetMapping("/my-courses")
@@ -54,7 +54,7 @@ public class LMSController {
         model.addAttribute("enrollments", enrollments);
         model.addAttribute("completedCount", courseService.getCompletedCoursesCount(user));
         
-        return "lms/my-courses";
+        return "user1/my-courses";
     }
     
     @GetMapping("/course/{id}")
@@ -73,7 +73,7 @@ public class LMSController {
         model.addAttribute("enrollment", enrollment.orElse(null));
         model.addAttribute("isEnrolled", enrollment.isPresent());
         
-        return "lms/course-detail";
+        return "user1/course-detail";
     }
     
     @PostMapping("/enroll/{courseId}")
@@ -103,14 +103,14 @@ public class LMSController {
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String adminCourseList(Model model) {
         model.addAttribute("courses", courseService.getActiveCourses());
-        return "lms/admin/course-list";
+        return "admin/course-list";
     }
     
     @GetMapping("/admin/course/new")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String newCourseForm(Model model) {
         model.addAttribute("course", new Course());
-        return "lms/admin/course-form";
+        return "admin/course-form";
     }
     
     @PostMapping("/admin/course/save")

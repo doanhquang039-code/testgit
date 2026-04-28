@@ -26,5 +26,11 @@ public interface RecognitionRepository extends JpaRepository<Recognition, Intege
     @Query("SELECT r FROM Recognition r WHERE r.isPublic = true ORDER BY r.createdAt DESC")
     List<Recognition> findRecentPublicRecognitions();
     
+    @Query("SELECT COUNT(r) FROM Recognition r WHERE MONTH(r.createdAt) = MONTH(CURRENT_DATE) AND YEAR(r.createdAt) = YEAR(CURRENT_DATE)")
+    long countThisMonth();
+    
+    @Query("SELECT SUM(r.points) FROM Recognition r")
+    Integer getTotalPoints();
+    
     long countByRecipient(User recipient);
 }
