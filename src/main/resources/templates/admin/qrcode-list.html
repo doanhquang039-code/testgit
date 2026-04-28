@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title th:text="${pageTitle}">QR Code Management</title>
+    <style>
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .qr-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .qr-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .type-badge {
+            font-size: 0.85rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-qr-code"></i> QR Code Management</h2>
+            <a th:href="@{/qrcode/admin/create}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Create QR Code
+            </a>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6>Total QR Codes</h6>
+                    <h2 th:text="${stats.totalQRCodes()}">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <h6>Active QR Codes</h6>
+                    <h2 th:text="${stats.activeQRCodes()}">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <h6>Total Scans</h6>
+                    <h2 th:text="${stats.totalScans()}">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <h6>Today's Scans</h6>
+                    <h2 th:text="${stats.todayScans()}">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Codes List -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Scan Count</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="qr : ${qrCodes}">
+                                <td th:text="${qr.id}">1</td>
+                                <td>
+                                    <strong th:text="${qr.name}">Main Entrance</strong>
+                                </td>
+                                <td>
+                                    <span class="badge type-badge bg-primary" th:text="${qr.type.displayName}">Check-in</span>
+                                </td>
+                                <td th:text="${qr.location}">Building A</td>
+                                <td>
+                                    <span class="badge bg-info" th:text="${qr.scanCount}">0</span>
+                                </td>
+                                <td>
+                                    <span th:if="${qr.isActive}" class="badge bg-success">Active</span>
+                                    <span th:unless="${qr.isActive}" class="badge bg-secondary">Inactive</span>
+                                    <span th:if="${qr.isExpired()}" class="badge bg-danger ms-1">Expired</span>
+                                </td>
+                                <td th:text="${#temporals.format(qr.createdAt, 'dd/MM/yyyy')}">01/01/2024</td>
+                                <td>
+                                    <a th:href="@{/qrcode/admin/view/{id}(id=${qr.id})}" class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a th:href="@{/qrcode/admin/edit/{id}(id=${qr.id})}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form th:action="@{/qrcode/admin/delete/{id}(id=${qr.id})}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

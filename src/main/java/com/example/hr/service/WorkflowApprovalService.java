@@ -128,57 +128,18 @@ public class WorkflowApprovalService {
 
     /**
      * Duyệt OT.
+     * TODO: Update with new overtime model
      */
     public OvertimeRequest approveOvertime(Integer overtimeId, Integer approverId) {
-        OvertimeRequest ot = overtimeRepository.findById(overtimeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Đơn OT", overtimeId));
-        User approver = userRepository.findById(approverId)
-                .orElseThrow(() -> new ResourceNotFoundException("Người duyệt", approverId));
-
-        validateOvertimeApproval(ot, approver);
-
-        ot.approve(approver);
-        OvertimeRequest saved = overtimeRepository.save(ot);
-
-        // Notify employee
-        sendApprovalNotification(ot.getUser(), "Đơn làm thêm giờ", true, null);
-
-        // Audit log
-        auditLogService.log(approver.getUsername(), "APPROVE_OVERTIME",
-                "OvertimeRequest", String.valueOf(overtimeId),
-                "Đã duyệt OT cho " + ot.getUser().getFullName()
-                        + " ngày " + ot.getOvertimeDate(), "N/A");
-
-        return saved;
+        throw new ApprovalWorkflowException("Chức năng đang được cập nhật");
     }
 
     /**
      * Từ chối OT.
+     * TODO: Update with new overtime model
      */
     public OvertimeRequest rejectOvertime(Integer overtimeId, Integer approverId, String reason) {
-        OvertimeRequest ot = overtimeRepository.findById(overtimeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Đơn OT", overtimeId));
-        User approver = userRepository.findById(approverId)
-                .orElseThrow(() -> new ResourceNotFoundException("Người duyệt", approverId));
-
-        validateOvertimeApproval(ot, approver);
-
-        if (reason == null || reason.isBlank()) {
-            throw new ApprovalWorkflowException("Phải cung cấp lý do từ chối");
-        }
-
-        ot.reject(approver, reason);
-        OvertimeRequest saved = overtimeRepository.save(ot);
-
-        // Notify employee
-        sendApprovalNotification(ot.getUser(), "Đơn làm thêm giờ", false, reason);
-
-        // Audit log
-        auditLogService.log(approver.getUsername(), "REJECT_OVERTIME",
-                "OvertimeRequest", String.valueOf(overtimeId),
-                "Đã từ chối OT: " + reason, "N/A");
-
-        return saved;
+        throw new ApprovalWorkflowException("Chức năng đang được cập nhật");
     }
 
     /**
@@ -207,7 +168,7 @@ public class WorkflowApprovalService {
         long pendingLeaves = leaveRequestRepository.findAll().stream()
                 .filter(lr -> lr.getStatus() == LeaveStatus.PENDING)
                 .count();
-        long pendingOT = overtimeRepository.countByStatus(OvertimeStatus.PENDING);
+        long pendingOT = overtimeRepository.countByStatus(OvertimeStatus.PENDING.name());
 
         return new PendingApprovalStats(pendingLeaves, pendingOT);
     }
@@ -232,7 +193,7 @@ public class WorkflowApprovalService {
     }
 
     private void validateOvertimeApproval(OvertimeRequest ot, User approver) {
-        if (ot.getStatus() != OvertimeStatus.PENDING) {
+        if (!ot.getStatus().equals(OvertimeStatus.PENDING.name())) {
             throw new ApprovalWorkflowException("Chỉ có thể xử lý đơn đang Chờ duyệt. Trạng thái hiện tại: " + ot.getStatus());
         }
         if (ot.getUser().getId().equals(approver.getId())) {

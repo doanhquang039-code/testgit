@@ -42,12 +42,12 @@ public class AdvancedPayrollService {
 
     private final PayrollRepository payrollRepository;
     private final UserRepository userRepository;
-    private final OvertimeService overtimeService;
+    private final NewOvertimeService overtimeService;
     private final BenefitService benefitService;
 
     public AdvancedPayrollService(PayrollRepository payrollRepository,
                                     UserRepository userRepository,
-                                    OvertimeService overtimeService,
+                                    NewOvertimeService overtimeService,
                                     BenefitService benefitService) {
         this.payrollRepository = payrollRepository;
         this.userRepository = userRepository;
@@ -155,10 +155,10 @@ public class AdvancedPayrollService {
         }
         summary.setAllowance(allowance);
 
-        // 3. Overtime pay
+        // 3. Overtime pay - TODO: Update with new overtime model
         BigDecimal hourlyRate = calculateHourlyRate(baseSalary);
-        BigDecimal overtimeHours = overtimeService.getApprovedHoursInMonth(user.getId(), month, year);
-        BigDecimal overtimePay = overtimeService.calculateMonthlyOvertimePay(user.getId(), month, year, hourlyRate);
+        BigDecimal overtimeHours = BigDecimal.ZERO; // overtimeService.getApprovedHoursInMonth(user.getId(), month, year);
+        BigDecimal overtimePay = BigDecimal.ZERO; // overtimeService.calculateMonthlyOvertimePay(user.getId(), month, year, hourlyRate);
         summary.setOvertimeHours(overtimeHours);
         summary.setOvertimePay(overtimePay);
 

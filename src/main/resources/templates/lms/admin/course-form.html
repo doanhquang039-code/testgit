@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo khóa học - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-plus me-2"></i>Tạo khóa học mới</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/lms/admin/course/save}" method="post" th:object="${course}">
+                            <input type="hidden" th:field="*{id}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Tiêu đề khóa học <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" th:field="*{title}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Mô tả</label>
+                                <textarea class="form-control" rows="4" th:field="*{description}"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                    <select class="form-select" th:field="*{category}" required>
+                                        <option value="">-- Chọn danh mục --</option>
+                                        <option value="TECHNICAL">Kỹ thuật</option>
+                                        <option value="SOFT_SKILLS">Kỹ năng mềm</option>
+                                        <option value="COMPLIANCE">Tuân thủ</option>
+                                        <option value="LEADERSHIP">Lãnh đạo</option>
+                                        <option value="SALES">Bán hàng</option>
+                                        <option value="MANAGEMENT">Quản lý</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Cấp độ <span class="text-danger">*</span></label>
+                                    <select class="form-select" th:field="*{level}" required>
+                                        <option value="">-- Chọn cấp độ --</option>
+                                        <option value="BEGINNER">Cơ bản</option>
+                                        <option value="INTERMEDIATE">Trung cấp</option>
+                                        <option value="ADVANCED">Nâng cao</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Giảng viên</label>
+                                    <input type="text" class="form-control" th:field="*{instructor}">
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Thời lượng (phút)</label>
+                                    <input type="number" class="form-control" th:field="*{durationMinutes}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">URL hình ảnh</label>
+                                <input type="text" class="form-control" th:field="*{thumbnailUrl}" 
+                                       placeholder="https://example.com/image.jpg">
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" th:field="*{isActive}" id="isActive">
+                                    <label class="form-check-label" for="isActive">
+                                        Kích hoạt khóa học
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" th:field="*{isMandatory}" id="isMandatory">
+                                    <label class="form-check-label" for="isMandatory">
+                                        Khóa học bắt buộc
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/lms/admin/courses}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Lưu khóa học
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

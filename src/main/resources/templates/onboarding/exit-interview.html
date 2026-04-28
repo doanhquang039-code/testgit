@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phỏng vấn nghỉ việc - Offboarding</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4><i class="fas fa-comments me-2"></i>Phỏng vấn nghỉ việc</h4>
+                        <p class="mb-0">Ý kiến của bạn rất quan trọng để chúng tôi cải thiện</p>
+                    </div>
+                    <div class="card-body">
+                        <form id="exitInterviewForm">
+                            <!-- Reason for Leaving -->
+                            <div class="mb-4">
+                                <label class="form-label"><strong>1. Lý do bạn quyết định nghỉ việc? <span class="text-danger">*</span></strong></label>
+                                <select class="form-select mb-2" required>
+                                    <option value="">-- Chọn lý do chính --</option>
+                                    <option value="BETTER_OPPORTUNITY">Cơ hội tốt hơn</option>
+                                    <option value="SALARY">Lương thấp</option>
+                                    <option value="CAREER_GROWTH">Thiếu cơ hội phát triển</option>
+                                    <option value="WORK_LIFE_BALANCE">Cân bằng công việc - cuộc sống</option>
+                                    <option value="MANAGEMENT">Vấn đề với quản lý</option>
+                                    <option value="COMPANY_CULTURE">Văn hóa công ty</option>
+                                    <option value="RELOCATION">Chuyển chỗ ở</option>
+                                    <option value="PERSONAL">Lý do cá nhân</option>
+                                    <option value="OTHER">Khác</option>
+                                </select>
+                                <textarea class="form-control" rows="3" 
+                                          placeholder="Vui lòng mô tả chi tiết..."></textarea>
+                            </div>
+
+                            <!-- Job Satisfaction -->
+                            <div class="mb-4">
+                                <label class="form-label"><strong>2. Mức độ hài lòng với công việc? <span class="text-danger">*</span></strong></label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="satisfaction" value="5" required>
+                                        <label class="form-check-label">Rất hài lòng</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="satisfaction" value="4">
+                                        <label class="form-check-label">Hài lòng</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="satisfaction" value="3">
+                                        <label class="form-check-label">Bình thường</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="satisfaction" value="2">
+                                        <label class="form-check-label">Không hài lòng</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="satisfaction" value="1">
+                                        <label class="form-check-label">Rất không hài lòng</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Management -->
+                            <div class="mb-4">
+                                <label class="form-label"><strong>3. Đánh giá về quản lý trực tiếp?</strong></label>
+                                <div class="d-flex gap-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="management" value="5">
+                                        <label class="form-check-label">Xuất sắc</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="management" value="4">
+                                        <label class="form-check-label">Tốt</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="management" value="3">
+                                        <label class="form-check-label">Trung bình</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="management" value="2">
+                                        <label class="form-check-label">Kém</label>
+                                    </div>
+                                </div>
+                                <textarea class="form-control" rows="2" 
+                                          placeholder="Nhận xét thêm..."></textarea>
+                            </div>
+
+                            <!-- Work Environment -->
+                            <div class="mb-4">
+                                <label class="form-label"><strong>4. Môi trường làm việc có thân thiện không?</strong></label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="environment" value="5">
+                                        <label class="form-check-label">Rất thân thiện</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="environment" value="4">
+                                        <label class="form-check-label">Thân thiện</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="environment" value="3">
+                                        <label class="form-check-label">Bình thường</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="environment" value="2">
+                                        <label class="form-check-label">Không thân thiện</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recommend -->
+                            <div class="mb-4">
+                                <label class="form-label"><strong>5. Bạn có giới thiệu công ty cho bạn bè không? <span class="text-danger">*</span></strong></label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="recommend" value="true" required>
+                                        <label class="form-check-label">Có</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="recommend" value="false">
+                                        <label class="form-check-label">Không</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Improvements -->
+                            <div class="mb-4">
+                                <label class="form-label"><strong>6. Công ty nên cải thiện điều gì?</strong></label>
+                                <textarea class="form-control" rows="4" 
+                                          placeholder="Chia sẻ ý kiến của bạn..."></textarea>
+                            </div>
+
+                            <!-- Positive Aspects -->
+                            <div class="mb-4">
+                                <label class="form-label"><strong>7. Điều bạn thích nhất khi làm việc tại công ty?</strong></label>
+                                <textarea class="form-control" rows="3" 
+                                          placeholder="Chia sẻ trải nghiệm tích cực..."></textarea>
+                            </div>
+
+                            <!-- Future Contact -->
+                            <div class="mb-4">
+                                <label class="form-label"><strong>8. Bạn có muốn được liên hệ trong tương lai không?</strong></label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="futureContact">
+                                    <label class="form-check-label" for="futureContact">
+                                        Có, tôi muốn nhận thông tin về cơ hội việc làm trong tương lai
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Thông tin này sẽ được bảo mật và chỉ sử dụng để cải thiện môi trường làm việc
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Gửi phản hồi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Thank You Message -->
+                <div class="card mt-4 bg-light">
+                    <div class="card-body text-center">
+                        <i class="fas fa-heart fa-3x text-danger mb-3"></i>
+                        <h5>Cảm ơn bạn đã đồng hành cùng chúng tôi!</h5>
+                        <p class="text-muted">Chúc bạn thành công trên con đường sự nghiệp mới</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('exitInterviewForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Cảm ơn bạn đã chia sẻ! Chúc bạn thành công!');
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>

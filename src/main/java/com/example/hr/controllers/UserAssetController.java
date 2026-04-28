@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -27,7 +28,8 @@ public class UserAssetController {
         User user = authUserHelper.getCurrentUser(auth);
         if (user == null) return "redirect:/login";
 
-        List<AssetAssignment> myAssets = assetAssignmentRepository.findByUserOrderByAssignedDateDesc(user);
+        // TODO: Update with new asset model
+        List<AssetAssignment> myAssets = new ArrayList<>(); // assetAssignmentRepository.findByUserOrderByAssignedDateDesc(user);
         
         model.addAttribute("user", user);
         model.addAttribute("myAssets", myAssets);

@@ -40,7 +40,7 @@ public class ReportGenerationService {
     private final TrainingEnrollmentRepository trainingEnrollmentRepository;
     private final EmployeeWarningRepository warningRepository;
     private final EmployeeBenefitRepository benefitRepository;
-    private final CompanyAssetRepository assetRepository;
+    private final AssetRepository assetRepository;
     private final EmployeeDocumentRepository documentRepository;
 
     public ReportGenerationService(
@@ -52,7 +52,7 @@ public class ReportGenerationService {
             TrainingEnrollmentRepository trainingEnrollmentRepository,
             EmployeeWarningRepository warningRepository,
             EmployeeBenefitRepository benefitRepository,
-            CompanyAssetRepository assetRepository,
+            AssetRepository assetRepository,
             EmployeeDocumentRepository documentRepository) {
         this.userRepository = userRepository;
         this.payrollRepository = payrollRepository;
@@ -176,9 +176,9 @@ public class ReportGenerationService {
                             (ot.getUser().getFullName() != null ? ot.getUser().getFullName() : ot.getUser().getUsername())
                             : "N/A");
                     row.add(ot.getOvertimeDate());
-                    row.add(ot.getTotalHours());
+                    row.add(ot.getHours() != null ? ot.getHours() : 0); // Changed from getTotalHours()
                     row.add(ot.getReason());
-                    row.add(ot.getStatus().name());
+                    row.add(ot.getStatus()); // Already a String
                     row.add(ot.getApprovedBy() != null ? ot.getApprovedBy().getFullName() : "Chưa duyệt");
                     // OvertimeRequest hiện chưa lưu tiền OT; để 0 và có thể tính lại khi có hourlyRate.
                     row.add(BigDecimal.ZERO);
@@ -197,21 +197,21 @@ public class ReportGenerationService {
 
         List<String> headers = List.of(
                 "Mã TS", "Tên tài sản", "Loại", "Nguyên giá",
-                "Giá trị hiện tại", "Ngày mua", "Trạng thái", "Bảo hành đến"
+                "Ngày mua", "Trạng thái", "Tình trạng", "Vị trí"
         );
 
-        List<CompanyAsset> assets = assetRepository.findAll();
+        List<Asset> assets = assetRepository.findAll();
         List<List<Object>> data = assets.stream()
                 .map(a -> {
                     List<Object> row = new ArrayList<>();
                     row.add(a.getAssetCode());
-                    row.add(a.getAssetName());
+                    row.add(a.getName());
                     row.add(a.getCategory());
                     row.add(a.getPurchasePrice());
-                    row.add(a.getCurrentValue());
                     row.add(a.getPurchaseDate());
-                    row.add(a.getStatus().name());
-                    row.add(a.getWarrantyExpiry());
+                    row.add(a.getStatus());
+                    row.add(a.getCondition());
+                    row.add(a.getLocation());
                     return row;
                 })
                 .collect(Collectors.toList());
@@ -322,7 +322,7 @@ public class ReportGenerationService {
         // Asset summary
         long totalAssets = assetRepository.count();
         BigDecimal totalAssetValue = assetRepository.findAll().stream()
-                .map(CompanyAsset::getCurrentValue)
+                .map(Asset::getPurchasePrice)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         summary.put("totalAssets", totalAssets);

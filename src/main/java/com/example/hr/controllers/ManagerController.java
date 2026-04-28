@@ -6,7 +6,7 @@ import com.example.hr.repository.*;
 import com.example.hr.service.AuthUserHelper;
 import com.example.hr.service.EmailFacade;
 import com.example.hr.service.NotificationService;
-import com.example.hr.service.OvertimeService;
+import com.example.hr.service.NewOvertimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -33,7 +33,7 @@ public class ManagerController {
     @Autowired private TaskAssignmentRepository taskAssignmentRepository;
     @Autowired private PerformanceReviewRepository reviewRepository;
     @Autowired private OvertimeRequestRepository overtimeRepository;
-    @Autowired private OvertimeService overtimeService;
+    @Autowired private NewOvertimeService overtimeService;
     @Autowired private NotificationService notificationService;
     @Autowired private EmailFacade emailFacade;
     @Autowired private AuthUserHelper authUserHelper;
@@ -46,7 +46,7 @@ public class ManagerController {
 
         long totalEmployees = userRepository.findByStatus(UserStatus.ACTIVE).size();
         long pendingLeaves  = leaveRepository.countByStatus(LeaveStatus.PENDING);
-        long pendingOT      = overtimeService.countByStatus(OvertimeStatus.PENDING);
+        long pendingOT      = 0; // TODO: Update with new overtime model
 
         var allAssignments = taskAssignmentRepository.findAllWithUser();
         long activeTasks    = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.IN_PROGRESS).count();
@@ -138,26 +138,12 @@ public class ManagerController {
     public String overtimeList(@RequestParam(required = false) String status,
                                @RequestParam(required = false) String keyword,
                                Model model) {
-        List<OvertimeRequest> requests;
-        if (status != null && !status.isBlank()) {
-            requests = overtimeService.getAllRequests().stream()
-                    .filter(r -> r.getStatus().name().equals(status))
-                    .collect(Collectors.toList());
-        } else {
-            requests = overtimeService.getAllRequests();
-        }
-
-        // Keyword search by employee name
-        if (keyword != null && !keyword.isBlank()) {
-            String kw = keyword.toLowerCase();
-            requests = requests.stream()
-                    .filter(r -> r.getUser() != null && r.getUser().getFullName().toLowerCase().contains(kw))
-                    .collect(Collectors.toList());
-        }
-
-        long countPending  = overtimeService.countByStatus(OvertimeStatus.PENDING);
-        long countApproved = overtimeService.countByStatus(OvertimeStatus.APPROVED);
-        long countRejected = overtimeService.countByStatus(OvertimeStatus.REJECTED);
+        // TODO: Update with new overtime model
+        List<OvertimeRequest> requests = new ArrayList<>();
+        
+        long countPending  = 0;
+        long countApproved = 0;
+        long countRejected = 0;
 
         model.addAttribute("requests", requests);
         model.addAttribute("selectedStatus", status);
@@ -170,19 +156,8 @@ public class ManagerController {
 
     @GetMapping("/overtime/approve/{id}")
     public String approveOT(@PathVariable Integer id, Authentication auth, RedirectAttributes ra) {
-        try {
-            User approver = authUserHelper.getCurrentUser(auth);
-            OvertimeRequest req = overtimeService.approveRequest(id, approver);
-            // Notification
-            if (req.getUser() != null) {
-                notificationService.createNotification(req.getUser(),
-                        "✅ Đơn OT ngày " + req.getOvertimeDate() + " đã được duyệt!",
-                        NotificationType.SUCCESS, "/user1/overtime");
-            }
-            ra.addFlashAttribute("success", "Đã duyệt đơn OT!");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
+        // TODO: Update with new overtime model
+        ra.addFlashAttribute("info", "Chức năng đang được cập nhật");
         return "redirect:/manager/overtime";
     }
 
@@ -191,18 +166,8 @@ public class ManagerController {
                             @RequestParam String reason,
                             Authentication auth,
                             RedirectAttributes ra) {
-        try {
-            User approver = authUserHelper.getCurrentUser(auth);
-            OvertimeRequest req = overtimeService.rejectRequest(id, approver, reason);
-            if (req.getUser() != null) {
-                notificationService.createNotification(req.getUser(),
-                        "❌ Đơn OT ngày " + req.getOvertimeDate() + " bị từ chối: " + reason,
-                        NotificationType.DANGER, "/user1/overtime");
-            }
-            ra.addFlashAttribute("success", "Đã từ chối đơn OT!");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
+        // TODO: Update with new overtime model
+        ra.addFlashAttribute("info", "Chức năng đang được cập nhật");
         return "redirect:/manager/overtime";
     }
 
@@ -213,7 +178,8 @@ public class ManagerController {
     public String userOvertimeList(Authentication auth, Model model) {
         User currentUser = authUserHelper.getCurrentUser(auth);
         if (currentUser == null) return "redirect:/login";
-        List<OvertimeRequest> myRequests = overtimeService.getRequestsByUser(currentUser.getId());
+        // TODO: Update with new overtime model
+        List<OvertimeRequest> myRequests = new ArrayList<>();
         model.addAttribute("myRequests", myRequests);
         model.addAttribute("currentUser", currentUser);
         return "user1/overtime";

@@ -10,8 +10,13 @@
       body { background-color: #f0f2f5; font-family: 'Inter', sans-serif; }
       .sidebar {
         height: 100vh; background: linear-gradient(180deg,#1a1f2e 0%,#2d3748 100%);
-        color: white; padding-top: 20px; position: sticky; top: 0; overflow-y: auto;
+        color: white; padding-top: 20px; padding-bottom: 80px; position: sticky; top: 0; overflow-y: auto; overflow-x: hidden;
       }
+      /* Custom scrollbar */
+      .sidebar::-webkit-scrollbar { width: 6px; }
+      .sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+      .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+      .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
       .sidebar a { color: #a0aec0; text-decoration: none; display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-radius: 0; transition: all .2s; }
       .sidebar a:hover, .sidebar a.active { background: rgba(255,255,255,.1); color: white; border-left: 3px solid #667eea; }
       .sidebar-logo { font-size: 1rem; font-weight: 700; letter-spacing: 2px; color: white; text-align: center; padding: 12px; }
@@ -81,6 +86,16 @@
           <a th:href="@{/admin/reports}"><i class="bi bi-bar-chart-line"></i> Báo cáo</a>
           <a th:href="@{/admin/audit-log}"><i class="bi bi-journal-text"></i> Nhật ký</a>
           <a th:href="@{/hiring}"><i class="bi bi-person-plus"></i> Tuyển dụng</a>
+          <hr style="border-color:rgba(255,255,255,.1);margin:8px 16px"/>
+          <!-- NEW FEATURES -->
+          <a th:href="@{/lms/admin/courses}"><i class="bi bi-book"></i> LMS - Khóa học</a>
+          <a th:href="@{/admin/qrcodes}"><i class="bi bi-qr-code"></i> QR Code</a>
+          <a th:href="@{/engagement/admin/surveys}"><i class="bi bi-clipboard-data"></i> Khảo sát</a>
+          <a th:href="@{/engagement/admin/recognition}"><i class="bi bi-award"></i> Vinh danh</a>
+          <a th:href="@{/onboarding/admin/checklists}"><i class="bi bi-list-check"></i> Onboarding</a>
+          <a th:href="@{/admin/okr}"><i class="bi bi-graph-up"></i> OKR</a>
+          <a th:href="@{/admin/settings}"><i class="bi bi-gear"></i> Cài đặt</a>
+          <a th:href="@{/admin/analytics}"><i class="bi bi-graph-up-arrow"></i> Phân tích</a>
           <!-- Language Toggle -->
           <div class="lang-toggle-wrap">
             <div class="lang-toggle">

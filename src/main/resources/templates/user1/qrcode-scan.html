@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/user-layout}">
+<head>
+    <title th:text="${pageTitle}">Scan QR Code</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        .scanner-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #reader {
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .scan-result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .scan-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .scan-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .manual-input {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <div class="scanner-container">
+            <h2 class="text-center mb-4">
+                <i class="bi bi-qr-code-scan"></i> Scan QR Code
+            </h2>
+
+            <!-- Camera Scanner -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div id="reader"></div>
+                    <div class="text-center mt-3">
+                        <button id="startBtn" class="btn btn-primary" onclick="startScanner()">
+                            <i class="bi bi-camera"></i> Start Camera
+                        </button>
+                        <button id="stopBtn" class="btn btn-danger" onclick="stopScanner()" style="display:none;">
+                            <i class="bi bi-stop-circle"></i> Stop Camera
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scan Result -->
+            <div id="scanResult" class="scan-result">
+                <h5 id="resultTitle"></h5>
+                <p id="resultMessage"></p>
+            </div>
+
+            <!-- Manual Input -->
+            <div class="manual-input">
+                <h5><i class="bi bi-keyboard"></i> Or Enter Code Manually</h5>
+                <form id="manualForm" onsubmit="return submitManualCode(event)">
+                    <div class="input-group">
+                        <input type="text" id="manualCode" class="form-control" 
+                               placeholder="Enter QR code" required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Submit
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Recent Scans -->
+            <div class="mt-4">
+                <a th:href="@{/qrcode/my-scans}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-clock-history"></i> View My Scan History
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        let html5QrcodeScanner = null;
+
+        function startScanner() {
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanError
+            ).then(() => {
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'inline-block';
+            }).catch(err => {
+                alert('Camera access denied or not available');
+                console.error(err);
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    document.getElementById('startBtn').style.display = 'inline-block';
+                    document.getElementById('stopBtn').style.display = 'none';
+                });
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            stopScanner();
+            processScan(decodedText);
+        }
+
+        function onScanError(errorMessage) {
+            // Ignore scan errors (too noisy)
+        }
+
+        function processScan(code) {
+            fetch('/qrcode/scan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'code=' + encodeURIComponent(code) + '&scanType=SCAN'
+            })
+            .then(response => response.json())
+            .then(data => {
+                showResult(data.success, data.message, data.qrCodeName);
+            })
+            .catch(error => {
+                showResult(false, 'Network error occurred', null);
+            });
+        }
+
+        function submitManualCode(event) {
+            event.preventDefault();
+            const code = document.getElementById('manualCode').value;
+            processScan(code);
+            return false;
+        }
+
+        function showResult(success, message, qrCodeName) {
+            const resultDiv = document.getElementById('scanResult');
+            const titleEl = document.getElementById('resultTitle');
+            const messageEl = document.getElementById('resultMessage');
+            
+            resultDiv.className = 'scan-result ' + (success ? 'scan-success' : 'scan-error');
+            titleEl.innerHTML = '<i class="bi bi-' + (success ? 'check-circle' : 'x-circle') + '"></i> ' + 
+                               (success ? 'Success!' : 'Failed');
+            messageEl.textContent = message + (qrCodeName ? ' (' + qrCodeName + ')' : '');
+            resultDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+                document.getElementById('manualCode').value = '';
+            }, 5000);
+        }
+    </script>
+</div>
+</body>
+</html>

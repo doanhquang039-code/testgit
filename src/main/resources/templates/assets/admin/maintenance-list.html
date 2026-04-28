@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch bảo trì - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container-fluid mt-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2><i class="fas fa-wrench me-2"></i>Lịch bảo trì tài sản</h2>
+                <p class="text-muted">Quản lý và theo dõi bảo trì tài sản</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+                    <i class="fas fa-plus me-2"></i>Lên lịch bảo trì
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h3>0</h3>
+                        <p class="mb-0">Chờ bảo trì</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3>0</h3>
+                        <p class="mb-0">Đang bảo trì</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3>0</h3>
+                        <p class="mb-0">Hoàn thành</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <h3>0</h3>
+                        <p class="mb-0">Quá hạn</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance Table -->
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-0">Danh sách bảo trì</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select form-select-sm">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="SCHEDULED">Đã lên lịch</option>
+                            <option value="IN_PROGRESS">Đang bảo trì</option>
+                            <option value="COMPLETED">Hoàn thành</option>
+                            <option value="CANCELLED">Đã hủy</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mã tài sản</th>
+                                <th>Tên tài sản</th>
+                                <th>Loại bảo trì</th>
+                                <th>Ngày lên lịch</th>
+                                <th>Ngày hoàn thành</th>
+                                <th>Chi phí</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>LAP001</strong></td>
+                                <td>Dell Latitude 5420</td>
+                                <td><span class="badge bg-info">Bảo trì định kỳ</span></td>
+                                <td>01/05/2026</td>
+                                <td>-</td>
+                                <td>500,000 VNĐ</td>
+                                <td><span class="badge bg-warning">Đã lên lịch</span></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-success" title="Bắt đầu">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary" title="Chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="Hủy">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>PHO003</strong></td>
+                                <td>iPhone 13 Pro</td>
+                                <td><span class="badge bg-danger">Sửa chữa</span></td>
+                                <td>25/04/2026</td>
+                                <td>-</td>
+                                <td>2,000,000 VNĐ</td>
+                                <td><span class="badge bg-info">Đang bảo trì</span></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-success" title="Hoàn thành">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary" title="Chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>MON002</strong></td>
+                                <td>LG UltraWide 29"</td>
+                                <td><span class="badge bg-info">Bảo trì định kỳ</span></td>
+                                <td>15/04/2026</td>
+                                <td>20/04/2026</td>
+                                <td>300,000 VNĐ</td>
+                                <td><span class="badge bg-success">Hoàn thành</span></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" title="Chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Maintenance Modal -->
+    <div class="modal fade" id="scheduleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-calendar-plus me-2"></i>Lên lịch bảo trì</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleForm">
+                        <div class="mb-3">
+                            <label class="form-label">Tài sản <span class="text-danger">*</span></label>
+                            <select class="form-select" required>
+                                <option value="">-- Chọn tài sản --</option>
+                                <option value="1">LAP001 - Dell Latitude 5420</option>
+                                <option value="2">MON002 - LG UltraWide 29"</option>
+                                <option value="3">PHO003 - iPhone 13 Pro</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Loại bảo trì <span class="text-danger">*</span></label>
+                            <select class="form-select" required>
+                                <option value="">-- Chọn loại --</option>
+                                <option value="PREVENTIVE">Bảo trì định kỳ</option>
+                                <option value="REPAIR">Sửa chữa</option>
+                                <option value="UPGRADE">Nâng cấp</option>
+                                <option value="INSPECTION">Kiểm tra</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ngày lên lịch <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Chi phí dự kiến (VNĐ)</label>
+                            <input type="number" class="form-control" min="0">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nhà cung cấp</label>
+                            <input type="text" class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả công việc</label>
+                            <textarea class="form-control" rows="3" 
+                                      placeholder="Mô tả chi tiết công việc bảo trì..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" form="scheduleForm" class="btn btn-primary">
+                        <i class="fas fa-calendar-check me-2"></i>Lên lịch
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Đã lên lịch bảo trì thành công!');
+            bootstrap.Modal.getInstance(document.getElementById('scheduleModal')).hide();
+            this.reset();
+        });
+    </script>
+</body>
+</html>

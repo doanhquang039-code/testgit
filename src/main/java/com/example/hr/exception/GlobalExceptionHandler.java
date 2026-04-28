@@ -1,5 +1,7 @@
 package com.example.hr.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -21,6 +23,8 @@ import java.util.Map;
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
      * Xử lý ResourceNotFoundException.
@@ -138,6 +142,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public Object handleGenericException(Exception ex, HttpServletRequest request) {
+        // Log chi tiết exception để debug
+        logger.error("Unexpected exception at {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+        
         if (isApiRequest(request)) {
             return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Đã xảy ra lỗi hệ thống: " + ex.getMessage(), request.getRequestURI());
@@ -146,6 +153,7 @@ public class GlobalExceptionHandler {
         mav.addObject("status", 500);
         mav.addObject("error", "Lỗi hệ thống");
         mav.addObject("message", "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.");
+        mav.addObject("details", ex.getMessage()); // Thêm chi tiết lỗi
         mav.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         return mav;
     }

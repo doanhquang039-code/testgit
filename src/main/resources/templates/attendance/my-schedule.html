@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch làm việc - Attendance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .calendar-day {
+            min-height: 100px;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .calendar-day:hover {
+            background-color: #f8f9fa;
+        }
+        .calendar-day.today {
+            background-color: #e7f1ff;
+            border-color: #0d6efd;
+        }
+        .shift-badge {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container-fluid mt-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2><i class="fas fa-calendar-alt me-2"></i>Lịch làm việc của tôi</h2>
+                <p class="text-muted">Xem lịch ca làm việc và chấm công</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" id="prevMonth">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="currentMonth">
+                        Tháng 4, 2026
+                    </button>
+                    <button class="btn btn-outline-primary" id="nextMonth">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Calendar -->
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Calendar Header -->
+                        <div class="row text-center fw-bold mb-2">
+                            <div class="col">CN</div>
+                            <div class="col">T2</div>
+                            <div class="col">T3</div>
+                            <div class="col">T4</div>
+                            <div class="col">T5</div>
+                            <div class="col">T6</div>
+                            <div class="col">T7</div>
+                        </div>
+
+                        <!-- Calendar Days -->
+                        <div class="row">
+                            <div class="col calendar-day">
+                                <div class="text-muted">30</div>
+                            </div>
+                            <div class="col calendar-day">
+                                <div class="text-muted">31</div>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>1</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>2</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>3</div>
+                                <span class="shift-badge badge bg-warning">Chiều</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>4</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>5</div>
+                                <span class="shift-badge badge bg-secondary">Nghỉ</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col calendar-day">
+                                <div>6</div>
+                                <span class="shift-badge badge bg-secondary">Nghỉ</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>7</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>8</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>9</div>
+                                <span class="shift-badge badge bg-warning">Chiều</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>10</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>11</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>12</div>
+                                <span class="shift-badge badge bg-secondary">Nghỉ</span>
+                            </div>
+                        </div>
+
+                        <!-- More weeks... -->
+                        <div class="row">
+                            <div class="col calendar-day">
+                                <div>13</div>
+                                <span class="shift-badge badge bg-secondary">Nghỉ</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>14</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>15</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>16</div>
+                                <span class="shift-badge badge bg-warning">Chiều</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>17</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>18</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>19</div>
+                                <span class="shift-badge badge bg-secondary">Nghỉ</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col calendar-day">
+                                <div>20</div>
+                                <span class="shift-badge badge bg-secondary">Nghỉ</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>21</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>22</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>23</div>
+                                <span class="shift-badge badge bg-warning">Chiều</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>24</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>25</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>26</div>
+                                <span class="shift-badge badge bg-secondary">Nghỉ</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col calendar-day">
+                                <div>27</div>
+                                <span class="shift-badge badge bg-secondary">Nghỉ</span>
+                            </div>
+                            <div class="col calendar-day today">
+                                <div>28</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                                <small class="d-block text-primary mt-1">Hôm nay</small>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>29</div>
+                                <span class="shift-badge badge bg-primary">Sáng</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div>30</div>
+                                <span class="shift-badge badge bg-danger">Tăng ca</span>
+                            </div>
+                            <div class="col calendar-day">
+                                <div class="text-muted">1</div>
+                            </div>
+                            <div class="col calendar-day">
+                                <div class="text-muted">2</div>
+                            </div>
+                            <div class="col calendar-day">
+                                <div class="text-muted">3</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <!-- Legend -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-info-circle me-2"></i>Chú thích</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <span class="badge bg-primary">Sáng</span> Ca sáng (8:00 - 12:00)
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-warning">Chiều</span> Ca chiều (13:00 - 17:00)
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-danger">Tăng ca</span> Làm thêm giờ
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-secondary">Nghỉ</span> Ngày nghỉ
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar me-2"></i>Thống kê tháng</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>Tổng ngày làm:</strong> 22 ngày
+                        </div>
+                        <div class="mb-3">
+                            <strong>Đã chấm công:</strong> 20 ngày
+                        </div>
+                        <div class="mb-3">
+                            <strong>Tăng ca:</strong> 5 giờ
+                        </div>
+                        <div class="mb-3">
+                            <strong>Nghỉ phép:</strong> 1 ngày
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bolt me-2"></i>Thao tác nhanh</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="/attendance/geofencing-checkin" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-sign-in-alt me-2"></i>Chấm công
+                        </a>
+                        <button class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-clock me-2"></i>Đăng ký tăng ca
+                        </button>
+                        <button class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-calendar-times me-2"></i>Xin nghỉ phép
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

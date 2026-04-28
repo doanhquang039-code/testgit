@@ -1,0 +1,61 @@
+package com.example.hr.models;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "asset_maintenance")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class AssetMaintenance {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "asset_id", nullable = false)
+    private Asset asset;
+    
+    @Column(nullable = false)
+    private String type; // REPAIR, UPGRADE, INSPECTION, CLEANING
+    
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String description;
+    
+    @Column(nullable = false)
+    private LocalDate maintenanceDate;
+    
+    private LocalDate nextMaintenanceDate;
+    
+    private BigDecimal cost;
+    
+    private String vendor; // Nhà cung cấp dịch vụ
+    
+    @Column(nullable = false)
+    private String status = "SCHEDULED"; // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+    
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+    
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}

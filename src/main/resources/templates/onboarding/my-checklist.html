@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist onboarding - Onboarding</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .checklist-item {
+            transition: all 0.3s;
+            border-left: 4px solid #e9ecef;
+        }
+        .checklist-item.completed {
+            border-left-color: #28a745;
+            background-color: #f8f9fa;
+        }
+        .checklist-item:hover {
+            background-color: #f8f9fa;
+        }
+        .progress-circle {
+            width: 150px;
+            height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2><i class="fas fa-clipboard-check me-2"></i>Checklist onboarding</h2>
+                <p class="text-muted">Hoàn thành các bước để bắt đầu làm việc</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3>0%</h3>
+                        <p class="mb-0">Hoàn thành</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Checklist -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-tasks me-2"></i>Danh sách công việc</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Day 1 -->
+                        <h6 class="text-primary mb-3"><i class="fas fa-calendar-day me-2"></i>Ngày đầu tiên</h6>
+                        
+                        <div class="checklist-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="task1">
+                                            <label class="form-check-label" for="task1">
+                                                <strong>Nhận tài khoản email và hệ thống</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            Liên hệ IT để nhận thông tin đăng nhập
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-warning">Chờ xử lý</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="task2">
+                                            <label class="form-check-label" for="task2">
+                                                <strong>Nhận tài sản làm việc</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            Laptop, chuột, bàn phím, tai nghe
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-warning">Chờ xử lý</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="task3">
+                                            <label class="form-check-label" for="task3">
+                                                <strong>Tham quan văn phòng</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            Làm quen với môi trường làm việc
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-warning">Chờ xử lý</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Week 1 -->
+                        <h6 class="text-primary mb-3 mt-4"><i class="fas fa-calendar-week me-2"></i>Tuần đầu tiên</h6>
+                        
+                        <div class="checklist-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="task4">
+                                            <label class="form-check-label" for="task4">
+                                                <strong>Gặp gỡ team và quản lý trực tiếp</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            Họp 1-1 với manager
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-warning">Chờ xử lý</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="task5">
+                                            <label class="form-check-label" for="task5">
+                                                <strong>Hoàn thành khóa đào tạo bắt buộc</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            An toàn lao động, quy định công ty
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-warning">Chờ xử lý</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="task6">
+                                            <label class="form-check-label" for="task6">
+                                                <strong>Nộp hồ sơ nhân sự</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            CMND, bằng cấp, giấy khám sức khỏe
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-warning">Chờ xử lý</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Month 1 -->
+                        <h6 class="text-primary mb-3 mt-4"><i class="fas fa-calendar-alt me-2"></i>Tháng đầu tiên</h6>
+                        
+                        <div class="checklist-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="task7">
+                                            <label class="form-check-label" for="task7">
+                                                <strong>Hoàn thành dự án đầu tiên</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            Được giao bởi manager
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-warning">Chờ xử lý</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="task8">
+                                            <label class="form-check-label" for="task8">
+                                                <strong>Đánh giá 30 ngày</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            Họp đánh giá với HR và manager
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-warning">Chờ xử lý</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-md-4">
+                <!-- Welcome Card -->
+                <div class="card mb-4 bg-primary text-white">
+                    <div class="card-body">
+                        <h5><i class="fas fa-hand-sparkles me-2"></i>Chào mừng!</h5>
+                        <p class="mb-0">Chúc mừng bạn đã gia nhập công ty. Hãy hoàn thành checklist để bắt đầu hành trình mới!</p>
+                    </div>
+                </div>
+
+                <!-- Resources -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-book me-2"></i>Tài liệu hữu ích</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <a href="#"><i class="fas fa-file-pdf text-danger me-2"></i>Sổ tay nhân viên</a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="#"><i class="fas fa-file-pdf text-danger me-2"></i>Quy định nội bộ</a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="#"><i class="fas fa-file-pdf text-danger me-2"></i>Cơ cấu tổ chức</a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="#"><i class="fas fa-video text-primary me-2"></i>Video giới thiệu</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-phone me-2"></i>Liên hệ hỗ trợ</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>HR Department</strong></p>
+                        <p class="mb-1"><i class="fas fa-envelope me-2"></i>hr@company.com</p>
+                        <p class="mb-1"><i class="fas fa-phone me-2"></i>0123-456-789</p>
+                        <p class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Phòng 301, Tầng 3</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle checkbox changes
+        document.querySelectorAll('.form-check-input').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.checklist-item');
+                const badge = card.querySelector('.badge');
+                
+                if (this.checked) {
+                    card.classList.add('completed');
+                    badge.className = 'badge bg-success';
+                    badge.textContent = 'Hoàn thành';
+                } else {
+                    card.classList.remove('completed');
+                    badge.className = 'badge bg-warning';
+                    badge.textContent = 'Chờ xử lý';
+                }
+                
+                updateProgress();
+            });
+        });
+
+        function updateProgress() {
+            const total = document.querySelectorAll('.form-check-input').length;
+            const completed = document.querySelectorAll('.form-check-input:checked').length;
+            const percent = Math.round((completed / total) * 100);
+            
+            document.querySelector('.card.bg-primary h3').textContent = percent + '%';
+        }
+    </script>
+</body>
+</html>

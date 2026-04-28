@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title th:text="${pageTitle}">QR Code Form</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 th:text="${qrCode.id != null ? 'Edit QR Code' : 'Create New QR Code'}">QR Code Form</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${qrCode.id != null ? '/qrcode/admin/edit/' + qrCode.id : '/qrcode/admin/create'}" 
+                              method="post">
+                            
+                            <div class="mb-3" th:if="${qrCode.id == null}">
+                                <label class="form-label">Type *</label>
+                                <select name="type" class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option th:each="type : ${types}" 
+                                            th:value="${type}" 
+                                            th:text="${type.displayName}"
+                                            th:selected="${qrCode.type == type}">
+                                        Type
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Name *</label>
+                                <input type="text" name="name" class="form-control" 
+                                       th:value="${qrCode.name}" 
+                                       placeholder="e.g., Main Office Entrance" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Location</label>
+                                <input type="text" name="location" class="form-control" 
+                                       th:value="${qrCode.location}" 
+                                       placeholder="e.g., Building A, Floor 1">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea name="description" class="form-control" rows="3" 
+                                          th:text="${qrCode.description}" 
+                                          placeholder="Optional description"></textarea>
+                            </div>
+
+                            <div class="mb-3" th:if="${qrCode.id == null}">
+                                <label class="form-label">Expires At (Optional)</label>
+                                <input type="datetime-local" name="expiresAt" class="form-control">
+                                <small class="text-muted">Leave empty for permanent QR code</small>
+                            </div>
+
+                            <div class="mb-3" th:if="${qrCode.id != null}">
+                                <label class="form-label">Status</label>
+                                <select name="isActive" class="form-select">
+                                    <option value="true" th:selected="${qrCode.isActive}">Active</option>
+                                    <option value="false" th:selected="${!qrCode.isActive}">Inactive</option>
+                                </select>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/qrcode/admin/list}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

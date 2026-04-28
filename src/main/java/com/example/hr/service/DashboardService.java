@@ -10,7 +10,7 @@ import com.example.hr.models.EmployeeWarning;
 import com.example.hr.models.LeaveRequest;
 import com.example.hr.models.OvertimeRequest;
 import com.example.hr.models.User;
-import com.example.hr.repository.CompanyAssetRepository;
+import com.example.hr.repository.AssetRepository;
 import com.example.hr.repository.EmployeeBenefitRepository;
 import com.example.hr.repository.EmployeeDocumentRepository;
 import com.example.hr.repository.EmployeeWarningRepository;
@@ -49,7 +49,7 @@ public class DashboardService {
     private final TrainingProgramRepository trainingProgramRepository;
     private final EmployeeWarningRepository warningRepository;
     private final EmployeeBenefitRepository benefitRepository;
-    private final CompanyAssetRepository assetRepository;
+    private final AssetRepository assetRepository;
     private final EmployeeDocumentRepository documentRepository;
 
     public DashboardService(
@@ -60,7 +60,7 @@ public class DashboardService {
             TrainingProgramRepository trainingProgramRepository,
             EmployeeWarningRepository warningRepository,
             EmployeeBenefitRepository benefitRepository,
-            CompanyAssetRepository assetRepository,
+            AssetRepository assetRepository,
             EmployeeDocumentRepository documentRepository) {
         this.userRepository = userRepository;
         this.payrollRepository = payrollRepository;
@@ -84,12 +84,12 @@ public class DashboardService {
         long totalEmployees = userRepository.count();
         long newHires = userRepository.countByCreatedAtGreaterThanEqual(firstOfMonth);
         long pendingLeaves = leaveRequestRepository.countByStatus(LeaveStatus.PENDING);
-        long pendingOT = overtimeRequestRepository.countByStatus(OvertimeStatus.PENDING);
+        long pendingOT = overtimeRequestRepository.countByStatus(OvertimeStatus.PENDING.name());
         long activeTrainings = trainingProgramRepository.countByStatus(TrainingStatus.IN_PROGRESS);
         long unackWarnings = warningRepository.countByIsAcknowledged(false);
         BigDecimal benefitCost = benefitRepository.sumTotalActiveBenefitCost();
         long totalAssets = assetRepository.count();
-        long availableAssets = assetRepository.countByStatus(AssetStatus.AVAILABLE);
+        long availableAssets = assetRepository.countByStatus("AVAILABLE");
         // long expiringDocs = documentRepository.countByExpiryDateBetween(today.plusDays(1), today.plusDays(30));
         long expiringDocs = 0; // Temporary: EmployeeDocument doesn't have expiryDate field
 
@@ -125,16 +125,16 @@ public class DashboardService {
             activities.add(act);
         });
 
-        overtimeRequestRepository.findAllByOrderByCreatedAtDesc(page).forEach(ot -> {
-            Map<String, Object> act = new LinkedHashMap<>();
-            act.put("type", "OVERTIME_REQUEST");
-            act.put("description",
-                    (ot.getUser() != null ? ot.getUser().getFullName() : "N/A")
-                            + " - OT " + (ot.getTotalHours() != null ? ot.getTotalHours() : 0) + "h");
-            act.put("status", ot.getStatus());
-            act.put("time", ot.getCreatedAt());
-            activities.add(act);
-        });
+        // overtimeRequestRepository.findAllByOrderByCreatedAtDesc(page).forEach(ot -> {
+        //     Map<String, Object> act = new LinkedHashMap<>();
+        //     act.put("type", "OVERTIME_REQUEST");
+        //     act.put("description",
+        //             (ot.getUser() != null ? ot.getUser().getFullName() : "N/A")
+        //                     + " - OT " + (ot.getTotalHours() != null ? ot.getTotalHours() : 0) + "h");
+        //     act.put("status", ot.getStatus());
+        //     act.put("time", ot.getCreatedAt());
+        //     activities.add(act);
+        // });
 
         warningRepository.findAllByOrderByIssuedDateDesc(page).forEach(w -> {
             Map<String, Object> act = new LinkedHashMap<>();

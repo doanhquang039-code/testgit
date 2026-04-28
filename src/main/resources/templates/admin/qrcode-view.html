@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title th:text="${pageTitle}">QR Code Details</title>
+    <style>
+        .qr-image-container {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .qr-image {
+            max-width: 300px;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        .info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-qr-code"></i> QR Code Details</h2>
+            <div>
+                <a th:href="@{/qrcode/admin/edit/{id}(id=${qrCode.id})}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a th:href="@{/qrcode/admin/list}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- QR Code Image -->
+            <div class="col-md-4">
+                <div class="qr-image-container">
+                    <img th:src="'data:image/png;base64,' + ${qrCodeImage}" 
+                         alt="QR Code" class="qr-image">
+                    <div class="mt-3">
+                        <button class="btn btn-primary" onclick="downloadQR()">
+                            <i class="bi bi-download"></i> Download
+                        </button>
+                        <button class="btn btn-info" onclick="printQR()">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Info Card -->
+                <div class="info-card">
+                    <h5 th:text="${qrCode.name}">QR Code Name</h5>
+                    <hr>
+                    <p><strong>Type:</strong> <span class="badge bg-primary" th:text="${qrCode.type.displayName}">Type</span></p>
+                    <p><strong>Location:</strong> <span th:text="${qrCode.location}">Location</span></p>
+                    <p><strong>Status:</strong> 
+                        <span th:if="${qrCode.isActive}" class="badge bg-success">Active</span>
+                        <span th:unless="${qrCode.isActive}" class="badge bg-secondary">Inactive</span>
+                    </p>
+                    <p><strong>Scan Count:</strong> <span class="badge bg-info" th:text="${qrCode.scanCount}">0</span></p>
+                    <p><strong>Created:</strong> <span th:text="${#temporals.format(qrCode.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span></p>
+                    <p th:if="${qrCode.expiresAt}"><strong>Expires:</strong> <span th:text="${#temporals.format(qrCode.expiresAt, 'dd/MM/yyyy HH:mm')}">Date</span></p>
+                    <p th:if="${qrCode.description}"><strong>Description:</strong><br><span th:text="${qrCode.description}">Description</span></p>
+                </div>
+            </div>
+
+            <!-- Scan History -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-clock-history"></i> Scan History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Scan Type</th>
+                                        <th>Time</th>
+                                        <th>Device</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="scan : ${scans}">
+                                        <td th:text="${scan.user.fullName}">User Name</td>
+                                        <td><span class="badge bg-secondary" th:text="${scan.scanType}">SCAN</span></td>
+                                        <td th:text="${#temporals.format(scan.scannedAt, 'dd/MM/yyyy HH:mm:ss')}">Time</td>
+                                        <td><small th:text="${scan.deviceInfo}">Device</small></td>
+                                        <td>
+                                            <span th:if="${scan.isSuccessful}" class="badge bg-success">Success</span>
+                                            <span th:unless="${scan.isSuccessful}" class="badge bg-danger" th:title="${scan.errorMessage}">Failed</span>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(scans)}">
+                                        <td colspan="5" class="text-center text-muted">No scans yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function downloadQR() {
+            const img = document.querySelector('.qr-image');
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = /*[[${qrCode.name}]]*/ 'qrcode' + '.png';
+            link.click();
+        }
+
+        function printQR() {
+            const img = document.querySelector('.qr-image');
+            const win = window.open('', '_blank');
+            win.document.write('<html><head><title>Print QR Code</title></head><body style="text-align:center;">');
+            win.document.write('<h2>' + /*[[${qrCode.name}]]*/ 'QR Code' + '</h2>');
+            win.document.write('<img src="' + img.src + '" style="max-width:400px;">');
+            win.document.write('</body></html>');
+            win.document.close();
+            win.print();
+        }
+    </script>
+</div>
+</body>
+</html>

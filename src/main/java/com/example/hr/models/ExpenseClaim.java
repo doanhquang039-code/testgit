@@ -1,6 +1,5 @@
 package com.example.hr.models;
 
-import com.example.hr.enums.ExpenseStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,64 +10,64 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "expense_claim")
+@Table(name = "expense_claims")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExpenseClaim {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @Column(name = "claim_title", nullable = false, length = 200)
-    private String claimTitle;
-
-    @Column(length = 50)
-    private String category = "OTHER"; // TRAVEL, MEAL, EQUIPMENT, TRAINING, OTHER
-
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal amount;
-
-    @Column(length = 10)
-    private String currency = "VND";
-
-    @Column(name = "expense_date", nullable = false)
-    private LocalDate expenseDate;
-
+    
+    @Column(nullable = false)
+    private String claimNumber; // Mã đơn
+    
+    @Column(nullable = false)
+    private String category; // TRAVEL, MEAL, EQUIPMENT, TRAINING, OTHER
+    
+    @Column(nullable = false)
+    private String title;
+    
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Column(name = "receipt_url", length = 500)
-    private String receiptUrl;
-
-    @Enumerated(EnumType.STRING)
+    
     @Column(nullable = false)
-    private ExpenseStatus status = ExpenseStatus.PENDING;
-
+    private BigDecimal amount;
+    
+    @Column(nullable = false)
+    private LocalDate expenseDate;
+    
+    private String receiptUrl; // URL hóa đơn
+    
+    @Column(nullable = false)
+    private String status = "PENDING"; // PENDING, APPROVED, REJECTED, PAID
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     private User approvedBy;
-
-    @Column(name = "approved_at")
+    
     private LocalDateTime approvedAt;
-
-    @Column(name = "paid_at")
-    private LocalDateTime paidAt;
-
-    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    
     private String rejectionReason;
-
-    @Column(name = "project_code", length = 100)
-    private String projectCode;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
+    
+    private LocalDateTime paidAt;
+    
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

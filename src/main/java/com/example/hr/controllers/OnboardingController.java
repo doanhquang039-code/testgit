@@ -1,0 +1,129 @@
+package com.example.hr.controllers;
+
+import com.example.hr.models.*;
+import com.example.hr.service.AuthUserHelper;
+import com.example.hr.service.OnboardingOffboardingService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDate;
+
+@Controller
+@RequestMapping("/onboarding")
+@RequiredArgsConstructor
+public class OnboardingController {
+    
+    private final OnboardingOffboardingService onboardingService;
+    private final AuthUserHelper authUserHelper;
+    
+    // ===== User Views =====
+    
+    @GetMapping("/my-checklist")
+    @PreAuthorize("isAuthenticated()")
+    public String myChecklist(Authentication auth, Model model) {
+        User user = authUserHelper.getCurrentUser(auth);
+        
+        model.addAttribute("checklist", onboardingService.getUserChecklist(user));
+        model.addAttribute("pending", onboardingService.getPendingItems(user));
+        model.addAttribute("completionPercentage", onboardingService.getCompletionPercentage(user));
+        
+        return "onboarding/my-checklist";
+    }
+    
+    @PostMapping("/checklist/{id}/complete")
+    @PreAuthorize("isAuthenticated()")
+    public String completeItem(@PathVariable Integer id, RedirectAttributes ra) {
+        try {
+            onboardingService.completeItem(id);
+            ra.addFlashAttribute("success", "Đã hoàn thành nhiệm vụ!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/onboarding/my-checklist";
+    }
+    
+    // ===== Admin Views =====
+    
+    @GetMapping("/admin/create-checklist")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String createChecklistForm(Model model) {
+        return "onboarding/admin/create-checklist";
+    }
+    
+    @PostMapping("/admin/create-standard-checklist")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String createStandardChecklist(@RequestParam Integer userId,
+                                         Authentication auth,
+                                         RedirectAttributes ra) {
+        try {
+            User newEmployee = new User();
+            newEmployee.setId(userId);
+            
+            User hr = authUserHelper.getCurrentUser(auth);
+            onboardingService.createStandardOnboardingChecklist(newEmployee, hr);
+            
+            ra.addFlashAttribute("success", "Tạo checklist onboarding thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/onboarding/admin/create-checklist";
+    }
+    
+    // ===== Exit Interview =====
+    
+    @GetMapping("/exit-interview")
+    @PreAuthorize("isAuthenticated()")
+    public String exitInterviewForm(Authentication auth, Model model) {
+        User user = authUserHelper.getCurrentUser(auth);
+        var interview = onboardingService.getExitInterview(user);
+        
+        model.addAttribute("interview", interview.orElse(null));
+        model.addAttribute("hasInterview", interview.isPresent());
+        
+        return "onboarding/exit-interview";
+    }
+    
+    @PostMapping("/exit-interview/submit")
+    @PreAuthorize("isAuthenticated()")
+    public String submitExitInterview(@RequestParam String reasonForLeaving,
+                                     @RequestParam Integer satisfactionRating,
+                                     @RequestParam String feedback,
+                                     @RequestParam(required = false) String suggestions,
+                                     @RequestParam Boolean wouldRecommend,
+                                     Authentication auth,
+                                     RedirectAttributes ra) {
+        try {
+            User user = authUserHelper.getCurrentUser(auth);
+            var existingInterview = onboardingService.getExitInterview(user);
+            
+            if (existingInterview.isEmpty()) {
+                ExitInterview interview = onboardingService.createExitInterview(user, LocalDate.now(), null);
+                onboardingService.updateExitInterview(interview.getId(), reasonForLeaving, 
+                    satisfactionRating, feedback, suggestions, wouldRecommend, false, null);
+            } else {
+                onboardingService.updateExitInterview(existingInterview.get().getId(), 
+                    reasonForLeaving, satisfactionRating, feedback, suggestions, wouldRecommend, false, null);
+            }
+            
+            ra.addFlashAttribute("success", "Cảm ơn bạn đã chia sẻ!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/onboarding/exit-interview";
+    }
+    
+    @GetMapping("/admin/exit-interviews")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String exitInterviewList(Model model) {
+        model.addAttribute("interviews", onboardingService.getAllExitInterviews());
+        model.addAttribute("avgSatisfaction", onboardingService.getAverageSatisfactionRating());
+        model.addAttribute("recommendationRate", onboardingService.getRecommendationRate());
+        
+        return "onboarding/admin/exit-interview-list";
+    }
+}

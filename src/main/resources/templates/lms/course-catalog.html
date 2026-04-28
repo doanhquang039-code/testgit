@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh mục khóa học - LMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .course-card {
+            transition: transform 0.2s;
+            height: 100%;
+        }
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .course-thumbnail {
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .level-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2><i class="fas fa-graduation-cap me-2"></i>Danh mục khóa học</h2>
+                <p class="text-muted">Khám phá và học tập các khóa học chất lượng</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a th:href="@{/lms/my-courses}" class="btn btn-primary">
+                    <i class="fas fa-book-reader me-2"></i>Khóa học của tôi
+                </a>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" th:action="@{/lms/courses}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Tìm kiếm khóa học..." th:value="${searchKeyword}">
+                        </div>
+                        <div class="col-md-4">
+                            <select name="category" class="form-select">
+                                <option value="">Tất cả danh mục</option>
+                                <option value="TECHNICAL" th:selected="${selectedCategory == 'TECHNICAL'}">Kỹ thuật</option>
+                                <option value="SOFT_SKILLS" th:selected="${selectedCategory == 'SOFT_SKILLS'}">Kỹ năng mềm</option>
+                                <option value="COMPLIANCE" th:selected="${selectedCategory == 'COMPLIANCE'}">Tuân thủ</option>
+                                <option value="LEADERSHIP" th:selected="${selectedCategory == 'LEADERSHIP'}">Lãnh đạo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Tìm
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Course Grid -->
+        <div class="row">
+            <div class="col-md-4 mb-4" th:each="course : ${courses}">
+                <div class="card course-card">
+                    <div class="position-relative">
+                        <img th:src="${course.thumbnailUrl}" th:alt="${course.title}" 
+                             class="card-img-top course-thumbnail">
+                        <span class="badge level-badge" 
+                              th:classappend="${course.level == 'BEGINNER'} ? 'bg-success' : 
+                                             (${course.level == 'INTERMEDIATE'} ? 'bg-warning' : 'bg-danger')"
+                              th:text="${course.level}">Level</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="badge bg-primary mb-2" th:text="${course.category}">Category</span>
+                        <h5 class="card-title" th:text="${course.title}">Course Title</h5>
+                        <p class="card-text text-muted" th:text="${course.description}">Description</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                <span th:text="${course.durationMinutes} + ' phút'">Duration</span>
+                            </small>
+                            <a th:href="@{/lms/course/{id}(id=${course.id})}" class="btn btn-sm btn-outline-primary">
+                                Xem chi tiết <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${courses.empty}" class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Không tìm thấy khóa học nào</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

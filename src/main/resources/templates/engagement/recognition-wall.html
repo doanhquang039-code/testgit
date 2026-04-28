@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tường vinh danh - Engagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .recognition-card {
+            transition: all 0.3s;
+            border-left: 4px solid;
+        }
+        .recognition-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .recognition-card.excellence {
+            border-left-color: #ffd700;
+        }
+        .recognition-card.teamwork {
+            border-left-color: #4CAF50;
+        }
+        .recognition-card.innovation {
+            border-left-color: #2196F3;
+        }
+        .recognition-card.leadership {
+            border-left-color: #9C27B0;
+        }
+        .points-badge {
+            font-size: 1.2rem;
+            padding: 8px 15px;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2><i class="fas fa-trophy me-2"></i>Tường vinh danh</h2>
+                <p class="text-muted">Ghi nhận và tôn vinh những đóng góp xuất sắc</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#giveRecognitionModal">
+                    <i class="fas fa-award me-2"></i>Tặng vinh danh
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-star fa-2x"></i>
+                        </div>
+                        <h3>0</h3>
+                        <p class="mb-0">Điểm của bạn</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-award fa-2x"></i>
+                        </div>
+                        <h3>0</h3>
+                        <p class="mb-0">Đã nhận</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-gift fa-2x"></i>
+                        </div>
+                        <h3>0</h3>
+                        <p class="mb-0">Đã tặng</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <div class="mb-2">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                        <h3>0</h3>
+                        <p class="mb-0">Tháng này</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <select class="form-select">
+                            <option value="">Tất cả loại</option>
+                            <option value="EXCELLENCE">Xuất sắc</option>
+                            <option value="TEAMWORK">Tinh thần đồng đội</option>
+                            <option value="INNOVATION">Sáng tạo</option>
+                            <option value="LEADERSHIP">Lãnh đạo</option>
+                            <option value="CUSTOMER_SERVICE">Dịch vụ khách hàng</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select">
+                            <option value="">Tất cả thời gian</option>
+                            <option value="today">Hôm nay</option>
+                            <option value="week">Tuần này</option>
+                            <option value="month">Tháng này</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recognition Feed -->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Sample Recognition Card -->
+                <div class="recognition-card excellence card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=random" 
+                                         class="rounded-circle me-3" width="50" height="50">
+                                    <div>
+                                        <h6 class="mb-0">John Doe</h6>
+                                        <small class="text-muted">nhận vinh danh từ <strong>Jane Smith</strong></small>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-medal me-1"></i>Xuất sắc
+                                    </span>
+                                    <span class="points-badge badge bg-primary ms-2">
+                                        <i class="fas fa-star me-1"></i>+50 điểm
+                                    </span>
+                                </div>
+                                
+                                <p class="mb-2">
+                                    Hoàn thành xuất sắc dự án ABC trước thời hạn với chất lượng cao. 
+                                    Đóng góp tích cực vào thành công của team!
+                                </p>
+                                
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>2 giờ trước
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 pt-3 border-top">
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-thumbs-up me-1"></i>Thích (0)
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary ms-2">
+                                <i class="fas fa-comment me-1"></i>Bình luận
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Chưa có vinh danh nào</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#giveRecognitionModal">
+                        <i class="fas fa-award me-2"></i>Tặng vinh danh đầu tiên
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Give Recognition Modal -->
+    <div class="modal fade" id="giveRecognitionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-award me-2"></i>Tặng vinh danh</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="recognitionForm">
+                        <div class="mb-3">
+                            <label class="form-label">Người nhận <span class="text-danger">*</span></label>
+                            <select class="form-select" required>
+                                <option value="">-- Chọn nhân viên --</option>
+                                <option value="1">John Doe</option>
+                                <option value="2">Jane Smith</option>
+                                <option value="3">Bob Johnson</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Loại vinh danh <span class="text-danger">*</span></label>
+                            <select class="form-select" required>
+                                <option value="">-- Chọn loại --</option>
+                                <option value="EXCELLENCE">🏆 Xuất sắc (+50 điểm)</option>
+                                <option value="TEAMWORK">🤝 Tinh thần đồng đội (+30 điểm)</option>
+                                <option value="INNOVATION">💡 Sáng tạo (+40 điểm)</option>
+                                <option value="LEADERSHIP">👑 Lãnh đạo (+50 điểm)</option>
+                                <option value="CUSTOMER_SERVICE">😊 Dịch vụ khách hàng (+30 điểm)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Lý do <span class="text-danger">*</span></label>
+                            <textarea class="form-control" rows="4" required 
+                                      placeholder="Mô tả lý do bạn muốn vinh danh người này..."></textarea>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Vinh danh sẽ được hiển thị công khai trên tường vinh danh
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" form="recognitionForm" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Gửi vinh danh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('recognitionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Vinh danh đã được gửi thành công!');
+            bootstrap.Modal.getInstance(document.getElementById('giveRecognitionModal')).hide();
+            this.reset();
+        });
+    </script>
+</body>
+</html>

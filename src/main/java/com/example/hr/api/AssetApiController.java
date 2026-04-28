@@ -1,119 +1,177 @@
 package com.example.hr.api;
 
-import com.example.hr.dto.AssetAssignmentDTO;
-import com.example.hr.dto.CompanyAssetDTO;
-import com.example.hr.models.AssetAssignment;
-import com.example.hr.models.CompanyAsset;
-import com.example.hr.service.AssetManagementService;
-import jakarta.validation.Valid;
+import com.example.hr.models.*;
+import com.example.hr.service.AuthUserHelper;
+import com.example.hr.service.NewAssetManagementService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/assets")
+@RequiredArgsConstructor
 public class AssetApiController {
-
-    private final AssetManagementService assetService;
-
-    public AssetApiController(AssetManagementService assetService) {
-        this.assetService = assetService;
+    
+    private final NewAssetManagementService assetService;
+    private final AuthUserHelper authUserHelper;
+    
+    @GetMapping("/my-assets")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getMyAssets(Authentication auth) {
+        User user = authUserHelper.getCurrentUser(auth);
+        List<AssetAssignment> assignments = assetService.getUserActiveAssignments(user);
+        
+        return ResponseEntity.ok(assignments);
     }
-
-    // --- Assets ---
-
-    @GetMapping
-    public ResponseEntity<List<CompanyAsset>> getAll() {
-        return ResponseEntity.ok(assetService.getAllAssets());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<CompanyAsset> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(assetService.getAssetById(id));
-    }
-
+    
     @GetMapping("/available")
-    public ResponseEntity<List<CompanyAsset>> getAvailable() {
-        return ResponseEntity.ok(assetService.getAvailableAssets());
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public ResponseEntity<?> getAvailableAssets() {
+        List<Asset> assets = assetService.getAvailableAssets();
+        return ResponseEntity.ok(assets);
     }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<CompanyAsset>> search(@RequestParam String keyword) {
-        return ResponseEntity.ok(assetService.searchAssets(keyword));
+    
+    @PostMapping("/create")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public ResponseEntity<?> createAsset(@RequestBody Asset asset) {
+        try {
+            Asset created = assetService.createAsset(asset);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Tạo tài sản thành công");
+            response.put("asset", created);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
-
-    @PostMapping
-    public ResponseEntity<CompanyAsset> create(@Valid @RequestBody CompanyAssetDTO dto) {
-        return ResponseEntity.ok(assetService.createAsset(dto));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<CompanyAsset> update(@PathVariable Integer id,
-                                                 @RequestBody CompanyAssetDTO dto) {
-        return ResponseEntity.ok(assetService.updateAsset(id, dto));
-    }
-
-    @PatchMapping("/{id}/retire")
-    public ResponseEntity<CompanyAsset> retire(@PathVariable Integer id) {
-        return ResponseEntity.ok(assetService.retireAsset(id));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        assetService.deleteAsset(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    // --- Assignments ---
-
+    
     @PostMapping("/assign")
-    public ResponseEntity<AssetAssignment> assign(@Valid @RequestBody AssetAssignmentDTO dto) {
-        return ResponseEntity.ok(assetService.assignAsset(dto));
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public ResponseEntity<?> assignAsset(@RequestBody Map<String, Object> request,
+                                        Authentication auth) {
+        try {
+            User assignedBy = authUserHelper.getCurrentUser(auth);
+            
+            Integer assetId = Integer.parseInt(request.get("assetId").toString());
+            Integer userId = Integer.parseInt(request.get("userId").toString());
+            String notes = request.getOrDefault("notes", "").toString();
+            
+            Asset asset = new Asset();
+            asset.setId(assetId);
+            
+            User user = new User();
+            user.setId(userId);
+            
+            AssetAssignment assignment = assetService.assignAsset(asset, user, assignedBy, LocalDate.now(), notes);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Giao tài sản thành công");
+            response.put("assignment", assignment);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
-
-    @PatchMapping("/assignment/{id}/return")
-    public ResponseEntity<AssetAssignment> returnAsset(@PathVariable Integer id,
-                                                         @RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(assetService.returnAsset(id, body.get("condition")));
+    
+    @PostMapping("/return/{assignmentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public ResponseEntity<?> returnAsset(@PathVariable Integer assignmentId,
+                                        @RequestBody Map<String, Object> request) {
+        try {
+            String condition = request.get("condition").toString();
+            String notes = request.getOrDefault("notes", "").toString();
+            
+            AssetAssignment assignment = assetService.returnAsset(assignmentId, condition, notes);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Thu hồi tài sản thành công");
+            response.put("assignment", assignment);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
-
-    @GetMapping("/assignments/active")
-    public ResponseEntity<List<AssetAssignment>> getActiveAssignments() {
-        return ResponseEntity.ok(assetService.getAllActiveAssignments());
+    
+    @PostMapping("/maintenance/schedule")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public ResponseEntity<?> scheduleMaintenance(@RequestBody Map<String, Object> request) {
+        try {
+            Integer assetId = Integer.parseInt(request.get("assetId").toString());
+            String type = request.get("type").toString();
+            LocalDate scheduledDate = LocalDate.parse(request.get("scheduledDate").toString());
+            String description = request.getOrDefault("description", "").toString();
+            
+            Asset asset = new Asset();
+            asset.setId(assetId);
+            
+            LocalDate nextMaintenanceDate = scheduledDate.plusMonths(6); // Default 6 months
+            AssetMaintenance maintenance = assetService.scheduleMaintenance(asset, type, description, scheduledDate, nextMaintenanceDate);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Lên lịch bảo trì thành công");
+            response.put("maintenance", maintenance);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
-
-    @GetMapping("/assignments/overdue")
-    public ResponseEntity<List<AssetAssignment>> getOverdue() {
-        return ResponseEntity.ok(assetService.getOverdueAssignments());
+    
+    @PostMapping("/maintenance/{maintenanceId}/complete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public ResponseEntity<?> completeMaintenance(@PathVariable Integer maintenanceId,
+                                                @RequestBody Map<String, Object> request) {
+        try {
+            String notes = request.getOrDefault("notes", "").toString();
+            
+            AssetMaintenance maintenance = assetService.completeMaintenance(maintenanceId, notes);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Hoàn thành bảo trì");
+            response.put("maintenance", maintenance);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
-
-    @GetMapping("/assignments/user/{userId}")
-    public ResponseEntity<List<AssetAssignment>> getUserAssignments(@PathVariable Integer userId) {
-        return ResponseEntity.ok(assetService.getCurrentAssignmentsByUser(userId));
-    }
-
-    // --- Analytics ---
-
-    @GetMapping("/total-value")
-    public ResponseEntity<BigDecimal> getTotalValue() {
-        return ResponseEntity.ok(assetService.getTotalAssetValue());
-    }
-
-    @GetMapping("/stats/category")
-    public ResponseEntity<Map<String, Long>> statsByCategory() {
-        return ResponseEntity.ok(assetService.countByCategory());
-    }
-
-    @GetMapping("/stats/value-by-category")
-    public ResponseEntity<Map<String, BigDecimal>> valueByCategory() {
-        return ResponseEntity.ok(assetService.getValueByCategory());
-    }
-
-    @GetMapping("/warranty-expiring")
-    public ResponseEntity<List<CompanyAsset>> warrantyExpiring() {
-        return ResponseEntity.ok(assetService.getWarrantyExpiringSoon());
+    
+    @GetMapping("/maintenance/upcoming")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public ResponseEntity<?> getUpcomingMaintenance() {
+        LocalDate thirtyDaysFromNow = LocalDate.now().plusDays(30);
+        List<AssetMaintenance> maintenances = assetService.getUpcomingMaintenance(thirtyDaysFromNow);
+        return ResponseEntity.ok(maintenances);
     }
 }
