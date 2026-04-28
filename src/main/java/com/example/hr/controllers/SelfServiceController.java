@@ -43,7 +43,7 @@ public class SelfServiceController {
         boolean checkedInToday = attendanceRepository.existsByUserAndAttendanceDate(user, today);
         
         long pendingLeaves = leaveRequestRepository.countByUserAndStatus(user, "PENDING");
-        long activeTrainings = trainingEnrollmentRepository.countByUserAndStatus(user, "IN_PROGRESS");
+        long activeTrainings = trainingEnrollmentRepository.countByUserAndStatusString(user, "IN_PROGRESS");
         
         model.addAttribute("user", user);
         model.addAttribute("leaveBalances", leaveBalances);

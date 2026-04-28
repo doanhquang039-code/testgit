@@ -46,7 +46,7 @@ public class AdvancedAnalyticsService {
         dashboard.setAverageSalary(calculateAverageSalary());
         
         // Leave metrics
-        dashboard.setPendingLeaveRequests(leaveRequestRepository.countByStatus("PENDING"));
+        dashboard.setPendingLeaveRequests(leaveRequestRepository.countByStatusString("PENDING"));
         dashboard.setApprovedLeavesToday(getApprovedLeavesToday());
         
         // Training metrics
@@ -115,6 +115,7 @@ public class AdvancedAnalyticsService {
         
         List<Payroll> payrolls = payrollRepository.findByYearMonthBetween(currentYear, currentMonth, currentYear, currentMonth);
         return payrolls.stream()
+                .filter(p -> p.getNetSalary() != null)
                 .mapToDouble(p -> p.getNetSalary().doubleValue())
                 .sum();
     }
@@ -124,6 +125,7 @@ public class AdvancedAnalyticsService {
         if (recentPayrolls.isEmpty()) return 0.0;
         
         return recentPayrolls.stream()
+                .filter(p -> p.getNetSalary() != null)
                 .mapToDouble(p -> p.getNetSalary().doubleValue())
                 .average()
                 .orElse(0.0);
@@ -131,6 +133,7 @@ public class AdvancedAnalyticsService {
     
     private Long getApprovedLeavesToday() {
         LocalDate today = LocalDate.now();
+        // countByStartDateLessThanEqualAndEndDateGreaterThanEqualAndStatus: endDate param first, startDate second (Spring naming)
         return leaveRequestRepository.countByStartDateLessThanEqualAndEndDateGreaterThanEqualAndStatus(
                 today, today, "APPROVED");
     }
@@ -139,7 +142,7 @@ public class AdvancedAnalyticsService {
         long totalEnrollments = trainingEnrollmentRepository.count();
         if (totalEnrollments == 0) return 0.0;
         
-        long completedEnrollments = trainingEnrollmentRepository.countByStatus("COMPLETED");
+        long completedEnrollments = trainingEnrollmentRepository.countByStatusString("COMPLETED");
         return (completedEnrollments * 100.0) / totalEnrollments;
     }
     
@@ -217,7 +220,10 @@ public class AdvancedAnalyticsService {
             int monthValue = month.getMonthValue();
             
             List<Payroll> payrolls = payrollRepository.findByYearMonthBetween(year, monthValue, year, monthValue);
-            double total = payrolls.stream().mapToDouble(p -> p.getNetSalary().doubleValue()).sum();
+            double total = payrolls.stream()
+                    .filter(p -> p.getNetSalary() != null)
+                    .mapToDouble(p -> p.getNetSalary().doubleValue())
+                    .sum();
             
             chartData.add(new AnalyticsDashboardDTO.ChartDataDTO(
                     month.format(DateTimeFormatter.ofPattern("MMM yyyy")),

@@ -37,22 +37,29 @@ public class AdminCacheController {
 
     @GetMapping
     public String dashboard(Model model) {
-        // Thống kê cache keys
+        // Thống kê cache keys — fail-safe: nếu Redis offline chỉ log, không crash
+        boolean redisOnline = false;
         try {
             Set<String> allKeys = cacheService.keys("*");
             long totalKeys = allKeys != null ? allKeys.size() : 0;
 
-            model.addAttribute("totalKeys", totalKeys);
+            model.addAttribute("totalKeys",     totalKeys);
             model.addAttribute("dashboardKeys", cacheService.countKeys("dashboard*"));
             model.addAttribute("userKeys",      cacheService.countKeys("users*"));
             model.addAttribute("deptKeys",      cacheService.countKeys("departments*"));
             model.addAttribute("videoKeys",     cacheService.countKeys("videoLibrary*"));
             model.addAttribute("kpiKeys",       cacheService.countKeys("kpiGoals*"));
-            model.addAttribute("redisOnline", true);
+            redisOnline = true;
         } catch (Exception e) {
-            model.addAttribute("redisOnline", false);
-            model.addAttribute("redisError", e.getMessage());
+            model.addAttribute("totalKeys",     0L);
+            model.addAttribute("dashboardKeys", 0L);
+            model.addAttribute("userKeys",      0L);
+            model.addAttribute("deptKeys",      0L);
+            model.addAttribute("videoKeys",     0L);
+            model.addAttribute("kpiKeys",       0L);
+            model.addAttribute("redisError", "Redis không kết nối được: " + e.getMessage());
         }
+        model.addAttribute("redisOnline", redisOnline);
 
         model.addAttribute("emailProvider", emailFacade.getProvider());
         model.addAttribute("cloudServices", cloudStorageFacade.getHealthStatus());

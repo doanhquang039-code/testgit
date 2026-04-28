@@ -25,8 +25,10 @@ List<LeaveRequest> findAllWithUser(@Param("keyword") String keyword);
    @EntityGraph(attributePaths = "user")
    List<LeaveRequest> findAllByOrderByCreatedAtDesc(Pageable pageable);
    
-   // Advanced Leave Management methods
-   long countByStatus(String status);
+   // Advanced Leave Management methods — dùng @Query để tránh ambiguous với countByStatus(LeaveStatus)
+   @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.status = :statusStr")
+   long countByStatusString(@Param("statusStr") String statusStr);
+
    long countByStartDateLessThanEqualAndEndDateGreaterThanEqualAndStatus(
        java.time.LocalDate endDate, java.time.LocalDate startDate, String status);
    List<LeaveRequest> findByUserAndStatusAndStartDateBetween(

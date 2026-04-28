@@ -13,8 +13,11 @@ import java.util.List;
 @Repository
 public interface TrainingEnrollmentRepository extends JpaRepository<TrainingEnrollment, Integer> {
     
-    long countByStatus(String status);
-    long countByUserAndStatus(User user, String status);
+    @Query("SELECT COUNT(e) FROM TrainingEnrollment e WHERE e.status = :status")
+    long countByStatusString(@Param("status") String status);
+
+    @Query("SELECT COUNT(e) FROM TrainingEnrollment e WHERE e.user = :user AND e.status = :status")
+    long countByUserAndStatusString(@Param("user") User user, @Param("status") String status);
     List<TrainingEnrollment> findByUserOrderByEnrolledAtDesc(User user);
     
     // Methods needed by TrainingService
