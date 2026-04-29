@@ -1,0 +1,71 @@
+type Query {
+    # Employee queries
+    employee(id: ID!): Employee
+    employees(page: Int, size: Int): EmployeePage
+    searchEmployees(keyword: String!): [Employee]
+    
+    # Department queries
+    department(id: ID!): Department
+    departments: [Department]
+    
+    # Attendance queries
+    attendance(id: ID!): Attendance
+    attendanceByUser(userId: ID!, startDate: String!, endDate: String!): [Attendance]
+}
+
+type Mutation {
+    # Employee mutations
+    createEmployee(input: EmployeeInput!): Employee
+    updateEmployee(id: ID!, input: EmployeeInput!): Employee
+    deleteEmployee(id: ID!): Boolean
+    
+    # Attendance mutations
+    checkIn(userId: ID!, latitude: Float, longitude: Float): Attendance
+    checkOut(userId: ID!): Attendance
+}
+
+type Employee {
+    id: ID!
+    username: String!
+    fullName: String!
+    email: String!
+    phone: String
+    department: Department
+    position: String
+    hireDate: String
+    status: String
+}
+
+type Department {
+    id: ID!
+    name: String!
+    description: String
+    employees: [Employee]
+}
+
+type Attendance {
+    id: ID!
+    user: Employee!
+    checkInTime: String!
+    checkOutTime: String
+    workingHours: Float
+    status: String
+}
+
+type EmployeePage {
+    content: [Employee]
+    totalElements: Int
+    totalPages: Int
+    number: Int
+    size: Int
+}
+
+input EmployeeInput {
+    username: String!
+    fullName: String!
+    email: String!
+    phone: String
+    departmentId: ID
+    position: String
+    hireDate: String
+}
