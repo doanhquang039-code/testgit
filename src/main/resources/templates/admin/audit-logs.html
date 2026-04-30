@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - HR Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="fragments/admin-sidebar :: sidebar"></div>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="bi bi-journal-text me-2"></i>Audit Logs</h1>
+                    <div class="btn-toolbar">
+                        <button class="btn btn-sm btn-outline-primary" onclick="window.location.href='/admin/audit-logs/export'">
+                            <i class="bi bi-download me-1"></i>Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 th:text="${activityStats.totalActions}">1,250</h3>
+                                <p class="text-muted mb-0">Total Actions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 th:text="${activityStats.uniqueUsers}">45</h3>
+                                <p class="text-muted mb-0">Active Users</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 th:text="${activityStats.todayActions}">89</h3>
+                                <p class="text-muted mb-0">Today's Actions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 th:text="${activityStats.failedActions}">3</h3>
+                                <p class="text-muted mb-0">Failed Actions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="get" action="/admin/audit-logs">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Action</label>
+                                    <input type="text" class="form-control" name="action" th:value="${action}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Entity Type</label>
+                                    <input type="text" class="form-control" name="entityType" th:value="${entityType}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">User ID</label>
+                                    <input type="number" class="form-control" name="userId" th:value="${userId}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-search me-1"></i>Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Audit Logs Table -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>Entity</th>
+                                        <th>IP Address</th>
+                                        <th>Timestamp</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="log : ${logs.content}">
+                                        <td th:text="${log.id}">1</td>
+                                        <td th:text="${log.user.fullName}">User Name</td>
+                                        <td>
+                                            <span class="badge bg-primary" th:text="${log.action}">CREATE</span>
+                                        </td>
+                                        <td th:text="${log.entityType}">User</td>
+                                        <td th:text="${log.ipAddress}">192.168.1.1</td>
+                                        <td th:text="${#temporals.format(log.timestamp, 'dd/MM/yyyy HH:mm:ss')}">30/04/2026 10:30:45</td>
+                                        <td>
+                                            <a th:href="@{/admin/audit-logs/{id}(id=${log.id})}" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav th:if="${logs.totalPages > 1}">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/admin/audit-logs(page=${currentPage - 1})}">Previous</a>
+                                </li>
+                                <li class="page-item" th:each="i : ${#numbers.sequence(0, logs.totalPages - 1)}"
+                                    th:classappend="${i == currentPage} ? 'active'">
+                                    <a class="page-link" th:href="@{/admin/audit-logs(page=${i})}" th:text="${i + 1}">1</a>
+                                </li>
+                                <li class="page-item" th:classappend="${currentPage == logs.totalPages - 1} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/admin/audit-logs(page=${currentPage + 1})}">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

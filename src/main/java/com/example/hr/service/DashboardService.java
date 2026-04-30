@@ -186,4 +186,45 @@ List<User> terminatedUsers = userRepository.findByStatus(UserStatus.INACTIVE);
 
         return metrics;
     }
+
+    /**
+     * Get business metrics for admin dashboard
+     */
+    @Cacheable(value = "dashboard", key = "'business-metrics'")
+    public Map<String, Object> getBusinessMetrics() {
+        Map<String, Object> metrics = new LinkedHashMap<>();
+        
+        // Employee metrics
+        long totalEmployees = userRepository.count();
+        long activeEmployees = userRepository.countByStatus(UserStatus.ACTIVE);
+        long newHiresThisMonth = userRepository.countByCreatedAtGreaterThanEqual(
+                LocalDate.now().withDayOfMonth(1).atStartOfDay());
+        
+        metrics.put("totalEmployees", totalEmployees);
+        metrics.put("activeEmployees", activeEmployees);
+        metrics.put("newHiresThisMonth", newHiresThisMonth);
+        
+        // Leave metrics
+        long pendingLeaves = leaveRequestRepository.countByStatus(LeaveStatus.PENDING);
+        long approvedLeaves = leaveRequestRepository.countByStatus(LeaveStatus.APPROVED);
+        
+        metrics.put("pendingLeaves", pendingLeaves);
+        metrics.put("approvedLeaves", approvedLeaves);
+        
+        // Training metrics
+        long activeTrainings = trainingProgramRepository.countByStatus(TrainingStatus.IN_PROGRESS);
+        long completedTrainings = trainingProgramRepository.countByStatus(TrainingStatus.COMPLETED);
+        
+        metrics.put("activeTrainings", activeTrainings);
+        metrics.put("completedTrainings", completedTrainings);
+        
+        // Asset metrics
+        long totalAssets = assetRepository.count();
+        long availableAssets = assetRepository.countByStatus("AVAILABLE");
+        
+        metrics.put("totalAssets", totalAssets);
+        metrics.put("availableAssets", availableAssets);
+        
+        return metrics;
+    }
 }

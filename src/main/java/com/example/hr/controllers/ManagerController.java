@@ -42,67 +42,82 @@ public class ManagerController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        LocalDate today = LocalDate.now();
+        try {
+            LocalDate today = LocalDate.now();
 
-        long totalEmployees = userRepository.findByStatus(UserStatus.ACTIVE).size();
-        long pendingLeaves  = leaveRepository.countByStatus(LeaveStatus.PENDING);
-        long pendingOT      = 0; // TODO: Update with new overtime model
+            long totalEmployees = userRepository.findByStatus(UserStatus.ACTIVE).size();
+            long pendingLeaves  = leaveRepository.countByStatus(LeaveStatus.PENDING);
+            long pendingOT      = 0; // TODO: Update with new overtime model
 
-        var allAssignments = taskAssignmentRepository.findAllWithUser();
-        long activeTasks    = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.IN_PROGRESS).count();
-        long completedTasks = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.COMPLETED).count();
-        long pendingTasks   = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.PENDING).count();
+            var allAssignments = taskAssignmentRepository.findAllWithUser();
+            long activeTasks    = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.IN_PROGRESS).count();
+            long completedTasks = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.COMPLETED).count();
+            long pendingTasks   = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.PENDING).count();
 
-        long checkedInToday = attendanceRepository.findByAttendanceDateBetween(today, today).size();
-        long absentToday    = Math.max(0, totalEmployees - checkedInToday);
+            long checkedInToday = attendanceRepository.findByAttendanceDateBetween(today, today).size();
+            long absentToday    = Math.max(0, totalEmployees - checkedInToday);
 
-        List<String> attLabels   = new ArrayList<>();
-        List<Integer> attPresent = new ArrayList<>();
-        List<Integer> attLate    = new ArrayList<>();
-        List<Integer> attAbsent  = new ArrayList<>();
+            List<String> attLabels   = new ArrayList<>();
+            List<Integer> attPresent = new ArrayList<>();
+            List<Integer> attLate    = new ArrayList<>();
+            List<Integer> attAbsent  = new ArrayList<>();
 
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
-            attLabels.add(date.format(DateTimeFormatter.ofPattern("dd/MM")));
-            List<Attendance> dayAtt = attendanceRepository.findByAttendanceDateBetween(date, date);
-            long present = dayAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.PRESENT).count();
-            long late    = dayAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.LATE).count();
-            long absent  = Math.max(0, totalEmployees - dayAtt.size());
-            attPresent.add((int) present);
-            attLate.add((int) late);
-            attAbsent.add((int) absent);
+            for (int i = 6; i >= 0; i--) {
+                LocalDate date = today.minusDays(i);
+                attLabels.add(date.format(DateTimeFormatter.ofPattern("dd/MM")));
+                List<Attendance> dayAtt = attendanceRepository.findByAttendanceDateBetween(date, date);
+                long present = dayAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.PRESENT).count();
+                long late    = dayAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.LATE).count();
+                long absent  = Math.max(0, totalEmployees - dayAtt.size());
+                attPresent.add((int) present);
+                attLate.add((int) late);
+                attAbsent.add((int) absent);
+            }
+
+            var pendingFirst = leaveRepository.findAllWithUser(null).stream()
+                    .sorted((a, b) -> {
+                        if (a.getStatus() == LeaveStatus.PENDING && b.getStatus() != LeaveStatus.PENDING) return -1;
+                        if (a.getStatus() != LeaveStatus.PENDING && b.getStatus() == LeaveStatus.PENDING) return 1;
+                        return 0;
+                    }).collect(Collectors.toList());
+
+            List<PerformanceReview> topPerformers = reviewRepository.findAllWithUsers().stream()
+                    .filter(r -> r.getOverallScore() != null)
+                    .sorted((a, b) -> b.getOverallScore().compareTo(a.getOverallScore()))
+                    .limit(5)
+                    .collect(Collectors.toList());
+
+            // Load tasks with error handling for invalid enum values
+            List<Task> recentTasks = new ArrayList<>();
+            try {
+                recentTasks = taskRepository.findAll();
+            } catch (Exception e) {
+                // Log error but continue - tasks with invalid enum will be skipped
+                System.err.println("Warning: Some tasks have invalid enum values: " + e.getMessage());
+            }
+
+            model.addAttribute("totalEmployees", totalEmployees);
+            model.addAttribute("pendingLeaves",  pendingLeaves);
+            model.addAttribute("pendingOT",      pendingOT);
+            model.addAttribute("activeTasks",    activeTasks);
+            model.addAttribute("absentToday",    absentToday);
+            model.addAttribute("completedTasks", completedTasks);
+            model.addAttribute("pendingTasks",   pendingTasks);
+            model.addAttribute("recentLeaves",   pendingFirst);
+            model.addAttribute("recentTasks",    recentTasks);
+            model.addAttribute("teamMembers",    userRepository.findByStatus(UserStatus.ACTIVE));
+            model.addAttribute("topPerformers",  topPerformers);
+            model.addAttribute("attLabels",      attLabels);
+            model.addAttribute("attPresent",     attPresent);
+            model.addAttribute("attLate",        attLate);
+            model.addAttribute("attAbsent",      attAbsent);
+            model.addAttribute("today", today.format(DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy")));
+            return "manager/dashboard-simple";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Lỗi tải dashboard: " + e.getMessage());
+            model.addAttribute("errorDetails", e.getClass().getSimpleName());
+            return "error/500";
         }
-
-        var pendingFirst = leaveRepository.findAllWithUser(null).stream()
-                .sorted((a, b) -> {
-                    if (a.getStatus() == LeaveStatus.PENDING && b.getStatus() != LeaveStatus.PENDING) return -1;
-                    if (a.getStatus() != LeaveStatus.PENDING && b.getStatus() == LeaveStatus.PENDING) return 1;
-                    return 0;
-                }).collect(Collectors.toList());
-
-        List<PerformanceReview> topPerformers = reviewRepository.findAllWithUsers().stream()
-                .filter(r -> r.getOverallScore() != null)
-                .sorted((a, b) -> b.getOverallScore().compareTo(a.getOverallScore()))
-                .limit(5)
-                .collect(Collectors.toList());
-
-        model.addAttribute("totalEmployees", totalEmployees);
-        model.addAttribute("pendingLeaves",  pendingLeaves);
-        model.addAttribute("pendingOT",      pendingOT);
-        model.addAttribute("activeTasks",    activeTasks);
-        model.addAttribute("absentToday",    absentToday);
-        model.addAttribute("completedTasks", completedTasks);
-        model.addAttribute("pendingTasks",   pendingTasks);
-        model.addAttribute("recentLeaves",   pendingFirst);
-        model.addAttribute("recentTasks",    taskRepository.findAll());
-        model.addAttribute("teamMembers",    userRepository.findByStatus(UserStatus.ACTIVE));
-        model.addAttribute("topPerformers",  topPerformers);
-        model.addAttribute("attLabels",      attLabels);
-        model.addAttribute("attPresent",     attPresent);
-        model.addAttribute("attLate",        attLate);
-        model.addAttribute("attAbsent",      attAbsent);
-        model.addAttribute("today", today.format(DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy")));
-        return "manager/dashboard";
     }
 
     // ==================== TEAM MANAGEMENT ====================

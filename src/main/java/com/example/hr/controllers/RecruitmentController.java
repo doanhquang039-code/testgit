@@ -30,22 +30,71 @@ public class RecruitmentController {
     @Autowired private JobPositionRepository jobPositionRepository;
     @Autowired private UserRepository userRepository;
 
-    // ==================== JOB POSTINGS ====================
+    // ==================== DASHBOARD ====================
 
     @GetMapping
-    public String dashboard(Model model) {
-        List<JobPosting> postings = jobPostingRepository.findAll();
-        long openCount = postings.stream().filter(p -> "OPEN".equals(p.getStatus())).count();
-        long totalCandidates = candidateRepository.count();
-        long newCandidates      = candidateRepository.countByStatus("NEW");
-        long screeningCount     = candidateRepository.countByStatus("SCREENING");
-        long interviewCount     = candidateRepository.countByStatus("INTERVIEW");
-        long offerCount         = candidateRepository.countByStatus("OFFER");
-        long hiredCount         = candidateRepository.countByStatus("HIRED");
-        long rejectedCount      = candidateRepository.countByStatus("REJECTED");
+    public String hiringRoot() {
+        return "redirect:/hiring/dashboard";
+    }
 
+    @GetMapping("/dashboard")
+    public String dashboard(Model model) {
+        // Job postings statistics
+        List<JobPosting> postings = jobPostingRepository.findAll();
+        long totalJobs = postings.size();
+        long activeJobs = postings.stream().filter(p -> "OPEN".equals(p.getStatus())).count();
+        
+        // Candidate statistics
+        long totalCandidates = candidateRepository.count();
+        long newCandidates = candidateRepository.countByCurrentStage("NEW");
+        long screeningCount = candidateRepository.countByCurrentStage("SCREENING");
+        long interviewCount = candidateRepository.countByCurrentStage("INTERVIEW");
+        long offerCount = candidateRepository.countByCurrentStage("OFFER");
+        long hiredCount = candidateRepository.countByCurrentStage("HIRED");
+        long rejectedCount = candidateRepository.countByCurrentStage("REJECTED");
+
+        // Hiring Overview DTO
+        HiringOverview hiringOverview = new HiringOverview();
+        hiringOverview.setTotalJobs(totalJobs);
+        hiringOverview.setActiveJobs(activeJobs);
+        hiringOverview.setTotalCandidates(totalCandidates);
+        hiringOverview.setTotalInterviews(interviewCount); // Simplified
+        hiringOverview.setAvgApplicationsPerJob(activeJobs > 0 ? (double) totalCandidates / activeJobs : 0);
+        hiringOverview.setAvgCandidateScore(75.0); // TODO: Calculate from actual scores
+
+        // Candidate Pipeline
+        java.util.Map<String, Long> candidatePipeline = new java.util.HashMap<>();
+        candidatePipeline.put("APPLIED", newCandidates);
+        candidatePipeline.put("SCREENING", screeningCount);
+        candidatePipeline.put("INTERVIEW", interviewCount);
+        candidatePipeline.put("OFFER", offerCount);
+        candidatePipeline.put("HIRED", hiredCount);
+        candidatePipeline.put("REJECTED", rejectedCount);
+
+        // Recent job postings (last 5)
+        List<JobPosting> recentJobs = postings.stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .limit(5)
+                .collect(java.util.stream.Collectors.toList());
+
+        // Recent candidates (last 10)
+        List<Candidate> recentCandidates = candidateRepository.findAll().stream()
+                .sorted((a, b) -> b.getAppliedAt().compareTo(a.getAppliedAt()))
+                .limit(10)
+                .collect(java.util.stream.Collectors.toList());
+
+        // Upcoming interviews - empty for now (TODO: implement Interview entity)
+        List<Object> upcomingInterviews = new java.util.ArrayList<>();
+
+        model.addAttribute("hiringOverview", hiringOverview);
+        model.addAttribute("candidatePipeline", candidatePipeline);
+        model.addAttribute("recentJobs", recentJobs);
+        model.addAttribute("recentCandidates", recentCandidates);
+        model.addAttribute("upcomingInterviews", upcomingInterviews);
+        
+        // Legacy attributes for backward compatibility
         model.addAttribute("postings", postings);
-        model.addAttribute("openCount", openCount);
+        model.addAttribute("openCount", activeJobs);
         model.addAttribute("totalCandidates", totalCandidates);
         model.addAttribute("newCandidates", newCandidates);
         model.addAttribute("screeningCount", screeningCount);
@@ -53,7 +102,31 @@ public class RecruitmentController {
         model.addAttribute("offerCount", offerCount);
         model.addAttribute("hiredCount", hiredCount);
         model.addAttribute("rejectedCount", rejectedCount);
+        
         return "hiring/dashboard";
+    }
+    
+    // Inner class for Hiring Overview DTO
+    public static class HiringOverview {
+        private long totalJobs;
+        private long activeJobs;
+        private long totalCandidates;
+        private long totalInterviews;
+        private double avgApplicationsPerJob;
+        private double avgCandidateScore;
+        
+        public long getTotalJobs() { return totalJobs; }
+        public void setTotalJobs(long totalJobs) { this.totalJobs = totalJobs; }
+        public long getActiveJobs() { return activeJobs; }
+        public void setActiveJobs(long activeJobs) { this.activeJobs = activeJobs; }
+        public long getTotalCandidates() { return totalCandidates; }
+        public void setTotalCandidates(long totalCandidates) { this.totalCandidates = totalCandidates; }
+        public long getTotalInterviews() { return totalInterviews; }
+        public void setTotalInterviews(long totalInterviews) { this.totalInterviews = totalInterviews; }
+        public double getAvgApplicationsPerJob() { return avgApplicationsPerJob; }
+        public void setAvgApplicationsPerJob(double avgApplicationsPerJob) { this.avgApplicationsPerJob = avgApplicationsPerJob; }
+        public double getAvgCandidateScore() { return avgCandidateScore; }
+        public void setAvgCandidateScore(double avgCandidateScore) { this.avgCandidateScore = avgCandidateScore; }
     }
 
     @GetMapping("/postings")
@@ -108,134 +181,6 @@ public class RecruitmentController {
     }
 
     // ==================== CANDIDATES ====================
-
-    @GetMapping("/candidates")
-    public String listCandidates(@RequestParam(required = false) String keyword,
-                                 @RequestParam(required = false) String status,
-                                 Model model) {
-        List<Candidate> candidates;
-        if (keyword != null && !keyword.isBlank()) {
-            candidates = candidateRepository.findByFullNameContainingIgnoreCase(keyword);
-        } else if (status != null && !status.isBlank()) {
-            candidates = candidateRepository.findByStatus(status);
-        } else {
-            candidates = candidateRepository.findAll();
-        }
-
-        long newCount = candidateRepository.countByStatus("NEW");
-        long screeningCount = candidateRepository.countByStatus("SCREENING");
-        long interviewCount = candidateRepository.countByStatus("INTERVIEW");
-        long hiredCount = candidateRepository.countByStatus("HIRED");
-
-        model.addAttribute("candidates", candidates);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("selectedStatus", status);
-        model.addAttribute("newCount", newCount);
-        model.addAttribute("screeningCount", screeningCount);
-        model.addAttribute("interviewCount", interviewCount);
-        model.addAttribute("hiredCount", hiredCount);
-        return "hiring/candidate-list";
-    }
-
-    @GetMapping("/candidates/add")
-    public String showAddCandidate(Model model) {
-        model.addAttribute("candidate", new Candidate());
-        model.addAttribute("postings", jobPostingRepository.findByStatus("OPEN"));
-        return "hiring/candidate-form";
-    }
-
-    @GetMapping("/candidates/edit/{id}")
-    public String showEditCandidate(@PathVariable Integer id, Model model) {
-        Candidate candidate = candidateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ứng viên: " + id));
-        model.addAttribute("candidate", candidate);
-        model.addAttribute("postings", jobPostingRepository.findAll());
-        return "hiring/candidate-form";
-    }
-
-    @PostMapping("/candidates/save")
-    public String saveCandidate(@ModelAttribute Candidate candidate, RedirectAttributes ra) {
-        candidateRepository.save(candidate);
-        ra.addFlashAttribute("successMsg", "✅ Thông tin ứng viên đã được lưu!");
-        return "redirect:/hiring/candidates";
-    }
-
-    @GetMapping("/candidates/status/{id}")
-    public String updateCandidateStatus(@PathVariable Integer id,
-                                        @RequestParam String status,
-                                        RedirectAttributes ra) {
-        Candidate candidate = candidateRepository.findById(id).orElseThrow();
-        candidate.setStatus(status);
-        candidateRepository.save(candidate);
-        ra.addFlashAttribute("successMsg", "✅ Đã cập nhật trạng thái ứng viên.");
-        return "redirect:/hiring/candidates";
-    }
-
-    @GetMapping("/candidates/delete/{id}")
-    public String deleteCandidate(@PathVariable Integer id, RedirectAttributes ra) {
-        candidateRepository.deleteById(id);
-        ra.addFlashAttribute("successMsg", "🗑️ Đã xoá ứng viên.");
-        return "redirect:/hiring/candidates";
-    }
-
-    /**
-     * Chuyển ứng viên đã HIRED thành nhân viên chính thức trong hệ thống
-     */
-    @GetMapping("/candidates/hire/{id}")
-    public String hireToEmployee(@PathVariable Integer id, RedirectAttributes ra) {
-        Candidate c = candidateRepository.findById(id).orElseThrow();
-
-        // Kiểm tra trạng thái phải là HIRED
-        if (!"HIRED".equals(c.getStatus())) {
-            ra.addFlashAttribute("errorMsg", "⚠️ Ứng viên chưa ở trạng thái HIRED!");
-            return "redirect:/hiring/candidates";
-        }
-
-        // Tạo tài khoản nhân viên từ thông tin ứng viên
-        // Username: tên viết tắt + "." + họ (không dấu, thường)
-        String[] nameParts = c.getFullName().trim().split("\\s+");
-        String lastName = nameParts[nameParts.length - 1].toLowerCase()
-                .replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a")
-                .replaceAll("[èéẹẻẽêềếệểễ]", "e")
-                .replaceAll("[ìíịỉĩ]", "i")
-                .replaceAll("[òóọỏõôồốộổỗơờớợởỡ]", "o")
-                .replaceAll("[ùúụủũưừứựửữ]", "u")
-                .replaceAll("[ỳýỵỷỹ]", "y")
-                .replaceAll("đ", "d")
-                .replaceAll("[^a-z]", "");
-        String firstInitial = nameParts.length > 1 ? nameParts[0].substring(0, 1).toLowerCase() : "x";
-        String baseUsername = lastName + "." + firstInitial;
-
-        // Đảm bảo username unique
-        String username = baseUsername;
-        int suffix = 1;
-        while (userRepository.findByUsername(username).isPresent()) {
-            username = baseUsername + suffix++;
-        }
-
-        User newEmployee = new User();
-        newEmployee.setFullName(c.getFullName());
-        newEmployee.setEmail(c.getEmail());
-        newEmployee.setUsername(username);
-        // Mật khẩu mặc định = 123456 (BCrypt)
-        newEmployee.setPassword("$2a$10$hqVbLomRjVdJbGhyByGAeOYPaLYzGDxMIjilh3juV6.ZYc07DNkAu");
-        newEmployee.setRole(Role.USER);
-        newEmployee.setStatus(UserStatus.ACTIVE);
-        // Gán phòng ban từ job posting nếu có
-        if (c.getJobPosting() != null && c.getJobPosting().getDepartment() != null) {
-            newEmployee.setDepartment(c.getJobPosting().getDepartment());
-        }
-
-        userRepository.save(newEmployee);
-
-        // Cập nhật candidate status -> đã tạo nhân viên
-        c.setNotes((c.getNotes() != null ? c.getNotes() + " | " : "") +
-                "[✅ Đã tạo tài khoản nhân viên: " + username + "]");
-        candidateRepository.save(c);
-
-        ra.addFlashAttribute("successMsg",
-            "✅ Đã tạo tài khoản nhân viên cho " + c.getFullName() +
-            "! Username: <strong>" + username + "</strong>, Mật khẩu: 123456");
-        return "redirect:/hiring/candidates";
-    }
+    // NOTE: Candidate management has been moved to CandidateController
+    // All /hiring/candidates/* endpoints are now handled by CandidateController
 }

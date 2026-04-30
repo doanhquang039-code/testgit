@@ -89,5 +89,10 @@ import java.time.LocalDateTime;
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    // Alias method for compatibility with services
+    public String getName() {
+        return this.departmentName;
+    }
     
 }

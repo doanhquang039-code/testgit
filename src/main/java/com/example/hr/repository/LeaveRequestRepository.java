@@ -37,4 +37,13 @@ List<LeaveRequest> findAllWithUser(@Param("keyword") String keyword);
        String status, java.time.LocalDate endDate, java.time.LocalDate startDate);
    long countByUserAndStatus(User user, String status);
    List<LeaveRequest> findTop5ByOrderByCreatedAtDesc();
+   
+   // Team Analytics methods
+   @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.user.department = :department AND l.status = 'PENDING'")
+   long countPendingByDepartment(@Param("department") com.example.hr.models.Department department);
+   
+   @Query("SELECT l FROM LeaveRequest l WHERE l.user.department = :department AND l.startDate >= :startDate AND l.endDate <= :endDate")
+   List<LeaveRequest> findByDepartmentAndDateRange(@Param("department") com.example.hr.models.Department department, 
+                                                     @Param("startDate") java.time.LocalDate startDate, 
+                                                     @Param("endDate") java.time.LocalDate endDate);
 }

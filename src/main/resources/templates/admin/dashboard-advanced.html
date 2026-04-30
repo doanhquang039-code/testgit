@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Dashboard - HR Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+    <style>
+        .metric-card {
+            border-left: 4px solid;
+            transition: transform 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .metric-card.success { border-left-color: #28a745; }
+        .metric-card.warning { border-left-color: #ffc107; }
+        .metric-card.danger { border-left-color: #dc3545; }
+        .metric-card.info { border-left-color: #17a2b8; }
+        .metric-card.primary { border-left-color: #007bff; }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .status-healthy { background-color: #d4edda; color: #155724; }
+        .status-warning { background-color: #fff3cd; color: #856404; }
+        .status-critical { background-color: #f8d7da; color: #721c24; }
+        
+        .quick-action-btn {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            text-align: left;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="fragments/admin-sidebar :: sidebar"></div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="bi bi-graph-up-arrow me-2"></i>Advanced Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- System Health Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4 class="mb-3"><i class="bi bi-heart-pulse me-2"></i>System Health</h4>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card metric-card success">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">CPU Usage</h6>
+                                        <h3 class="mb-0" th:text="${systemHealth.cpuUsage + '%'}">45%</h3>
+                                    </div>
+                                    <i class="bi bi-cpu fs-1 text-success"></i>
+                                </div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar bg-success" th:style="'width: ' + ${systemHealth.cpuUsage} + '%'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="card metric-card warning">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Memory Usage</h6>
+                                        <h3 class="mb-0" th:text="${systemHealth.memoryUsage + '%'}">68%</h3>
+                                    </div>
+                                    <i class="bi bi-memory fs-1 text-warning"></i>
+                                </div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar bg-warning" th:style="'width: ' + ${systemHealth.memoryUsage} + '%'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="card metric-card info">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Disk Usage</h6>
+                                        <h3 class="mb-0" th:text="${systemHealth.diskUsage + '%'}">52%</h3>
+                                    </div>
+                                    <i class="bi bi-hdd fs-1 text-info"></i>
+                                </div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar bg-info" th:style="'width: ' + ${systemHealth.diskUsage} + '%'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="card metric-card success">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">System Status</h6>
+                                        <span class="status-badge status-healthy" th:text="${systemHealth.status}">Healthy</span>
+                                    </div>
+                                    <i class="bi bi-check-circle fs-1 text-success"></i>
+                                </div>
+                                <small class="text-muted" th:text="'Uptime: ' + ${systemHealth.uptime}">Uptime: 15 days</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Metrics Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4 class="mb-3"><i class="bi bi-bar-chart me-2"></i>Business Metrics</h4>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="card metric-card primary">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Total Employees</h6>
+                                        <h3 class="mb-0" th:text="${businessMetrics.totalEmployees}">250</h3>
+                                    </div>
+                                    <i class="bi bi-people fs-1 text-primary"></i>
+                                </div>
+                                <small class="text-success">
+                                    <i class="bi bi-arrow-up"></i> <span th:text="${businessMetrics.activeEmployees}">245</span> active
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="card metric-card success">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Attendance Today</h6>
+                                        <h3 class="mb-0" th:text="${businessMetrics.attendanceRate + '%'}">92%</h3>
+                                    </div>
+                                    <i class="bi bi-calendar-check fs-1 text-success"></i>
+                                </div>
+                                <small class="text-muted" th:text="${businessMetrics.presentToday} + ' present'">230 present</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="card metric-card warning">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Pending Leaves</h6>
+                                        <h3 class="mb-0" th:text="${businessMetrics.pendingLeaves}">12</h3>
+                                    </div>
+                                    <i class="bi bi-calendar-x fs-1 text-warning"></i>
+                                </div>
+                                <small class="text-muted">Requires approval</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="card metric-card info">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Open Positions</h6>
+                                        <h3 class="mb-0" th:text="${businessMetrics.openPositions}">8</h3>
+                                    </div>
+                                    <i class="bi bi-briefcase fs-1 text-info"></i>
+                                </div>
+                                <small class="text-muted" th:text="${businessMetrics.totalApplications} + ' applications'">45 applications</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Recent Activity -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-outline-primary quick-action-btn" onclick="window.location.href='/admin/users-advanced'">
+                                    <i class="bi bi-people me-2"></i>Manage Users
+                                </button>
+                                <button class="btn btn-outline-success quick-action-btn" onclick="window.location.href='/admin/backup'">
+                                    <i class="bi bi-cloud-arrow-down me-2"></i>Create Backup
+                                </button>
+                                <button class="btn btn-outline-info quick-action-btn" onclick="window.location.href='/admin/system-config'">
+                                    <i class="bi bi-sliders me-2"></i>System Settings
+                                </button>
+                                <button class="btn btn-outline-warning quick-action-btn" onclick="window.location.href='/admin/audit-logs'">
+                                    <i class="bi bi-journal-text me-2"></i>View Audit Logs
+                                </button>
+                                <button class="btn btn-outline-secondary quick-action-btn" onclick="window.location.href='/admin/system-monitor'">
+                                    <i class="bi bi-activity me-2"></i>System Monitor
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Activity</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group list-group-flush">
+                                    <div th:each="log : ${recentLogs}" class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">
+                                                <i class="bi bi-person-circle me-2"></i>
+                                                <span th:text="${log.user.fullName}">User Name</span>
+                                            </h6>
+                                            <small class="text-muted" th:text="${#temporals.format(log.timestamp, 'HH:mm:ss')}">10:30:45</small>
+                                        </div>
+                                        <p class="mb-1">
+                                            <span class="badge bg-secondary" th:text="${log.action}">Action</span>
+                                            <span th:text="${log.entityType}">Entity</span>
+                                        </p>
+                                        <small class="text-muted" th:text="${log.ipAddress}">IP Address</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup Statistics & Activity Stats -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-cloud-arrow-down me-2"></i>Backup Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <h3 class="text-primary" th:text="${backupStats.totalBackups}">15</h3>
+                                        <small class="text-muted">Total Backups</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h3 class="text-success" th:text="${backupStats.completedBackups}">14</h3>
+                                        <small class="text-muted">Completed</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h3 class="text-danger" th:text="${backupStats.failedBackups}">1</h3>
+                                        <small class="text-muted">Failed</small>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <span>Total Size:</span>
+                                    <strong th:text="${#numbers.formatDecimal(backupStats.totalSize / 1024 / 1024, 1, 2)} + ' MB'">250.5 MB</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2" th:if="${backupStats.latestBackup != null}">
+                                    <span>Latest Backup:</span>
+                                    <strong th:text="${#temporals.format(backupStats.latestBackup.createdAt, 'dd/MM/yyyy HH:mm')}">30/04/2026 10:30</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Activity Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <h3 class="text-info" th:text="${activityStats.totalActions}">1,250</h3>
+                                        <small class="text-muted">Total Actions</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h3 class="text-primary" th:text="${activityStats.uniqueUsers}">45</h3>
+                                        <small class="text-muted">Active Users</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <h3 class="text-success" th:text="${activityStats.todayActions}">89</h3>
+                                        <small class="text-muted">Today</small>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <span>Most Active User:</span>
+                                    <strong th:text="${activityStats.mostActiveUser}">Admin User</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <span>Peak Hour:</span>
+                                    <strong th:text="${activityStats.peakHour}">10:00 - 11:00</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Auto-refresh every 30 seconds
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>

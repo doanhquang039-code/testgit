@@ -12,21 +12,21 @@ import java.util.List;
 @Repository
 public interface PerformanceReviewRepository extends JpaRepository<PerformanceReview, Integer> {
 
-    List<PerformanceReview> findByUser(User user);
+    List<PerformanceReview> findByEmployee(User employee);
 
     List<PerformanceReview> findByReviewer(User reviewer);
 
-    @Query("SELECT p FROM PerformanceReview p JOIN FETCH p.user LEFT JOIN FETCH p.reviewer ORDER BY p.reviewDate DESC")
+    @Query("SELECT p FROM PerformanceReview p JOIN FETCH p.employee LEFT JOIN FETCH p.reviewer ORDER BY p.reviewDate DESC")
     List<PerformanceReview> findAllWithUsers();
 
-    @Query("SELECT p FROM PerformanceReview p JOIN FETCH p.user LEFT JOIN FETCH p.reviewer " +
-           "WHERE p.user = :user ORDER BY p.reviewDate DESC")
+    @Query("SELECT p FROM PerformanceReview p JOIN FETCH p.employee LEFT JOIN FETCH p.reviewer " +
+           "WHERE p.employee = :user ORDER BY p.reviewDate DESC")
     List<PerformanceReview> findByUserOrdered(@Param("user") User user);
 
-    @Query("SELECT p FROM PerformanceReview p WHERE p.reviewPeriod = :period")
-    List<PerformanceReview> findByPeriod(@Param("period") String period);
+    @Query("SELECT p FROM PerformanceReview p WHERE p.reviewCycle = :cycle")
+    List<PerformanceReview> findByCycle(@Param("cycle") String cycle);
     
     // Advanced Analytics methods
     List<PerformanceReview> findTop10ByOrderByOverallScoreDesc();
-    java.util.Optional<PerformanceReview> findTopByUserOrderByReviewDateDesc(User user);
+    java.util.Optional<PerformanceReview> findTopByEmployeeOrderByReviewDateDesc(User employee);
 }

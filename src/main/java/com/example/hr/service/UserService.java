@@ -2,6 +2,7 @@ package com.example.hr.service;
 
 import com.example.hr.enums.UserStatus;
 import com.example.hr.models.User;
+import com.example.hr.models.Department;
 import com.example.hr.repository.DepartmentRepository;
 import com.example.hr.repository.JobPositionRepository;
 import com.example.hr.repository.UserRepository;
@@ -143,7 +144,42 @@ public class UserService {
         user.setPhoneNumber(phoneNumber);
         user.setGender(gender);
         user.setAddress(address);
-        user.setEmployeeCode(employeeCode != null && !employeeCode.isBlank() ? employeeCode : null);
+        
+        // Handle employee code - generate unique if not provided or if creating new user
+        if (existing == null) {
+            // Creating new user
+            if (employeeCode != null && !employeeCode.isBlank()) {
+                // Check if provided code already exists
+                if (userRepository.findByEmployeeCode(employeeCode).isPresent()) {
+                    // Generate new unique code
+                    user.setEmployeeCode(generateUniqueEmployeeCode());
+                } else {
+                    user.setEmployeeCode(employeeCode);
+                }
+            } else {
+                // No code provided, generate one
+                user.setEmployeeCode(generateUniqueEmployeeCode());
+            }
+        } else {
+            // Updating existing user
+            if (employeeCode != null && !employeeCode.isBlank()) {
+                // Check if code changed and if new code already exists
+                if (!employeeCode.equals(existing.getEmployeeCode())) {
+                    if (userRepository.findByEmployeeCode(employeeCode).isPresent()) {
+                        // Keep old code if new one is duplicate
+                        user.setEmployeeCode(existing.getEmployeeCode());
+                    } else {
+                        user.setEmployeeCode(employeeCode);
+                    }
+                } else {
+                    user.setEmployeeCode(employeeCode);
+                }
+            } else {
+                // Keep existing code
+                user.setEmployeeCode(existing.getEmployeeCode());
+            }
+        }
+        
         user.setDateOfBirth(parseDate(dateOfBirth, existing != null ? existing.getDateOfBirth() : null));
         user.setHireDate(parseDate(hireDate, existing != null ? existing.getHireDate() : null));
 
@@ -153,6 +189,41 @@ public class UserService {
         if (existing != null && user.getStatus() == null) {
             user.setStatus(existing.getStatus());
         }
+    }
+    
+    /**
+     * Generate unique employee code in format NV00001, NV00002, etc.
+     */
+    private String generateUniqueEmployeeCode() {
+        // Find the highest employee code
+        List<User> allUsers = userRepository.findAll();
+        int maxNumber = 0;
+        
+        for (User u : allUsers) {
+            String code = u.getEmployeeCode();
+            if (code != null && code.startsWith("NV")) {
+                try {
+                    int num = Integer.parseInt(code.substring(2));
+                    if (num > maxNumber) {
+                        maxNumber = num;
+                    }
+                } catch (NumberFormatException ignored) {
+                    // Skip invalid codes
+                }
+            }
+        }
+        
+        // Generate next code
+        int nextNumber = maxNumber + 1;
+        String newCode = String.format("NV%05d", nextNumber);
+        
+        // Double check it doesn't exist (safety check)
+        while (userRepository.findByEmployeeCode(newCode).isPresent()) {
+            nextNumber++;
+            newCode = String.format("NV%05d", nextNumber);
+        }
+        
+        return newCode;
     }
 
     private void handleProfileImage(User user, MultipartFile file, User existing) throws IOException {
@@ -232,5 +303,31 @@ public class UserService {
         } catch (Exception ignored) {
             return fallback;
         }
+    }
+
+    /**
+     * Get users by role for hiring module
+     */
+    @Transactional(readOnly = true)
+    public List<User> getUsersByRole(String roleName) {
+        return getActiveUsers().stream()
+                .filter(user -> user.getRole() != null && user.getRole().name().equals(roleName))
+                .toList();
+    }
+
+    /**
+     * Get all users (including inactive) for admin management
+     */
+    @Transactional(readOnly = true)
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    /**
+     * Get users by department for manager tools
+     */
+    @Transactional(readOnly = true)
+    public List<User> getUsersByDepartment(Department department) {
+        return userRepository.findByDepartment(department);
     }
 }

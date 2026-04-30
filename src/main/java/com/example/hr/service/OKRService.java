@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -61,8 +62,8 @@ public class OKRService {
                 keyResult.setTitle(krDto.getTitle());
                 keyResult.setDescription(krDto.getDescription());
                 keyResult.setMeasurementType(krDto.getMeasurementType());
-                keyResult.setTargetValue(krDto.getTargetValue());
-                keyResult.setCurrentValue(0.0);
+                keyResult.setTargetValue(krDto.getTargetValue() != null ? BigDecimal.valueOf(krDto.getTargetValue()) : BigDecimal.ZERO);
+                keyResult.setCurrentValue(BigDecimal.ZERO);
                 keyResult.setUnit(krDto.getUnit() != null ? krDto.getUnit() : "");
                 keyResult.setWeight(krDto.getWeight() != null ? krDto.getWeight() : 100);
                 keyResult.calculateProgress();
@@ -79,8 +80,8 @@ public class OKRService {
         KeyResult keyResult = keyResultRepository.findById(keyResultId)
                 .orElseThrow(() -> new RuntimeException("Key result not found"));
         
-        Double previousValue = keyResult.getCurrentValue();
-        keyResult.setCurrentValue(newValue);
+        BigDecimal previousValue = keyResult.getCurrentValue();
+        keyResult.setCurrentValue(BigDecimal.valueOf(newValue));
         keyResult.calculateProgress();
         keyResult = keyResultRepository.save(keyResult);
         
@@ -88,7 +89,7 @@ public class OKRService {
         OKRProgress progress = new OKRProgress();
         progress.setKeyResult(keyResult);
         progress.setUpdatedBy(updatedBy);
-        progress.setPreviousValue(previousValue);
+        progress.setPreviousValue(previousValue.doubleValue()); // Convert BigDecimal to Double
         progress.setNewValue(newValue);
         progress.setNotes(notes);
         okrProgressRepository.save(progress);

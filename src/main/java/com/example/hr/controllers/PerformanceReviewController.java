@@ -31,13 +31,13 @@ public class PerformanceReviewController {
 
     @GetMapping("/admin/reviews")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public String adminList(@RequestParam(required = false) String period, Model model) {
-        List<PerformanceReview> reviews = (period != null && !period.isBlank())
-                ? reviewRepository.findByPeriod(period)
+    public String adminList(@RequestParam(required = false) String cycle, Model model) {
+        List<PerformanceReview> reviews = (cycle != null && !cycle.isBlank())
+                ? reviewRepository.findByCycle(cycle)
                 : reviewRepository.findAllWithUsers();
 
         model.addAttribute("reviews", reviews);
-        model.addAttribute("period", period);
+        model.addAttribute("cycle", cycle);
         model.addAttribute("statuses", ReviewStatus.values());
         return "admin/review-list";
     }

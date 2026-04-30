@@ -40,4 +40,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
     boolean existsByUserAndAttendanceDateAndStatus(User user, LocalDate date, AttendanceStatus status);
     boolean existsByUserAndAttendanceDate(User user, LocalDate date);
     List<Attendance> findByUserAndAttendanceDateBetweenOrderByAttendanceDateDesc(User user, LocalDate startDate, LocalDate endDate);
+    
+    // Team Analytics methods
+    @Query("SELECT COUNT(a) FROM Attendance a WHERE a.user.department = :department AND a.attendanceDate = :date")
+    long countByDepartmentAndDate(@Param("department") com.example.hr.models.Department department, @Param("date") LocalDate date);
 }

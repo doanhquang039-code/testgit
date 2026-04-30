@@ -102,5 +102,10 @@ public class JobPosition {
 	public void setNextPosition(JobPosition nextPosition) {
 		this.nextPosition = nextPosition;
 	}
+
+	// Alias method for compatibility with templates
+	public String getTitle() {
+		return this.positionName;
+	}
     
 }

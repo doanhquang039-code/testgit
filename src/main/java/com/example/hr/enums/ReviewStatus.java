@@ -1,17 +1,19 @@
 package com.example.hr.enums;
 
 public enum ReviewStatus {
-    DRAFT("Bản nháp"),
+    DRAFT("Nháp"),
     SUBMITTED("Đã gửi"),
-    APPROVED("Đã duyệt");
+    ACKNOWLEDGED("Đã xác nhận"),
+    APPROVED("Đã phê duyệt"),
+    COMPLETED("Hoàn thành");
 
-    private final String label;
+    private final String displayName;
 
-    ReviewStatus(String label) {
-        this.label = label;
+    ReviewStatus(String displayName) {
+        this.displayName = displayName;
     }
 
-    public String getLabel() {
-        return label;
+    public String getDisplayName() {
+        return displayName;
     }
 }

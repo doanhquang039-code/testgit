@@ -29,11 +29,11 @@ public class HomeController {
         Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
 
         if (roles.contains("ROLE_ADMIN")) {
-            return "admin/dashboard";
+            return "redirect:/admin/dashboard";
         } else if (roles.contains("ROLE_MANAGER")) {
-            return "manager/dashboard";
+            return "redirect:/manager/dashboard";
         } else if (roles.contains("ROLE_HIRING")) {
-            return "hiring/dashboard";
+            return "redirect:/hiring/dashboard";
         } else {
             return "redirect:/user1/dashboard";
         }

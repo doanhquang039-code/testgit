@@ -41,6 +41,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByUsernameAndIdNot(String username, Integer id);
     boolean existsByEmailAndIdNot(String email, Integer id);
     boolean existsByEmployeeCodeAndIdNot(String employeeCode, Integer id);
+    
+    // Find by employee code
+    Optional<User> findByEmployeeCode(String employeeCode);
 
     List<User> findByStatusAndFullNameContainingIgnoreCaseOrStatusAndEmailContainingIgnoreCaseOrStatusAndEmployeeCodeContainingIgnoreCase(
             UserStatus s1, String name,
@@ -66,4 +69,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     long countByDepartment(com.example.hr.models.Department department);
     List<User> findByDepartmentAndStatus(com.example.hr.models.Department department, UserStatus status);
     List<User> findTop5ByOrderByCreatedAtDesc();
+
+    // Additional method for manager tools
+    List<User> findByDepartment(com.example.hr.models.Department department);
 }

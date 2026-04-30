@@ -6,11 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "performance_review")
+@Table(name = "performance_reviews")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,70 +20,100 @@ public class PerformanceReview {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", nullable = false)
+    private User employee;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "reviewer_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewer_id", nullable = false)
     private User reviewer;
 
-    @Column(name = "review_period", nullable = false, length = 20)
-    private String reviewPeriod; // e.g. "2025-Q1"
+    @Column(name = "review_cycle", length = 100)
+    private String reviewCycle; // Q1-2026, H1-2026, Annual-2026
 
     @Column(name = "review_date", nullable = false)
     private LocalDate reviewDate;
 
-    @Column(name = "kpi_score", precision = 5, scale = 2)
-    private BigDecimal kpiScore = BigDecimal.ZERO;
+    @Column(name = "review_period_start")
+    private LocalDate reviewPeriodStart;
 
-    @Column(name = "attitude_score", precision = 5, scale = 2)
-    private BigDecimal attitudeScore = BigDecimal.ZERO;
+    @Column(name = "review_period_end")
+    private LocalDate reviewPeriodEnd;
 
-    @Column(name = "teamwork_score", precision = 5, scale = 2)
-    private BigDecimal teamworkScore = BigDecimal.ZERO;
+    @Column(name = "overall_score")
+    private Integer overallScore; // 1-5 or 1-10
 
-    @Column(name = "overall_score", precision = 5, scale = 2)
-    private BigDecimal overallScore = BigDecimal.ZERO;
+    @Column(name = "technical_skills_score")
+    private Integer technicalSkillsScore;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "soft_skills_score")
+    private Integer softSkillsScore;
+
+    @Column(name = "productivity_score")
+    private Integer productivityScore;
+
+    @Column(name = "teamwork_score")
+    private Integer teamworkScore;
+
+    @Column(name = "leadership_score")
+    private Integer leadershipScore;
+
+    @Column(name = "strengths", columnDefinition = "TEXT")
     private String strengths;
 
-    @Column(columnDefinition = "TEXT")
-    private String improvements;
+    @Column(name = "areas_for_improvement", columnDefinition = "TEXT")
+    private String areasForImprovement;
 
-    @Column(columnDefinition = "TEXT")
-    private String comments;
+    @Column(name = "achievements", columnDefinition = "TEXT")
+    private String achievements;
+
+    @Column(name = "goals_for_next_period", columnDefinition = "TEXT")
+    private String goalsForNextPeriod;
+
+    @Column(name = "training_recommendations", columnDefinition = "TEXT")
+    private String trainingRecommendations;
+
+    @Column(name = "employee_comments", columnDefinition = "TEXT")
+    private String employeeComments;
+
+    @Column(name = "manager_comments", columnDefinition = "TEXT")
+    private String managerComments;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
     private ReviewStatus status = ReviewStatus.DRAFT;
 
-    // Helper: tính toán overall score từ 3 tiêu chí
+    @Column(name = "submitted_at")
+    private LocalDateTime submittedAt;
+
+    @Column(name = "acknowledged_at")
+    private LocalDateTime acknowledgedAt;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    // Alias method for compatibility
+    public User getUser() {
+        return this.employee;
+    }
+
+    // Calculate overall score based on individual scores
     public void calculateOverallScore() {
-        if (kpiScore != null && attitudeScore != null && teamworkScore != null) {
-            BigDecimal total = kpiScore.add(attitudeScore).add(teamworkScore);
-            this.overallScore = total.divide(BigDecimal.valueOf(3), 2, java.math.RoundingMode.HALF_UP);
+        if (technicalSkillsScore != null && softSkillsScore != null && 
+            productivityScore != null && teamworkScore != null) {
+            
+            int total = technicalSkillsScore + softSkillsScore + productivityScore + teamworkScore;
+            int count = 4;
+            
+            if (leadershipScore != null) {
+                total += leadershipScore;
+                count++;
+            }
+            
+            this.overallScore = Math.round((float) total / count);
         }
-    }
-
-    // Helper: lấy rating label
-    public String getRatingLabel() {
-        if (overallScore == null) return "N/A";
-        double score = overallScore.doubleValue();
-        if (score >= 90) return "Xuất sắc";
-        if (score >= 75) return "Tốt";
-        if (score >= 60) return "Khá";
-        if (score >= 50) return "Trung bình";
-        return "Yếu";
-    }
-
-    public String getRatingColor() {
-        if (overallScore == null) return "secondary";
-        double score = overallScore.doubleValue();
-        if (score >= 90) return "success";
-        if (score >= 75) return "primary";
-        if (score >= 60) return "info";
-        if (score >= 50) return "warning";
-        return "danger";
     }
 }

@@ -5,10 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "candidate")
+@Table(name = "candidates")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,53 +18,80 @@ public class Candidate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "job_posting_id")
-    private JobPosting jobPosting;
-
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(length = 100)
+    @Column(unique = true, nullable = false, length = 100)
     private String email;
 
-    @Column(length = 20)
-    private String phone;
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
 
-    @Column(name = "cv_url", length = 500)
-    private String cvUrl;
+    @Column(name = "resume_url", length = 500)
+    private String resumeUrl;
 
-    @Column(name = "applied_date")
-    private LocalDate appliedDate = LocalDate.now();
+    @Column(name = "cover_letter", columnDefinition = "TEXT")
+    private String coverLetter;
 
-    @Column(length = 30)
-    private String status = "NEW"; // NEW, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED
+    @Column(name = "linkedin_url", length = 500)
+    private String linkedinUrl;
+
+    @Column(name = "portfolio_url", length = 500)
+    private String portfolioUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_posting_id")
+    private JobPosting jobPosting;
+
+    @Column(name = "current_stage", length = 50)
+    private String currentStage; // APPLIED, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED
+
+    @Column(name = "years_of_experience")
+    private Integer yearsOfExperience;
+
+    @Column(length = 100)
+    private String currentCompany;
+
+    @Column(name = "current_position", length = 100)
+    private String currentPosition;
+
+    @Column(name = "expected_salary")
+    private Integer expectedSalary;
+
+    @Column(name = "availability_date")
+    private String availabilityDate;
+
+    @Column(columnDefinition = "TEXT")
+    private String skills;
+
+    @Column(columnDefinition = "TEXT")
+    private String education;
+
+    @Column(name = "overall_score")
+    private Integer overallScore; // 1-100
 
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    // Helper: get status badge color
-    public String getStatusColor() {
-        return switch (status) {
-            case "NEW" -> "secondary";
-            case "SCREENING" -> "info";
-            case "INTERVIEW" -> "primary";
-            case "OFFER" -> "warning";
-            case "HIRED" -> "success";
-            case "REJECTED" -> "danger";
-            default -> "light";
-        };
+    @Column(name = "source", length = 50)
+    private String source; // WEBSITE, LINKEDIN, REFERRAL, AGENCY
+
+    @Column(name = "applied_at")
+    private LocalDateTime appliedAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    public boolean isActive() {
+        return !("HIRED".equals(currentStage) || "REJECTED".equals(currentStage));
     }
 
-    public String getStatusLabel() {
-        return switch (status) {
-            case "NEW" -> "Mới";
-            case "SCREENING" -> "Sàng lọc";
-            case "INTERVIEW" -> "Phỏng vấn";
-            case "OFFER" -> "Offer";
-            case "HIRED" -> "Đã tuyển";
-            case "REJECTED" -> "Từ chối";
-            default -> status;
-        };
+    // Alias methods for compatibility with existing code
+    public String getStatus() {
+        return this.currentStage;
+    }
+
+    public void setStatus(String status) {
+        this.currentStage = status;
     }
 }

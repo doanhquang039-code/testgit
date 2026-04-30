@@ -292,7 +292,7 @@ public class AdvancedAnalyticsService {
         return employees.stream()
                 .mapToDouble(emp -> {
                     Optional<PerformanceReview> latestReview = 
-                        performanceReviewRepository.findTopByUserOrderByReviewDateDesc(emp);
+                        performanceReviewRepository.findTopByEmployeeOrderByReviewDateDesc(emp);
                     return latestReview.map(r -> r.getOverallScore().doubleValue()).orElse(0.0);
                 })
                 .average()

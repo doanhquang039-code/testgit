@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Team Analytics - HR Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="fragments/manager-sidebar :: sidebar"></div>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="bi bi-graph-up-arrow me-2"></i>Team Analytics</h1>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                    </button>
+                </div>
+
+                <!-- Team Overview Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center border-primary">
+                            <div class="card-body">
+                                <i class="bi bi-people fs-1 text-primary mb-2"></i>
+                                <h3 th:text="${teamOverview.totalMembers}">12</h3>
+                                <p class="text-muted mb-0">Team Members</p>
+                                <small class="text-success" th:text="${teamOverview.activeMembers} + ' active'">11 active</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-success">
+                            <div class="card-body">
+                                <i class="bi bi-calendar-check fs-1 text-success mb-2"></i>
+                                <h3 th:text="${#numbers.formatDecimal(teamOverview.attendanceRate, 1, 1)} + '%'">92%</h3>
+                                <p class="text-muted mb-0">Attendance Rate</p>
+                                <small class="text-muted" th:text="${teamOverview.presentToday} + ' present today'">11 present today</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-info">
+                            <div class="card-body">
+                                <i class="bi bi-bullseye fs-1 text-info mb-2"></i>
+                                <h3 th:text="${goalStats.totalGoals}">8</h3>
+                                <p class="text-muted mb-0">Active Goals</p>
+                                <small class="text-success" th:text="${#numbers.formatDecimal(goalStats.avgProgress, 1, 1)} + '% avg progress'">75% avg progress</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-warning">
+                            <div class="card-body">
+                                <i class="bi bi-graph-up fs-1 text-warning mb-2"></i>
+                                <h3 th:text="${#numbers.formatDecimal(performanceMetrics.avgPerformanceScore, 1, 1)}">85.5</h3>
+                                <p class="text-muted mb-0">Avg Performance</p>
+                                <small class="text-info" th:text="${#numbers.formatDecimal(performanceMetrics.goalsCompletionRate, 1, 1)} + '% goal completion'">80% goal completion</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Attendance Trends (Last 30 Days)</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="attendanceTrendChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Leave Patterns</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="leavePatternChart" width="300" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance & Goals Row -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-bullseye me-2"></i>Goal Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-3">
+                                        <h4 class="text-primary" th:text="${goalStats.totalGoals}">8</h4>
+                                        <small class="text-muted">Total</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <h4 class="text-success" th:text="${goalStats.completedGoals}">3</h4>
+                                        <small class="text-muted">Completed</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <h4 class="text-warning" th:text="${goalStats.inProgressGoals}">4</h4>
+                                        <small class="text-muted">In Progress</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <h4 class="text-secondary" th:text="${goalStats.notStartedGoals}">1</h4>
+                                        <small class="text-muted">Not Started</small>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" 
+                                         th:style="'width: ' + ${goalStats.completedGoals * 100 / goalStats.totalGoals} + '%'"
+                                         th:text="${#numbers.formatDecimal(goalStats.completedGoals * 100 / goalStats.totalGoals, 1, 0)} + '% Complete'">38% Complete</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-award me-2"></i>Performance Metrics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Average Performance Score</span>
+                                        <strong th:text="${#numbers.formatDecimal(performanceMetrics.avgPerformanceScore, 1, 1)}">85.5</strong>
+                                    </div>
+                                    <div class="progress mt-1" style="height: 8px;">
+                                        <div class="progress-bar bg-primary" 
+                                             th:style="'width: ' + ${performanceMetrics.avgPerformanceScore} + '%'"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Goals Completion Rate</span>
+                                        <strong th:text="${#numbers.formatDecimal(performanceMetrics.goalsCompletionRate, 1, 1)} + '%'">80%</strong>
+                                    </div>
+                                    <div class="progress mt-1" style="height: 8px;">
+                                        <div class="progress-bar bg-success" 
+                                             th:style="'width: ' + ${performanceMetrics.goalsCompletionRate} + '%'"></div>
+                                    </div>
+                                </div>
+                                <div class="row text-center mt-3">
+                                    <div class="col-6">
+                                        <h5 class="text-success" th:text="${performanceMetrics.completedGoals}">6</h5>
+                                        <small class="text-muted">Goals Completed</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <h5 class="text-primary" th:text="${performanceMetrics.totalGoals}">8</h5>
+                                        <small class="text-muted">Total Goals</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leave Patterns Details -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-calendar-x me-2"></i>Leave by Type</h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:each="entry : ${leavePatterns.byType}" class="d-flex justify-content-between align-items-center mb-2">
+                                    <span th:text="${entry.key}">Annual Leave</span>
+                                    <span class="badge bg-primary" th:text="${entry.value}">5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-calendar-month me-2"></i>Leave by Month</h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:each="entry : ${leavePatterns.byMonth}" class="d-flex justify-content-between align-items-center mb-2">
+                                    <span th:text="${entry.key}">April</span>
+                                    <span class="badge bg-info" th:text="${entry.value}">3</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+        // Attendance trends chart
+        const attendanceData = /*[[${attendanceTrends}]]*/ [];
+        
+        const attendanceCtx = document.getElementById('attendanceTrendChart').getContext('2d');
+        new Chart(attendanceCtx, {
+            type: 'line',
+            data: {
+                labels: attendanceData.map(d => d.date),
+                datasets: [{
+                    label: 'Attendance Rate (%)',
+                    data: attendanceData.map(d => d.rate),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Leave patterns pie chart
+        const leaveData = /*[[${leavePatterns.byType}]]*/ {};
+        
+        const leaveCtx = document.getElementById('leavePatternChart').getContext('2d');
+        new Chart(leaveCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(leaveData),
+                datasets: [{
+                    data: Object.values(leaveData),
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    </script>
+</body>
+</html>
