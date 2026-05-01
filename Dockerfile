@@ -8,7 +8,7 @@ COPY mvnw mvnw
 COPY mvnw.cmd mvnw.cmd
 COPY pom.xml pom.xml
 
-RUN chmod +x mvnw   ← thêm dòng này
+RUN chmod +x mvnw
 
 RUN ./mvnw -q -DskipTests dependency:go-offline
 
@@ -23,7 +23,7 @@ FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-RUN apt-get update -o Acquire::Retries=3 \   ← thêm retry
+RUN apt-get update -o Acquire::Retries=3 \
   && apt-get install -y --no-install-recommends curl \
   && rm -rf /var/lib/apt/lists/* \
   && useradd -r -u 10001 -g root appuser \
