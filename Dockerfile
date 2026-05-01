@@ -1,3 +1,4 @@
+# Stage 1: Build
 FROM eclipse-temurin:21-jdk-jammy AS build
 
 WORKDIR /workspace
@@ -7,6 +8,8 @@ COPY mvnw mvnw
 COPY mvnw.cmd mvnw.cmd
 COPY pom.xml pom.xml
 
+RUN chmod +x mvnw   ← thêm dòng này
+
 RUN ./mvnw -q -DskipTests dependency:go-offline
 
 COPY src/ src/
@@ -15,11 +18,12 @@ COPY public/ public/
 RUN ./mvnw -q -DskipTests package
 
 
+# Stage 2: Run
 FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-RUN apt-get update \
+RUN apt-get update -o Acquire::Retries=3 \   ← thêm retry
   && apt-get install -y --no-install-recommends curl \
   && rm -rf /var/lib/apt/lists/* \
   && useradd -r -u 10001 -g root appuser \
