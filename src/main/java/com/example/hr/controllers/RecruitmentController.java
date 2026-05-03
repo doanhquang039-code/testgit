@@ -180,6 +180,37 @@ public class RecruitmentController {
         return "redirect:/hiring/postings";
     }
 
+    // ==================== JOBS MANAGEMENT ====================
+
+    @GetMapping("/jobs/list")
+    public String jobsList(Model model) {
+        List<JobPosting> allJobs = jobPostingRepository.findAll();
+        
+        List<JobPosting> activeJobsList = allJobs.stream()
+                .filter(j -> "OPEN".equals(j.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+        
+        List<JobPosting> draftJobsList = allJobs.stream()
+                .filter(j -> "DRAFT".equals(j.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+        
+        List<JobPosting> closedJobsList = allJobs.stream()
+                .filter(j -> "CLOSED".equals(j.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+        
+        long totalApplications = candidateRepository.count();
+
+        model.addAttribute("activeJobsList", activeJobsList);
+        model.addAttribute("draftJobsList", draftJobsList);
+        model.addAttribute("closedJobsList", closedJobsList);
+        model.addAttribute("allJobsList", allJobs);
+        model.addAttribute("activeJobs", activeJobsList.size());
+        model.addAttribute("draftJobs", draftJobsList.size());
+        model.addAttribute("closedJobs", closedJobsList.size());
+        model.addAttribute("totalApplications", totalApplications);
+        return "hiring/jobs/list";
+    }
+
     // ==================== CANDIDATES ====================
     // NOTE: Candidate management has been moved to CandidateController
     // All /hiring/candidates/* endpoints are now handled by CandidateController

@@ -2,7 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Team Goals - HR Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goals Management - Manager Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
@@ -11,138 +12,114 @@
         <div class="row">
             <div th:replace="fragments/manager-sidebar :: sidebar"></div>
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between pt-3 pb-2 mb-3 border-bottom">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2"><i class="bi bi-bullseye me-2"></i>Team Goals</h1>
-                    <a href="/manager/goals/create" class="btn btn-primary">
-                        <i class="bi bi-plus-circle me-1"></i>Create Goal
-                    </a>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/manager/goals/create" class="btn btn-sm btn-primary me-2">
+                            <i class="bi bi-plus-circle me-1"></i>Create Goal
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
                 </div>
 
-                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
-                    <span th:text="${successMessage}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-
-                <!-- Goal Statistics -->
+                <!-- Stats -->
                 <div class="row mb-4">
                     <div class="col-md-3">
-                        <div class="card text-center">
+                        <div class="card border-primary">
                             <div class="card-body">
-                                <h3 th:text="${goalStats.totalGoals}">8</h3>
-                                <p class="text-muted mb-0">Total Goals</p>
+                                <h6 class="text-muted">Active Goals</h6>
+                                <h3 class="text-primary" th:text="${activeGoals}">0</h3>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card text-center">
+                        <div class="card border-success">
                             <div class="card-body">
-                                <h3 class="text-success" th:text="${goalStats.completedGoals}">3</h3>
-                                <p class="text-muted mb-0">Completed</p>
+                                <h6 class="text-muted">Completed</h6>
+                                <h3 class="text-success" th:text="${completedGoals}">0</h3>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card text-center">
+                        <div class="card border-warning">
                             <div class="card-body">
-                                <h3 class="text-primary" th:text="${goalStats.inProgressGoals}">4</h3>
-                                <p class="text-muted mb-0">In Progress</p>
+                                <h6 class="text-muted">In Progress</h6>
+                                <h3 class="text-warning" th:text="${inProgressGoals}">0</h3>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card text-center">
+                        <div class="card border-info">
                             <div class="card-body">
-                                <h3 th:text="${#numbers.formatDecimal(goalStats.avgProgress, 1, 1)} + '%'">75%</h3>
-                                <p class="text-muted mb-0">Avg Progress</p>
+                                <h6 class="text-muted">Avg Progress</h6>
+                                <h3 class="text-info" th:text="${avgProgress + '%'}">0%</h3>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Goals Table -->
+                <!-- Goals List -->
                 <div class="card">
-                    <div class="card-body">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Goal</th>
-                                    <th>Type</th>
-                                    <th>Progress</th>
-                                    <th>Priority</th>
-                                    <th>Status</th>
-                                    <th>End Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="goal : ${goals}">
-                                    <td>
-                                        <h6 class="mb-1" th:text="${goal.title}">Goal Title</h6>
-                                        <small class="text-muted" th:text="${goal.description}">Description</small>
-                                    </td>
-                                    <td><span class="badge bg-info" th:text="${goal.goalType}">QUARTERLY</span></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="progress me-2" style="width: 100px; height: 8px;">
-                                                <div class="progress-bar" th:style="'width: ' + ${goal.progressPercentage} + '%'"></div>
-                                            </div>
-                                            <span th:text="${goal.progressPercentage} + '%'">75%</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge" 
-                                              th:classappend="${goal.priority == 'HIGH'} ? 'bg-danger' : (${goal.priority == 'MEDIUM'} ? 'bg-warning' : 'bg-secondary')"
-                                              th:text="${goal.priority}">HIGH</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge" 
-                                              th:classappend="${goal.status == 'COMPLETED'} ? 'bg-success' : (${goal.status == 'IN_PROGRESS'} ? 'bg-primary' : 'bg-secondary')"
-                                              th:text="${goal.status}">IN_PROGRESS</span>
-                                    </td>
-                                    <td th:text="${#temporals.format(goal.endDate, 'dd/MM/yyyy')}">31/12/2026</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a th:href="@{/manager/goals/view/{id}(id=${goal.id})}" class="btn btn-sm btn-outline-info">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a th:href="@{/manager/goals/edit/{id}(id=${goal.id})}" class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-success" 
-                                                    data-bs-toggle="modal" th:data-bs-target="'#progressModal' + ${goal.id}">
-                                                <i class="bi bi-arrow-up-circle"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="card-header">
+                        <h5 class="mb-0">All Team Goals</h5>
                     </div>
-                </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6" th:each="goal : ${goals}">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title" th:text="${goal.title}">Goal Title</h5>
+                                            <span class="badge" 
+                                                  th:classappend="${goal.status == 'COMPLETED'} ? 'bg-success' : (${goal.status == 'IN_PROGRESS'} ? 'bg-warning' : 'bg-secondary')"
+                                                  th:text="${goal.status}">ACTIVE</span>
+                                        </div>
+                                        <p class="card-text text-muted" th:text="${goal.description}">Goal description</p>
+                                        
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <small class="text-muted">Progress</small>
+                                                <small class="fw-bold" th:text="${goal.progressPercentage + '%'}">0%</small>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar" 
+                                                     th:classappend="${goal.progressPercentage >= 100} ? 'bg-success' : (${goal.progressPercentage >= 50} ? 'bg-warning' : 'bg-danger')"
+                                                     th:style="'width: ' + ${goal.progressPercentage} + '%'"></div>
+                                            </div>
+                                        </div>
 
-                <!-- Progress Update Modals -->
-                <div th:each="goal : ${goals}" class="modal fade" th:id="'progressModal' + ${goal.id}" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Update Progress</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form method="post" th:action="@{/manager/goals/progress/{id}(id=${goal.id})}">
-                                <div class="modal-body">
-                                    <p><strong th:text="${goal.title}">Goal Title</strong></p>
-                                    <div class="mb-3">
-                                        <label class="form-label">Current Value</label>
-                                        <input type="number" class="form-control" name="currentValue" 
-                                               th:value="${goal.currentValue}" required>
-                                        <div class="form-text">Target: <span th:text="${goal.targetValue}">100</span></div>
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Start Date</small>
+                                                <small class="fw-bold" th:text="${#temporals.format(goal.startDate, 'dd/MM/yyyy')}">01/01/2026</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Target Date</small>
+                                                <small class="fw-bold" th:text="${#temporals.format(goal.targetDate, 'dd/MM/yyyy')}">31/12/2026</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <a th:href="@{/manager/goals/detail/{id}(id=${goal.id})}" class="btn btn-sm btn-outline-primary flex-fill">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                            <a th:href="@{/manager/goals/edit/{id}(id=${goal.id})}" class="btn btn-sm btn-outline-secondary flex-fill">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary">Update Progress</button>
-                                </div>
-                            </form>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(goals)}" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox" style="font-size: 4rem;"></i>
+                            <p class="mt-3">No goals created yet</p>
+                            <a href="/manager/goals/create" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Create First Goal
+                            </a>
                         </div>
                     </div>
                 </div>

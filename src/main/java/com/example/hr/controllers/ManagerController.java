@@ -37,6 +37,7 @@ public class ManagerController {
     @Autowired private NotificationService notificationService;
     @Autowired private EmailFacade emailFacade;
     @Autowired private AuthUserHelper authUserHelper;
+    @Autowired private MeetingRepository meetingRepository;
 
     // ==================== DASHBOARD ====================
 
@@ -198,5 +199,145 @@ public class ManagerController {
         model.addAttribute("myRequests", myRequests);
         model.addAttribute("currentUser", currentUser);
         return "user1/overtime";
+    }
+
+    // ==================== TEAM MEMBERS ====================
+
+    @GetMapping("/team-members")
+    public String teamMembers(Model model) {
+        List<User> teamMembers = userRepository.findByStatus(UserStatus.ACTIVE);
+        long totalMembers = teamMembers.size();
+        long activeMembers = teamMembers.stream().filter(u -> u.getStatus() == UserStatus.ACTIVE).count();
+        long onLeave = leaveRepository.findAllWithUser(null).stream()
+                .filter(l -> l.getStatus() == LeaveStatus.APPROVED 
+                        && !l.getStartDate().isAfter(LocalDate.now()) 
+                        && !l.getEndDate().isBefore(LocalDate.now()))
+                .count();
+        
+        double avgPerformance = reviewRepository.findAllWithUsers().stream()
+                .filter(r -> r.getOverallScore() != null)
+                .mapToDouble(PerformanceReview::getOverallScore)
+                .average()
+                .orElse(0.0);
+
+        model.addAttribute("teamMembers", teamMembers);
+        model.addAttribute("totalMembers", totalMembers);
+        model.addAttribute("activeMembers", activeMembers);
+        model.addAttribute("onLeave", onLeave);
+        model.addAttribute("avgPerformance", String.format("%.1f", avgPerformance));
+        return "manager/team-members";
+    }
+
+    // ==================== LEAVE REQUESTS ====================
+
+    @GetMapping("/leave-requests")
+    public String leaveRequests(Model model) {
+        List<LeaveRequest> allLeaves = leaveRepository.findAllWithUser(null);
+        
+        List<LeaveRequest> pendingLeaves = allLeaves.stream()
+                .filter(l -> l.getStatus() == LeaveStatus.PENDING)
+                .collect(Collectors.toList());
+        
+        List<LeaveRequest> approvedLeaves = allLeaves.stream()
+                .filter(l -> l.getStatus() == LeaveStatus.APPROVED)
+                .collect(Collectors.toList());
+        
+        List<LeaveRequest> rejectedLeaves = allLeaves.stream()
+                .filter(l -> l.getStatus() == LeaveStatus.REJECTED)
+                .collect(Collectors.toList());
+
+        model.addAttribute("pendingLeaves", pendingLeaves);
+        model.addAttribute("approvedLeaves", approvedLeaves);
+        model.addAttribute("rejectedLeaves", rejectedLeaves);
+        model.addAttribute("allLeaves", allLeaves);
+        model.addAttribute("pendingCount", pendingLeaves.size());
+        model.addAttribute("approvedCount", approvedLeaves.size());
+        model.addAttribute("rejectedCount", rejectedLeaves.size());
+        model.addAttribute("totalCount", allLeaves.size());
+        return "manager/leave-requests";
+    }
+
+    @PostMapping("/leave-approve/{id}")
+    public String approveLeave(@PathVariable Integer id, 
+                               @RequestParam String action,
+                               @RequestParam(required = false) String rejectionReason,
+                               RedirectAttributes ra) {
+        try {
+            LeaveRequest leave = leaveRepository.findById(id).orElse(null);
+            if (leave == null) {
+                ra.addFlashAttribute("error", "Leave request not found");
+                return "redirect:/manager/leave-requests";
+            }
+
+            if ("APPROVE".equals(action)) {
+                leave.setStatus(LeaveStatus.APPROVED);
+                ra.addFlashAttribute("success", "Leave request approved successfully");
+            } else if ("REJECT".equals(action)) {
+                leave.setStatus(LeaveStatus.REJECTED);
+                ra.addFlashAttribute("success", "Leave request rejected");
+            }
+            
+            leaveRepository.save(leave);
+            
+            // Send notification
+            try {
+                notificationService.createNotification(
+                    leave.getUser(),
+                    "Your leave request has been " + action.toLowerCase(),
+                    NotificationType.LEAVE_REQUEST,
+                    "/user/leaves"
+                );
+            } catch (Exception e) {
+                System.err.println("Failed to send notification: " + e.getMessage());
+            }
+            
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error processing leave request: " + e.getMessage());
+        }
+        return "redirect:/manager/leave-requests";
+    }
+
+    // ==================== GOALS MANAGEMENT ====================
+    // Note: Goals management is handled by TeamGoalController at /manager/goals
+    // Removed duplicate routes to avoid ambiguous mapping errors
+
+    // ==================== MEETINGS MANAGEMENT ====================
+
+    @GetMapping("/meetings/list")
+    public String meetingsList(Model model) {
+        List<Meeting> allMeetings = meetingRepository.findAll();
+        LocalDate today = LocalDate.now();
+        
+        List<Meeting> upcomingMeetings = allMeetings.stream()
+                .filter(m -> m.getScheduledTime() != null && m.getScheduledTime().isAfter(today.atStartOfDay()))
+                .sorted((a, b) -> a.getScheduledTime().compareTo(b.getScheduledTime()))
+                .collect(Collectors.toList());
+        
+        List<Meeting> pastMeetings = allMeetings.stream()
+                .filter(m -> m.getScheduledTime() != null && m.getScheduledTime().isBefore(today.atStartOfDay()))
+                .sorted((a, b) -> b.getScheduledTime().compareTo(a.getScheduledTime()))
+                .collect(Collectors.toList());
+
+        long upcomingCount = upcomingMeetings.size();
+        long thisWeekCount = upcomingMeetings.stream()
+                .filter(m -> m.getScheduledTime().isBefore(today.plusDays(7).atStartOfDay()))
+                .count();
+        long todayCount = upcomingMeetings.stream()
+                .filter(m -> m.getScheduledTime().toLocalDate().equals(today))
+                .count();
+        long monthCount = allMeetings.stream()
+                .filter(m -> m.getScheduledTime() != null 
+                        && m.getScheduledTime().getMonth() == today.getMonth()
+                        && m.getScheduledTime().getYear() == today.getYear())
+                .count();
+
+        model.addAttribute("upcomingMeetings", upcomingMeetings);
+        model.addAttribute("pastMeetings", pastMeetings);
+        model.addAttribute("allMeetings", allMeetings);
+        model.addAttribute("upcomingCount", upcomingCount);
+        model.addAttribute("thisWeekCount", thisWeekCount);
+        model.addAttribute("todayCount", todayCount);
+        model.addAttribute("monthCount", monthCount);
+        return "manager/meetings/list";
     }
 }

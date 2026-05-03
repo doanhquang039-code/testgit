@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Members - Manager Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="fragments/manager-sidebar :: sidebar"></div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="bi bi-people me-2"></i>Team Members</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Team Stats -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="text-muted">Total Members</h6>
+                                <h3 th:text="${totalMembers}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="text-muted">Active</h6>
+                                <h3 class="text-success" th:text="${activeMembers}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="text-muted">On Leave</h6>
+                                <h3 class="text-warning" th:text="${onLeave}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="text-muted">Avg Performance</h6>
+                                <h3 class="text-info" th:text="${avgPerformance + '%'}">0%</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Members Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Team Members List</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Position</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Status</th>
+                                        <th>Performance</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="member : ${teamMembers}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img th:src="@{'/uploads/' + ${member.profileImage}}" 
+                                                     class="rounded-circle me-2" 
+                                                     width="40" height="40"
+                                                     onerror="this.src='https://ui-avatars.com/api/?name=User&background=6366f1&color=fff'">
+                                                <div>
+                                                    <div class="fw-bold" th:text="${member.fullName}">Name</div>
+                                                    <small class="text-muted" th:text="${member.employeeCode}">EMP001</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td th:text="${member.position != null ? member.position.positionName : 'N/A'}">Position</td>
+                                        <td th:text="${member.email}">email@example.com</td>
+                                        <td th:text="${member.phoneNumber}">0123456789</td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${member.status == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                                                  th:text="${member.status}">ACTIVE</span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-success" 
+                                                     th:style="'width: ' + ${member.performanceScore ?: 0} + '%'"
+                                                     th:text="${member.performanceScore ?: 0} + '%'">0%</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/manager/member-detail/{id}(id=${member.id})}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
