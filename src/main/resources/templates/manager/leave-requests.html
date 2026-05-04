@@ -207,7 +207,7 @@
                                                 <td th:text="${#temporals.format(leave.startDate, 'dd/MM/yyyy')}">01/01/2026</td>
                                                 <td th:text="${#temporals.format(leave.endDate, 'dd/MM/yyyy')}">05/01/2026</td>
                                                 <td><strong th:text="${leave.totalDays}">5</strong> days</td>
-                                                <td th:text="${#temporals.format(leave.approvedDate, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</td>
+                                                <td th:text="${leave.approvedDate != null ? #temporals.format(leave.approvedDate, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2026 10:00</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -247,8 +247,8 @@
                                                 <td th:text="${#temporals.format(leave.startDate, 'dd/MM/yyyy')}">01/01/2026</td>
                                                 <td th:text="${#temporals.format(leave.endDate, 'dd/MM/yyyy')}">05/01/2026</td>
                                                 <td><strong th:text="${leave.totalDays}">5</strong> days</td>
-                                                <td th:text="${leave.rejectionReason}">Reason</td>
-                                                <td th:text="${#temporals.format(leave.rejectedDate, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</td>
+                                                <td th:text="${leave.rejectionReason != null ? leave.rejectionReason : 'N/A'}">Reason</td>
+                                                <td th:text="${leave.rejectedDate != null ? #temporals.format(leave.rejectedDate, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2026 10:00</td>
                                             </tr>
                                         </tbody>
                                     </table>

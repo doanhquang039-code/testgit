@@ -106,11 +106,11 @@
                                         <div class="row g-2 mb-3">
                                             <div class="col-6">
                                                 <small class="text-muted d-block">Applications</small>
-                                                <strong th:text="${job.applicationCount ?: 0}">0</strong>
+                                                <strong th:text="${job.applicationCount != null ? job.applicationCount : 0}">0</strong>
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">Closing Date</small>
-                                                <strong th:text="${#temporals.format(job.closingDate, 'dd/MM/yyyy')}">31/12/2026</strong>
+                                                <strong th:text="${job.closingDate != null ? #temporals.format(job.closingDate, 'dd/MM/yyyy') : 'N/A'}">31/12/2026</strong>
                                             </div>
                                         </div>
 
@@ -187,9 +187,9 @@
                                     <tr th:each="job : ${closedJobsList}">
                                         <td th:text="${job.title}">Job Title</td>
                                         <td th:text="${job.department != null ? job.department.departmentName : 'N/A'}">Department</td>
-                                        <td th:text="${job.applicationCount ?: 0}">0</td>
-                                        <td th:text="${job.hiredCount ?: 0}">0</td>
-                                        <td th:text="${#temporals.format(job.closedDate, 'dd/MM/yyyy')}">01/01/2026</td>
+                                        <td th:text="${job.applicationCount != null ? job.applicationCount : 0}">0</td>
+                                        <td th:text="${job.hiredCount != null ? job.hiredCount : 0}">0</td>
+                                        <td th:text="${job.closedDate != null ? #temporals.format(job.closedDate, 'dd/MM/yyyy') : 'N/A'}">01/01/2026</td>
                                         <td>
                                             <a th:href="@{/hiring/jobs/detail/{id}(id=${job.id})}" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-eye"></i> View
@@ -229,8 +229,8 @@
                                                   th:classappend="${job.status == 'OPEN'} ? 'bg-success' : (${job.status == 'DRAFT'} ? 'bg-warning' : 'bg-secondary')"
                                                   th:text="${job.status}">OPEN</span>
                                         </td>
-                                        <td th:text="${job.applicationCount ?: 0}">0</td>
-                                        <td th:text="${#temporals.format(job.postedDate, 'dd/MM/yyyy')}">01/01/2026</td>
+                                        <td th:text="${job.applicationCount != null ? job.applicationCount : 0}">0</td>
+                                        <td th:text="${job.postedDate != null ? #temporals.format(job.postedDate, 'dd/MM/yyyy') : 'N/A'}">01/01/2026</td>
                                         <td>
                                             <a th:href="@{/hiring/jobs/detail/{id}(id=${job.id})}" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-eye"></i>

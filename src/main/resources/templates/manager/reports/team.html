@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Reports - Manager Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="fragments/manager-sidebar :: sidebar"></div>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="bi bi-file-earmark-text me-2"></i>Team Reports</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i>Print Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Report Header -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4>Team Performance Report</h4>
+                        <p class="text-muted mb-0">Report Period: <strong th:text="${reportMonth}">Month Year</strong></p>
+                    </div>
+                </div>
+
+                <!-- Team Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="text-muted">Total Team Members</h6>
+                                <h2 th:text="${teamMembers.size()}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="text-muted">Attendance Records</h6>
+                                <h2 th:text="${monthAttendance.size()}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="text-muted">Performance Reviews</h6>
+                                <h2 th:text="${reviews.size()}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Members Table -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Team Members Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Department</th>
+                                        <th>Position</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="member : ${teamMembers}">
+                                        <td th:text="${member.fullName}">Name</td>
+                                        <td th:text="${member.department != null ? member.department.departmentName : 'N/A'}">Department</td>
+                                        <td th:text="${member.position != null ? member.position.positionName : 'N/A'}">Position</td>
+                                        <td>
+                                            <span class="badge bg-success" th:text="${member.status}">ACTIVE</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Summary -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Attendance Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Total attendance records this month: <strong th:text="${monthAttendance.size()}">0</strong></p>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p class="text-success">Present: <strong th:text="${monthAttendance.stream().filter(a -> a.status.name() == 'PRESENT').count()}">0</strong></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-warning">Late: <strong th:text="${monthAttendance.stream().filter(a -> a.status.name() == 'LATE').count()}">0</strong></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-danger">Absent: <strong th:text="${monthAttendance.stream().filter(a -> a.status.name() == 'ABSENT').count()}">0</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -302,42 +302,129 @@ public class ManagerController {
     // Removed duplicate routes to avoid ambiguous mapping errors
 
     // ==================== MEETINGS MANAGEMENT ====================
+    // Note: Meetings management is handled by ManagerMeetingController at /manager/meetings
+    // Removed duplicate routes to avoid ambiguous mapping errors
 
-    @GetMapping("/meetings/list")
-    public String meetingsList(Model model) {
-        List<Meeting> allMeetings = meetingRepository.findAll();
-        LocalDate today = LocalDate.now();
-        
-        List<Meeting> upcomingMeetings = allMeetings.stream()
-                .filter(m -> m.getScheduledTime() != null && m.getScheduledTime().isAfter(today.atStartOfDay()))
-                .sorted((a, b) -> a.getScheduledTime().compareTo(b.getScheduledTime()))
-                .collect(Collectors.toList());
-        
-        List<Meeting> pastMeetings = allMeetings.stream()
-                .filter(m -> m.getScheduledTime() != null && m.getScheduledTime().isBefore(today.atStartOfDay()))
-                .sorted((a, b) -> b.getScheduledTime().compareTo(a.getScheduledTime()))
-                .collect(Collectors.toList());
+    // ==================== ANALYTICS ====================
+    // Note: Analytics is handled by ManagerDashboardController at /manager/analytics
+    // Removed duplicate route to avoid ambiguous mapping errors
 
-        long upcomingCount = upcomingMeetings.size();
-        long thisWeekCount = upcomingMeetings.stream()
-                .filter(m -> m.getScheduledTime().isBefore(today.plusDays(7).atStartOfDay()))
-                .count();
-        long todayCount = upcomingMeetings.stream()
-                .filter(m -> m.getScheduledTime().toLocalDate().equals(today))
-                .count();
-        long monthCount = allMeetings.stream()
-                .filter(m -> m.getScheduledTime() != null 
-                        && m.getScheduledTime().getMonth() == today.getMonth()
-                        && m.getScheduledTime().getYear() == today.getYear())
-                .count();
+    // ==================== ATTENDANCE ====================
 
-        model.addAttribute("upcomingMeetings", upcomingMeetings);
-        model.addAttribute("pastMeetings", pastMeetings);
-        model.addAttribute("allMeetings", allMeetings);
-        model.addAttribute("upcomingCount", upcomingCount);
-        model.addAttribute("thisWeekCount", thisWeekCount);
-        model.addAttribute("todayCount", todayCount);
-        model.addAttribute("monthCount", monthCount);
-        return "manager/meetings/list";
+    @GetMapping("/attendance")
+    public String attendance(@RequestParam(required = false) String date, Model model) {
+        try {
+            LocalDate selectedDate = (date != null && !date.isBlank()) 
+                    ? LocalDate.parse(date) 
+                    : LocalDate.now();
+            
+            List<Attendance> attendances = attendanceRepository.findByAttendanceDateBetween(
+                    selectedDate, 
+                    selectedDate
+            );
+            
+            List<User> allMembers = userRepository.findByStatus(UserStatus.ACTIVE);
+            long presentCount = attendances.stream()
+                    .filter(a -> a.getStatus() == AttendanceStatus.PRESENT)
+                    .count();
+            long lateCount = attendances.stream()
+                    .filter(a -> a.getStatus() == AttendanceStatus.LATE)
+                    .count();
+            long absentCount = allMembers.size() - attendances.size();
+            
+            model.addAttribute("attendances", attendances);
+            model.addAttribute("selectedDate", selectedDate);
+            model.addAttribute("presentCount", presentCount);
+            model.addAttribute("lateCount", lateCount);
+            model.addAttribute("absentCount", absentCount);
+            model.addAttribute("totalMembers", allMembers.size());
+            
+            return "manager/attendance";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Lỗi tải attendance: " + e.getMessage());
+            return "error/500";
+        }
     }
+
+    // ==================== PERFORMANCE ====================
+
+    @GetMapping("/performance")
+    public String performance(Model model) {
+        try {
+            List<PerformanceReview> reviews = reviewRepository.findAllWithUsers();
+            
+            List<PerformanceReview> pendingReviews = reviews.stream()
+                    .filter(r -> r.getStatus() == com.example.hr.enums.ReviewStatus.DRAFT 
+                            || r.getStatus() == com.example.hr.enums.ReviewStatus.SUBMITTED)
+                    .collect(Collectors.toList());
+            
+            List<PerformanceReview> completedReviews = reviews.stream()
+                    .filter(r -> r.getStatus() == com.example.hr.enums.ReviewStatus.COMPLETED)
+                    .collect(Collectors.toList());
+            
+            double avgScore = reviews.stream()
+                    .filter(r -> r.getOverallScore() != null)
+                    .mapToDouble(PerformanceReview::getOverallScore)
+                    .average()
+                    .orElse(0.0);
+            
+            model.addAttribute("reviews", reviews);
+            model.addAttribute("pendingReviews", pendingReviews);
+            model.addAttribute("completedReviews", completedReviews);
+            model.addAttribute("avgScore", String.format("%.1f", avgScore));
+            model.addAttribute("totalReviews", reviews.size());
+            model.addAttribute("pendingCount", pendingReviews.size());
+            model.addAttribute("completedCount", completedReviews.size());
+            
+            return "manager/performance";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Lỗi tải performance: " + e.getMessage());
+            return "error/500";
+        }
+    }
+
+    // ==================== BUDGET ====================
+    // Note: Budget management is handled by TeamBudgetController at /manager/budget
+    // Removed duplicate route to avoid ambiguous mapping errors
+
+    // ==================== REPORTS ====================
+
+    @GetMapping("/reports/team")
+    public String teamReports(Model model) {
+        try {
+            LocalDate today = LocalDate.now();
+            LocalDate startOfMonth = today.withDayOfMonth(1);
+            
+            List<User> teamMembers = userRepository.findByStatus(UserStatus.ACTIVE);
+            List<Attendance> monthAttendance = attendanceRepository.findByAttendanceDateBetween(
+                    startOfMonth, 
+                    today
+            );
+            List<PerformanceReview> reviews = reviewRepository.findAllWithUsers();
+            
+            model.addAttribute("teamMembers", teamMembers);
+            model.addAttribute("monthAttendance", monthAttendance);
+            model.addAttribute("reviews", reviews);
+            model.addAttribute("reportMonth", today.format(DateTimeFormatter.ofPattern("MMMM yyyy")));
+            
+            return "manager/reports/team";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Lỗi tải team reports: " + e.getMessage());
+            return "error/500";
+        }
+    }
+
+    @GetMapping("/reports/budget")
+    public String budgetReports(Model model) {
+        try {
+            // TODO: Implement budget reports
+            model.addAttribute("message", "Budget reports feature coming soon");
+            
+            return "manager/reports/budget";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Lỗi tải budget reports: " + e.getMessage());
+            return "error/500";
+        }
+    }
+
 }
