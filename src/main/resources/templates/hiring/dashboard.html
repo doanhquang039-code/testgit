@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -273,7 +273,7 @@
                                         <tbody>
                                             <tr th:each="candidate : ${recentCandidates}">
                                                 <td th:text="${candidate.fullName}">John Doe</td>
-                                                <td th:text="${candidate.jobPosting.title}">Software Engineer</td>
+                                                <td th:text="${candidate.jobPosting?.title ?: 'N/A'}">Software Engineer</td>
                                                 <td>
                                                     <span class="badge" 
                                                           th:classappend="${candidate.currentStage == 'HIRED'} ? 'bg-success' : (${candidate.currentStage == 'REJECTED'} ? 'bg-danger' : 'bg-secondary')"

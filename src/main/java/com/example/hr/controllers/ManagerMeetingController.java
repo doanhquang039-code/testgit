@@ -2,6 +2,7 @@ package com.example.hr.controllers;
 
 import com.example.hr.models.Meeting;
 import com.example.hr.models.User;
+import com.example.hr.service.AuthUserHelper;
 import com.example.hr.service.MeetingService;
 import com.example.hr.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +21,16 @@ public class ManagerMeetingController {
 
     private final MeetingService meetingService;
     private final UserService userService;
+    private final AuthUserHelper authUserHelper;
 
     /**
      * List meetings
      */
     @GetMapping
     public String listMeetings(Authentication authentication, Model model) {
-        User manager = (User) authentication.getPrincipal();
-        
+        User manager = authUserHelper.getCurrentUser(authentication);
+        if (manager == null) return "redirect:/login";
+
         var meetings = meetingService.getMeetingsForUser(manager);
         var upcomingMeetings = meetingService.getUpcomingMeetings(manager);
         var meetingStats = meetingService.getMeetingStatistics(manager);
@@ -44,8 +47,9 @@ public class ManagerMeetingController {
      */
     @GetMapping("/create")
     public String createMeetingForm(Authentication authentication, Model model) {
-        User manager = (User) authentication.getPrincipal();
-        
+        User manager = authUserHelper.getCurrentUser(authentication);
+        if (manager == null) return "redirect:/login";
+
         model.addAttribute("meeting", new Meeting());
         
         // Get team members for participant selection
@@ -67,7 +71,8 @@ public class ManagerMeetingController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            User manager = (User) authentication.getPrincipal();
+            User manager = authUserHelper.getCurrentUser(authentication);
+            if (manager == null) throw new RuntimeException("Not authenticated");
             meeting.setOrganizer(manager);
             meeting.setDepartment(manager.getDepartment());
             
@@ -89,7 +94,8 @@ public class ManagerMeetingController {
     @GetMapping("/edit/{id}")
     public String editMeetingForm(@PathVariable Integer id, Authentication authentication, Model model) {
         try {
-            User manager = (User) authentication.getPrincipal();
+            User manager = authUserHelper.getCurrentUser(authentication);
+            if (manager == null) return "redirect:/login";
             var meeting = meetingService.getMeetingById(id);
             
             // Check if manager is the organizer
@@ -197,7 +203,8 @@ public class ManagerMeetingController {
             Authentication authentication,
             Model model) {
         
-        User manager = (User) authentication.getPrincipal();
+        User manager = authUserHelper.getCurrentUser(authentication);
+        if (manager == null) return "redirect:/login";
         var meetings = meetingService.getMeetingsByType(type, manager);
         
         model.addAttribute("meetings", meetings);

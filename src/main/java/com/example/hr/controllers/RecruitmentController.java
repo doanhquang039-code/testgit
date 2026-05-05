@@ -71,14 +71,16 @@ public class RecruitmentController {
         candidatePipeline.put("HIRED", hiredCount);
         candidatePipeline.put("REJECTED", rejectedCount);
 
-        // Recent job postings (last 5)
+        // Recent job postings (last 5) – null-safe sort
         List<JobPosting> recentJobs = postings.stream()
+                .filter(p -> p.getCreatedAt() != null)
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
                 .limit(5)
                 .collect(java.util.stream.Collectors.toList());
 
-        // Recent candidates (last 10)
+        // Recent candidates (last 10) – null-safe sort
         List<Candidate> recentCandidates = candidateRepository.findAll().stream()
+                .filter(c -> c.getAppliedAt() != null)
                 .sorted((a, b) -> b.getAppliedAt().compareTo(a.getAppliedAt()))
                 .limit(10)
                 .collect(java.util.stream.Collectors.toList());

@@ -2,6 +2,7 @@ package com.example.hr.controllers;
 
 import com.example.hr.models.TeamBudget;
 import com.example.hr.models.User;
+import com.example.hr.service.AuthUserHelper;
 import com.example.hr.service.TeamBudgetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,14 +22,16 @@ import java.time.LocalDateTime;
 public class TeamBudgetController {
 
     private final TeamBudgetService teamBudgetService;
+    private final AuthUserHelper authUserHelper;
 
     /**
      * List team budgets
      */
     @GetMapping
     public String listBudgets(Authentication authentication, Model model) {
-        User manager = (User) authentication.getPrincipal();
-        
+        User manager = authUserHelper.getCurrentUser(authentication);
+        if (manager == null) return "redirect:/login";
+
         if (manager.getDepartment() == null) {
             model.addAttribute("errorMessage", "Manager must be assigned to a department");
             return "error/403";
@@ -68,7 +71,8 @@ public class TeamBudgetController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            User manager = (User) authentication.getPrincipal();
+            User manager = authUserHelper.getCurrentUser(authentication);
+            if (manager == null) throw new RuntimeException("Not authenticated");
             budget.setManager(manager);
             budget.setDepartment(manager.getDepartment());
             
@@ -180,8 +184,9 @@ public class TeamBudgetController {
      */
     @GetMapping("/analytics")
     public String budgetAnalytics(Authentication authentication, Model model) {
-        User manager = (User) authentication.getPrincipal();
-        
+        User manager = authUserHelper.getCurrentUser(authentication);
+        if (manager == null) return "redirect:/login";
+
         if (manager.getDepartment() == null) {
             model.addAttribute("errorMessage", "Manager must be assigned to a department");
             return "error/403";

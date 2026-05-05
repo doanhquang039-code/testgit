@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Detail - Hiring</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { background: #f4f6fb; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        .info-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; }
+        .score-circle {
+            width: 64px; height: 64px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="fragments/hiring-sidebar :: sidebar"></div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+
+            <!-- Flash messages -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+                <i class="bi bi-check-circle me-2"></i><span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+                <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center pb-2 mb-4 border-bottom">
+                <div>
+                    <h1 class="h3 fw-bold mb-0">
+                        <i class="bi bi-calendar-event me-2 text-primary"></i>Interview Detail
+                    </h1>
+                    <small class="text-muted" th:text="${interview.candidate?.fullName ?: 'Unknown Candidate'}">Candidate</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/hiring/interviews/{id}/edit(id=${interview.id})}" class="btn btn-outline-warning">
+                        <i class="bi bi-pencil me-1"></i>Edit
+                    </a>
+                    <a th:href="@{/hiring/interviews/{id}/feedback(id=${interview.id})}" class="btn btn-outline-success"
+                       th:if="${interview.status == 'SCHEDULED'}">
+                        <i class="bi bi-chat-dots me-1"></i>Submit Feedback
+                    </a>
+                    <a href="/hiring/interviews" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Interview Info -->
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Interview Info</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="info-label">Candidate</p>
+                            <p class="fw-semibold" th:text="${interview.candidate?.fullName ?: 'N/A'}">N/A</p>
+
+                            <p class="info-label">Interview Type</p>
+                            <p><span class="badge bg-info text-white" th:text="${interview.interviewType ?: 'N/A'}">TECHNICAL</span></p>
+
+                            <p class="info-label">Status</p>
+                            <p>
+                                <span class="badge"
+                                      th:classappend="${interview.status=='COMPLETED'}?'bg-success':
+                                                      (${interview.status=='CANCELLED'}?'bg-danger':
+                                                      (${interview.status=='NO_SHOW'}?'bg-dark':'bg-warning text-dark'))"
+                                      th:text="${interview.status}">SCHEDULED</span>
+                            </p>
+
+                            <p class="info-label">Scheduled Time</p>
+                            <p th:text="${interview.scheduledTime != null ? #temporals.format(interview.scheduledTime,'dd/MM/yyyy HH:mm') : 'N/A'}">N/A</p>
+
+                            <p class="info-label">Duration</p>
+                            <p th:text="${interview.durationMinutes != null ? interview.durationMinutes + ' minutes' : 'N/A'}">N/A</p>
+
+                            <p class="info-label">Location</p>
+                            <p th:text="${interview.location ?: 'N/A'}">N/A</p>
+
+                            <p class="info-label" th:if="${interview.meetingLink != null}">Meeting Link</p>
+                            <p th:if="${interview.meetingLink != null}">
+                                <a th:href="${interview.meetingLink}" target="_blank" class="text-decoration-none">
+                                    <i class="bi bi-camera-video me-1"></i>Join Meeting
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="card" th:if="${interview.status == 'SCHEDULED'}">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Actions</h6>
+                        </div>
+                        <div class="card-body d-grid gap-2">
+                            <form th:action="@{/hiring/interviews/{id}/no-show(id=${interview.id})}" method="post">
+                                <button type="submit" class="btn btn-dark w-100"
+                                        onclick="return confirm('Mark as no-show?')">
+                                    <i class="bi bi-person-x me-1"></i>Mark No-Show
+                                </button>
+                            </form>
+                            <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                <i class="bi bi-x-circle me-1"></i>Cancel Interview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback & Scores -->
+                <div class="col-md-8">
+                    <div class="card mb-3" th:if="${interview.agenda != null and !interview.agenda.isEmpty()}">
+                        <div class="card-header"><h6 class="mb-0"><i class="bi bi-list-check me-2"></i>Agenda</h6></div>
+                        <div class="card-body" th:text="${interview.agenda}">N/A</div>
+                    </div>
+
+                    <!-- Score Summary (if completed) -->
+                    <div class="card mb-3" th:if="${interview.status == 'COMPLETED'}">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0"><i class="bi bi-star me-2"></i>Interview Results</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center g-3 mb-3">
+                                <div class="col-md-3">
+                                    <div class="score-circle bg-primary text-white mx-auto mb-2"
+                                         th:text="${interview.overallScore != null ? interview.overallScore : 'N/A'}">N/A</div>
+                                    <small class="text-muted">Overall</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="score-circle bg-info text-white mx-auto mb-2"
+                                         th:text="${interview.technicalScore != null ? interview.technicalScore : 'N/A'}">N/A</div>
+                                    <small class="text-muted">Technical</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="score-circle bg-success text-white mx-auto mb-2"
+                                         th:text="${interview.communicationScore != null ? interview.communicationScore : 'N/A'}">N/A</div>
+                                    <small class="text-muted">Communication</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="score-circle bg-warning text-dark mx-auto mb-2"
+                                         th:text="${interview.culturalFitScore != null ? interview.culturalFitScore : 'N/A'}">N/A</div>
+                                    <small class="text-muted">Cultural Fit</small>
+                                </div>
+                            </div>
+                            <div th:if="${interview.recommendation != null}">
+                                <p class="info-label">Recommendation</p>
+                                <span class="badge fs-6"
+                                      th:classappend="${interview.recommendation=='HIRE'}?'bg-success':
+                                                      (${interview.recommendation=='REJECT'}?'bg-danger':'bg-secondary')"
+                                      th:text="${interview.recommendation}">N/A</span>
+                            </div>
+                            <div th:if="${interview.feedback != null}" class="mt-3">
+                                <p class="info-label">Feedback</p>
+                                <p class="text-muted" th:text="${interview.feedback}">N/A</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" th:if="${interview.notes != null and !interview.notes.isEmpty()}">
+                        <div class="card-header"><h6 class="mb-0"><i class="bi bi-sticky me-2"></i>Notes</h6></div>
+                        <div class="card-body text-muted" th:text="${interview.notes}">N/A</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/hiring/interviews/{id}/cancel(id=${interview.id})}" method="post">
+                <div class="modal-body">
+                    <label class="form-label">Reason for cancellation</label>
+                    <textarea name="reason" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+                    <button type="submit" class="btn btn-danger">Cancel Interview</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

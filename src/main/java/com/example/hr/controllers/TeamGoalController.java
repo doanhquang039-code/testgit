@@ -2,6 +2,7 @@ package com.example.hr.controllers;
 
 import com.example.hr.models.TeamGoal;
 import com.example.hr.models.User;
+import com.example.hr.service.AuthUserHelper;
 import com.example.hr.service.TeamGoalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,14 +19,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class TeamGoalController {
 
     private final TeamGoalService teamGoalService;
+    private final AuthUserHelper authUserHelper;
 
     /**
      * List team goals
      */
     @GetMapping
     public String listGoals(Authentication authentication, Model model) {
-        User manager = (User) authentication.getPrincipal();
-        
+        User manager = authUserHelper.getCurrentUser(authentication);
+        if (manager == null) return "redirect:/login";
+
         if (manager.getDepartment() == null) {
             model.addAttribute("errorMessage", "Manager must be assigned to a department");
             return "error/403";
@@ -60,7 +63,8 @@ public class TeamGoalController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            User manager = (User) authentication.getPrincipal();
+            User manager = authUserHelper.getCurrentUser(authentication);
+            if (manager == null) throw new RuntimeException("Not authenticated");
             goal.setManager(manager);
             goal.setDepartment(manager.getDepartment());
             

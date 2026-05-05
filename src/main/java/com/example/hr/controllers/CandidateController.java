@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/hiring/candidates")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN') or hasRole('HR')")
+@PreAuthorize("hasAnyRole('ADMIN','HR','HIRING','MANAGER')")
 public class CandidateController {
 
     private final CandidateService candidateService;

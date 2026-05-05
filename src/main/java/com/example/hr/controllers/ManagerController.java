@@ -141,8 +141,15 @@ public class ManagerController {
                     .collect(Collectors.toList());
         }
         model.addAttribute("members", members);
-        model.addAttribute("departments", userRepository.findAll().stream()
-                .map(User::getDepartment).filter(d -> d != null).distinct().collect(Collectors.toList()));
+        // Use LinkedHashMap deduplication by ID to avoid StackOverflow from
+        // Lombok @Data hashCode() on bidirectional Department <-> User entities
+        java.util.Map<Integer, com.example.hr.models.Department> deptMap = new java.util.LinkedHashMap<>();
+        for (User u : members) {
+            if (u.getDepartment() != null) {
+                deptMap.putIfAbsent(u.getDepartment().getId(), u.getDepartment());
+            }
+        }
+        model.addAttribute("departments", new java.util.ArrayList<>(deptMap.values()));
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedDeptId", deptId);
         return "manager/team";

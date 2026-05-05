@@ -4,6 +4,7 @@ import com.example.hr.service.TeamAnalyticsService;
 import com.example.hr.service.TeamGoalService;
 import com.example.hr.service.MeetingService;
 import com.example.hr.service.TeamBudgetService;
+import com.example.hr.service.AuthUserHelper;
 import com.example.hr.models.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,14 +24,16 @@ public class ManagerDashboardController {
     private final TeamGoalService teamGoalService;
     private final MeetingService meetingService;
     private final TeamBudgetService teamBudgetService;
+    private final AuthUserHelper authUserHelper;
 
     /**
      * Manager advanced dashboard with analytics
      */
     @GetMapping("/dashboard-advanced")
     public String dashboardAdvanced(Authentication authentication, Model model) {
-        User manager = (User) authentication.getPrincipal();
-        
+        User manager = authUserHelper.getCurrentUser(authentication);
+        if (manager == null) return "redirect:/login";
+
         if (manager.getDepartment() == null) {
             model.addAttribute("errorMessage", "Manager must be assigned to a department");
             return "error/403";
@@ -68,7 +71,8 @@ public class ManagerDashboardController {
      */
     @GetMapping("/analytics")
     public String analytics(Authentication authentication, Model model) {
-        User manager = (User) authentication.getPrincipal();
+        User manager = authUserHelper.getCurrentUser(authentication);
+        if (manager == null) return "redirect:/login";
         
         if (manager.getDepartment() == null) {
             model.addAttribute("errorMessage", "Manager must be assigned to a department");
