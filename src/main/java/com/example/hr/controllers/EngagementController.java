@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("/engagement")
 @RequiredArgsConstructor
 @PreAuthorize("isAuthenticated()")
 public class EngagementController {
@@ -22,14 +21,14 @@ public class EngagementController {
     
     // ===== Social Feed =====
     
-    @GetMapping("/feed")
+    @GetMapping("/engagement/feed")
     public String socialFeed(Model model) {
         model.addAttribute("posts", engagementService.getPublicPosts());
         model.addAttribute("trending", engagementService.getTrendingPosts());
         return "user1/social-feed";
     }
     
-    @PostMapping("/post/create")
+    @PostMapping("/engagement/post/create")
     public String createPost(@RequestParam String content,
                             @RequestParam(required = false) String images,
                             @RequestParam(defaultValue = "POST") String type,
@@ -46,7 +45,7 @@ public class EngagementController {
         return "redirect:/engagement/feed";
     }
     
-    @PostMapping("/post/{id}/like")
+    @PostMapping("/engagement/post/{id}/like")
     @ResponseBody
     public int likePost(@PathVariable Integer id) {
         SocialPost post = engagementService.likePost(id);
@@ -55,18 +54,18 @@ public class EngagementController {
     
     // ===== Recognition =====
     
-    @GetMapping("/recognition")
+    @GetMapping("/engagement/recognition")
     public String recognitionWall(Model model) {
         model.addAttribute("recognitions", engagementService.getPublicRecognitions());
         return "user1/recognition-wall";
     }
     
-    @GetMapping("/recognition/give")
+    @GetMapping("/engagement/recognition/give")
     public String giveRecognitionForm(Model model) {
         return "engagement/give-recognition";
     }
     
-    @PostMapping("/recognition/give")
+    @PostMapping("/engagement/recognition/give")
     public String giveRecognition(@RequestParam Integer recipientId,
                                  @RequestParam String type,
                                  @RequestParam String title,
@@ -89,7 +88,7 @@ public class EngagementController {
         return "redirect:/engagement/recognition";
     }
     
-    @GetMapping("/my-points")
+    @GetMapping("/engagement/my-points")
     public String myPoints(Authentication auth, Model model) {
         User user = authUserHelper.getCurrentUser(auth);
         
@@ -101,20 +100,20 @@ public class EngagementController {
     
     // ===== Surveys =====
     
-    @GetMapping("/surveys")
+    @GetMapping("/engagement/surveys")
     public String surveys(Model model) {
         model.addAttribute("surveys", engagementService.getActiveSurveys());
         return "user1/surveys";
     }
     
-    @GetMapping("/survey/{id}")
+    @GetMapping("/engagement/survey/{id}")
     public String takeSurvey(@PathVariable Integer id, Model model) {
         // Get survey details
         model.addAttribute("surveyId", id);
         return "engagement/take-survey";
     }
     
-    @PostMapping("/survey/{id}/submit")
+    @PostMapping("/engagement/survey/{id}/submit")
     public String submitSurvey(@PathVariable Integer id,
                               @RequestParam String answers,
                               Authentication auth,
@@ -134,7 +133,7 @@ public class EngagementController {
     
     // ===== Referrals =====
     
-    @GetMapping("/referrals")
+    @GetMapping("/engagement/referrals")
     public String myReferrals(Authentication auth, Model model) {
         User user = authUserHelper.getCurrentUser(auth);
         model.addAttribute("referrals", engagementService.getUserReferrals(user));
@@ -143,7 +142,7 @@ public class EngagementController {
     
     // ===== ADMIN ROUTES =====
     
-    @GetMapping("/admin/surveys")
+    @GetMapping("/admin/engagement/surveys")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String adminSurveyList(Model model) {
         model.addAttribute("surveys", engagementService.getAllSurveys());
@@ -151,14 +150,14 @@ public class EngagementController {
         return "admin/survey-list";
     }
     
-    @GetMapping("/admin/surveys/create")
+    @GetMapping("/admin/engagement/surveys/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String adminSurveyCreateForm(Model model) {
         model.addAttribute("survey", new PulseSurvey());
         return "admin/survey-form";
     }
     
-    @PostMapping("/admin/surveys/create")
+    @PostMapping("/admin/engagement/surveys/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String adminSurveyCreate(@ModelAttribute PulseSurvey survey,
                                    Authentication auth,
@@ -178,17 +177,17 @@ public class EngagementController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
-        return "redirect:/engagement/admin/surveys";
+        return "redirect:/admin/engagement/surveys";
     }
     
-    @GetMapping("/admin/surveys/{id}/edit")
+    @GetMapping("/admin/engagement/surveys/{id}/edit")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String adminSurveyEditForm(@PathVariable Integer id, Model model) {
         model.addAttribute("survey", engagementService.getSurveyById(id));
         return "admin/survey-form";
     }
     
-    @PostMapping("/admin/surveys/{id}/update")
+    @PostMapping("/admin/engagement/surveys/{id}/update")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String adminSurveyUpdate(@PathVariable Integer id,
                                    @ModelAttribute PulseSurvey survey,
@@ -199,10 +198,10 @@ public class EngagementController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
-        return "redirect:/engagement/admin/surveys";
+        return "redirect:/admin/engagement/surveys";
     }
     
-    @PostMapping("/admin/surveys/{id}/delete")
+    @PostMapping("/admin/engagement/surveys/{id}/delete")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String adminSurveyDelete(@PathVariable Integer id, RedirectAttributes ra) {
         try {
@@ -211,10 +210,10 @@ public class EngagementController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
-        return "redirect:/engagement/admin/surveys";
+        return "redirect:/admin/engagement/surveys";
     }
     
-    @GetMapping("/admin/recognition")
+    @GetMapping("/admin/engagement/recognition")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String adminRecognitionList(Model model) {
         model.addAttribute("recognitions", engagementService.getAllRecognitions());

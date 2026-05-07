@@ -14,7 +14,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 
 @Controller
-@RequestMapping("/attendance/advanced")
 @RequiredArgsConstructor
 public class AttendanceAdvancedController {
     
@@ -23,14 +22,14 @@ public class AttendanceAdvancedController {
     
     // ===== Geofencing Check-in =====
     
-    @GetMapping("/checkin")
+    @GetMapping("/attendance/advanced/checkin")
     @PreAuthorize("isAuthenticated()")
     public String checkinPage(Model model) {
         model.addAttribute("locations", attendanceService.getActiveLocations());
         return "attendance/geofencing-checkin";
     }
     
-    @PostMapping("/checkin/validate")
+    @PostMapping("/attendance/advanced/checkin/validate")
     @PreAuthorize("isAuthenticated()")
     @ResponseBody
     public boolean validateLocation(@RequestParam Double latitude,
@@ -41,7 +40,7 @@ public class AttendanceAdvancedController {
     
     // ===== Face Recognition =====
     
-    @GetMapping("/face-setup")
+    @GetMapping("/attendance/advanced/face-setup")
     @PreAuthorize("isAuthenticated()")
     public String faceSetupPage(Authentication auth, Model model) {
         User user = authUserHelper.getCurrentUser(auth);
@@ -49,7 +48,7 @@ public class AttendanceAdvancedController {
         return "attendance/face-setup";
     }
     
-    @PostMapping("/face-register")
+    @PostMapping("/attendance/advanced/face-register")
     @PreAuthorize("isAuthenticated()")
     public String registerFace(@RequestParam String faceEncoding,
                               @RequestParam String imageUrl,
@@ -71,17 +70,17 @@ public class AttendanceAdvancedController {
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String shiftList(Model model) {
         model.addAttribute("shifts", attendanceService.getActiveShifts());
-        return "attendance/admin/shift-list";
+        return "admin/shift-list";
     }
     
-    @GetMapping("/admin/shift/new")
+    @GetMapping("/admin/shifts/add")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String newShiftForm(Model model) {
         model.addAttribute("shift", new Shift());
-        return "attendance/admin/shift-form";
+        return "admin/shift-form";
     }
     
-    @PostMapping("/admin/shift/save")
+    @PostMapping("/admin/shifts/save")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String saveShift(@ModelAttribute Shift shift, RedirectAttributes ra) {
         try {
@@ -90,7 +89,7 @@ public class AttendanceAdvancedController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/attendance/advanced/admin/shifts";
+        return "redirect:/admin/shifts";
     }
     
     // ===== Location Management (Admin) =====
@@ -99,7 +98,7 @@ public class AttendanceAdvancedController {
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String locationList(Model model) {
         model.addAttribute("locations", attendanceService.getActiveLocations());
-        return "attendance/admin/location-list";
+        return "admin/location-list";
     }
     
     @PostMapping("/admin/location/save")
@@ -116,12 +115,12 @@ public class AttendanceAdvancedController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/attendance/advanced/admin/locations";
+        return "redirect:/admin/locations";
     }
     
     // ===== My Shift Schedule =====
     
-    @GetMapping("/my-schedule")
+    @GetMapping("/attendance/advanced/my-schedule")
     @PreAuthorize("isAuthenticated()")
     public String mySchedule(@RequestParam(required = false) String month,
                             Authentication auth,

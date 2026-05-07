@@ -14,7 +14,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 
 @Controller
-@RequestMapping("/onboarding")
 @RequiredArgsConstructor
 public class OnboardingController {
     
@@ -23,7 +22,7 @@ public class OnboardingController {
     
     // ===== User Views =====
     
-    @GetMapping("/my-checklist")
+    @GetMapping("/onboarding/my-checklist")
     @PreAuthorize("isAuthenticated()")
     public String myChecklist(Authentication auth, Model model) {
         User user = authUserHelper.getCurrentUser(auth);
@@ -35,7 +34,7 @@ public class OnboardingController {
         return "user1/my-checklist";
     }
     
-    @PostMapping("/checklist/{id}/complete")
+    @PostMapping("/onboarding/checklist/{id}/complete")
     @PreAuthorize("isAuthenticated()")
     public String completeItem(@PathVariable Integer id, RedirectAttributes ra) {
         try {
@@ -49,7 +48,7 @@ public class OnboardingController {
     
     // ===== Admin Views =====
     
-    @GetMapping("/admin/checklists")
+    @GetMapping("/admin/onboarding/checklists")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String adminChecklistList(Model model) {
         model.addAttribute("checklists", onboardingService.getAllChecklists());
@@ -57,13 +56,13 @@ public class OnboardingController {
         return "admin/checklist-list";
     }
     
-    @GetMapping("/admin/create-checklist")
+    @GetMapping("/admin/onboarding/create-checklist")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String createChecklistForm(Model model) {
         return "onboarding/admin/create-checklist";
     }
     
-    @PostMapping("/admin/create-standard-checklist")
+    @PostMapping("/admin/onboarding/create-standard-checklist")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String createStandardChecklist(@RequestParam Integer userId,
                                          Authentication auth,
@@ -79,12 +78,12 @@ public class OnboardingController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/onboarding/admin/create-checklist";
+        return "redirect:/admin/onboarding/create-checklist";
     }
     
     // ===== Exit Interview =====
     
-    @GetMapping("/exit-interview")
+    @GetMapping("/onboarding/exit-interview")
     @PreAuthorize("isAuthenticated()")
     public String exitInterviewForm(Authentication auth, Model model) {
         User user = authUserHelper.getCurrentUser(auth);
@@ -96,7 +95,7 @@ public class OnboardingController {
         return "user1/exit-interview";
     }
     
-    @PostMapping("/exit-interview/submit")
+    @PostMapping("/onboarding/exit-interview/submit")
     @PreAuthorize("isAuthenticated()")
     public String submitExitInterview(@RequestParam String reasonForLeaving,
                                      @RequestParam Integer satisfactionRating,
@@ -125,7 +124,7 @@ public class OnboardingController {
         return "redirect:/onboarding/exit-interview";
     }
     
-    @GetMapping("/admin/exit-interviews")
+    @GetMapping("/admin/onboarding/exit-interviews")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public String exitInterviewList(Model model) {
         model.addAttribute("interviews", onboardingService.getAllExitInterviews());

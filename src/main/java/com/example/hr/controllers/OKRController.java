@@ -21,7 +21,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/okr")
 @RequiredArgsConstructor
 public class OKRController {
     
@@ -31,7 +30,7 @@ public class OKRController {
     private final DepartmentRepository departmentRepository;
     private final UserService userService;
     
-    @GetMapping("/my-objectives")
+    @GetMapping("/okr/my-objectives")
     public String showMyObjectives(Authentication auth, Model model) {
         User user = userService.getUserByUsername(auth.getName());
         List<Objective> objectives = okrService.getUserObjectives(user);
@@ -42,7 +41,7 @@ public class OKRController {
         return "user1/okr-list";
     }
     
-    @GetMapping("/company-objectives")
+    @GetMapping("/okr/company-objectives")
     public String showCompanyObjectives(Model model) {
         List<Objective> objectives = okrService.getCompanyObjectives();
         
@@ -52,7 +51,7 @@ public class OKRController {
         return "user1/okr-company";
     }
     
-    @GetMapping("/admin/objectives")
+    @GetMapping("/admin/okr/objectives")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'MANAGER')")
     public String showAllObjectives(@RequestParam(required = false) String level,
                                    @RequestParam(required = false) String status,
@@ -76,7 +75,7 @@ public class OKRController {
         return "admin/okr-list";
     }
     
-    @GetMapping("/admin/objectives/new")
+    @GetMapping("/admin/okr/objectives/new")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'MANAGER')")
     public String showObjectiveForm(Model model) {
         model.addAttribute("objective", new Objective());
@@ -87,7 +86,7 @@ public class OKRController {
         return "admin/okr-form";
     }
     
-    @PostMapping("/admin/objectives/save")
+    @PostMapping("/admin/okr/objectives/save")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'MANAGER')")
     public String saveObjective(@ModelAttribute OKRCreateDTO dto, 
                                Authentication auth,
@@ -96,10 +95,10 @@ public class OKRController {
         okrService.createObjective(dto, user);
         
         redirectAttributes.addFlashAttribute("success", "Objective created successfully");
-        return "redirect:/okr/admin/objectives";
+        return "redirect:/admin/okr/objectives";
     }
     
-    @GetMapping("/objectives/{id}")
+    @GetMapping("/okr/objectives/{id}")
     public String showObjectiveDetail(@PathVariable Long id, Model model) {
         Objective objective = objectiveRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Objective not found"));
@@ -113,7 +112,7 @@ public class OKRController {
         return "user1/okr-detail";
     }
     
-    @PostMapping("/key-results/{id}/update-progress")
+    @PostMapping("/okr/key-results/{id}/update-progress")
     public String updateKeyResultProgress(@PathVariable Long id,
                                          @RequestParam Double newValue,
                                          @RequestParam(required = false) String notes,
@@ -126,7 +125,7 @@ public class OKRController {
         return "redirect:/okr/objectives/" + keyResult.getObjective().getId();
     }
     
-    @PostMapping("/admin/objectives/{id}/status")
+    @PostMapping("/admin/okr/objectives/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'MANAGER')")
     public String updateObjectiveStatus(@PathVariable Long id,
                                        @RequestParam String status,
@@ -134,6 +133,6 @@ public class OKRController {
         okrService.updateObjectiveStatus(id, OKRStatus.valueOf(status));
         
         redirectAttributes.addFlashAttribute("success", "Status updated successfully");
-        return "redirect:/okr/admin/objectives";
+        return "redirect:/admin/okr/objectives";
     }
 }

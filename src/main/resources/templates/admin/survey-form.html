@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -22,7 +22,7 @@
 
                 <div class="card">
                     <div class="card-body">
-                        <form th:action="@{${survey.id != null ? '/engagement/admin/surveys/' + survey.id + '/update' : '/engagement/admin/surveys/create'}}" 
+                        <form th:action="@{${survey.id != null ? '/admin/engagement/surveys/' + survey.id + '/update' : '/admin/engagement/surveys/create'}}" 
                               method="post" th:object="${survey}">
                             
                             <div class="mb-3">
@@ -72,7 +72,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-save me-1"></i>Lưu
                                 </button>
-                                <a href="/engagement/admin/surveys" class="btn btn-secondary">
+                                <a href="/admin/engagement/surveys" class="btn btn-secondary">
                                     <i class="bi bi-x-circle me-1"></i>Hủy
                                 </a>
                             </div>

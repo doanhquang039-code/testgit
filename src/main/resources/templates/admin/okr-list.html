@@ -74,7 +74,7 @@
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2"><i class="bi bi-bullseye me-2 text-primary"></i>Quản lý OKR</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="/okr/admin/objectives/new" class="btn btn-primary">
+                        <a href="/admin/okr/objectives/new" class="btn btn-primary">
                             <i class="bi bi-plus-circle me-1"></i>Tạo mục tiêu mới
                         </a>
                     </div>
@@ -138,7 +138,7 @@
                                 <button type="submit" class="btn btn-primary me-2">
                                     <i class="bi bi-search me-1"></i>Lọc
                                 </button>
-                                <a href="/okr/admin/objectives" class="btn btn-outline-secondary">Đặt lại</a>
+                                <a href="/admin/okr/objectives" class="btn btn-outline-secondary">Đặt lại</a>
                             </div>
                         </form>
                     </div>
@@ -148,7 +148,7 @@
                 <div th:if="${objectives == null or #lists.isEmpty(objectives)}" class="text-center py-5">
                     <i class="bi bi-bullseye" style="font-size: 4rem; color: #dee2e6;"></i>
                     <p class="text-muted mt-3 mb-3">Chưa có mục tiêu nào</p>
-                    <a href="/okr/admin/objectives/new" class="btn btn-primary">
+                    <a href="/admin/okr/objectives/new" class="btn btn-primary">
                         <i class="bi bi-plus-circle me-1"></i>Tạo mục tiêu đầu tiên
                     </a>
                 </div>
@@ -178,7 +178,7 @@
                                         <li><a class="dropdown-item" th:href="@{/okr/objectives/{id}(id=${objective.id})}">
                                             <i class="bi bi-eye me-2"></i>Xem chi tiết
                                         </a></li>
-                                        <li><a class="dropdown-item" th:href="@{/okr/admin/objectives/edit/{id}(id=${objective.id})}">
+                                        <li><a class="dropdown-item" th:href="@{/admin/okr/objectives/edit/{id}(id=${objective.id})}">
                                             <i class="bi bi-pencil me-2"></i>Sửa
                                         </a></li>
                                         <li><hr class="dropdown-divider"></li>

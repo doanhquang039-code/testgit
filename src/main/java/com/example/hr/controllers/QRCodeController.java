@@ -20,7 +20,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
-@RequestMapping("/qrcode")
 @RequiredArgsConstructor
 public class QRCodeController {
 
@@ -29,7 +28,7 @@ public class QRCodeController {
 
     // ==================== ADMIN PAGES ====================
 
-    @GetMapping("/admin/list")
+    @GetMapping("/admin/qrcode/list")
     public String listQRCodes(Model model) {
         List<QRCode> qrCodes = qrCodeService.getAllQRCodes();
         QRCodeService.QRCodeStats stats = qrCodeService.getStatistics();
@@ -41,7 +40,7 @@ public class QRCodeController {
         return "admin/qrcode-list";
     }
 
-    @GetMapping("/admin/create")
+    @GetMapping("/admin/qrcode/create")
     public String showCreateForm(Model model) {
         model.addAttribute("qrCode", new QRCode());
         model.addAttribute("types", QRCodeType.values());
@@ -50,7 +49,7 @@ public class QRCodeController {
         return "admin/qrcode-form";
     }
 
-    @PostMapping("/admin/create")
+    @PostMapping("/admin/qrcode/create")
     public String createQRCode(@RequestParam QRCodeType type,
                                @RequestParam String name,
                                @RequestParam(required = false) String location,
@@ -68,10 +67,10 @@ public class QRCodeController {
         QRCode qrCode = qrCodeService.generateQRCode(type, name, location, description, user.getId(), expiry);
         
         redirectAttributes.addFlashAttribute("success", "QR Code created successfully!");
-        return "redirect:/qrcode/admin/view/" + qrCode.getId();
+        return "redirect:/admin/qrcode/view/" + qrCode.getId();
     }
 
-    @GetMapping("/admin/view/{id}")
+    @GetMapping("/admin/qrcode/view/{id}")
     public String viewQRCode(@PathVariable Integer id, Model model) {
         try {
             QRCode qrCode = qrCodeService.getQRCodeById(id);
@@ -86,11 +85,11 @@ public class QRCodeController {
             return "admin/qrcode-view";
         } catch (WriterException | IOException e) {
             model.addAttribute("error", "Failed to generate QR Code image");
-            return "redirect:/qrcode/admin/list";
+            return "redirect:/admin/qrcode/list";
         }
     }
 
-    @GetMapping("/admin/edit/{id}")
+    @GetMapping("/admin/qrcode/edit/{id}")
     public String showEditForm(@PathVariable Integer id, Model model) {
         QRCode qrCode = qrCodeService.getQRCodeById(id);
         
@@ -101,7 +100,7 @@ public class QRCodeController {
         return "admin/qrcode-form";
     }
 
-    @PostMapping("/admin/edit/{id}")
+    @PostMapping("/admin/qrcode/edit/{id}")
     public String updateQRCode(@PathVariable Integer id,
                                @RequestParam String name,
                                @RequestParam(required = false) String location,
@@ -111,26 +110,26 @@ public class QRCodeController {
         qrCodeService.updateQRCode(id, name, location, description, isActive);
         
         redirectAttributes.addFlashAttribute("success", "QR Code updated successfully!");
-        return "redirect:/qrcode/admin/view/" + id;
+        return "redirect:/admin/qrcode/view/" + id;
     }
 
-    @PostMapping("/admin/delete/{id}")
+    @PostMapping("/admin/qrcode/delete/{id}")
     public String deleteQRCode(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
         qrCodeService.deleteQRCode(id);
         
         redirectAttributes.addFlashAttribute("success", "QR Code deleted successfully!");
-        return "redirect:/qrcode/admin/list";
+        return "redirect:/admin/qrcode/list";
     }
 
     // ==================== USER PAGES ====================
 
-    @GetMapping("/scan")
+    @GetMapping("/qrcode/scan")
     public String showScanPage(Model model) {
         model.addAttribute("pageTitle", "Scan QR Code");
         return "user1/qrcode-scan";
     }
 
-    @PostMapping("/scan")
+    @PostMapping("/qrcode/scan")
     @ResponseBody
     public ScanResponse processScan(@RequestParam String code,
                                    @RequestParam(required = false) String scanType,
@@ -155,7 +154,7 @@ public class QRCodeController {
         }
     }
 
-    @GetMapping("/my-scans")
+    @GetMapping("/qrcode/my-scans")
     public String showMyScans(Authentication auth, Model model) {
         User user = userService.getUserByUsername(auth.getName());
         List<QRCodeScan> scans = qrCodeService.getUserScans(user);

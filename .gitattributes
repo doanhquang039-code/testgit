@@ -1,2 +1,10 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+*.js linguist-detectable=false
+*.css linguist-detectable=false
+*.html linguist-detectable=false
+*.scss linguist-detectable=false
+node_modules/* linguist-vendored
+src/main/resources/static/* linguist-vendored
+src/main/resources/templates/* linguist-vendored
+public/* linguist-vendored

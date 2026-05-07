@@ -14,7 +14,7 @@
                         <h4 th:text="${qrCode.id != null ? 'Edit QR Code' : 'Create New QR Code'}">QR Code Form</h4>
                     </div>
                     <div class="card-body">
-                        <form th:action="${qrCode.id != null ? '/qrcode/admin/edit/' + qrCode.id : '/qrcode/admin/create'}" 
+                        <form th:action="${qrCode.id != null ? '/admin/qrcode/edit/' + qrCode.id : '/admin/qrcode/create'}" 
                               method="post">
                             
                             <div class="mb-3" th:if="${qrCode.id == null}">
@@ -66,7 +66,7 @@
                             </div>
 
                             <div class="d-flex justify-content-between">
-                                <a th:href="@{/qrcode/admin/list}" class="btn btn-secondary">
+                                <a th:href="@{/admin/qrcode/list}" class="btn btn-secondary">
                                     <i class="bi bi-arrow-left"></i> Back
                                 </a>
                                 <button type="submit" class="btn btn-primary">

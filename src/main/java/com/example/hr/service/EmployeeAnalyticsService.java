@@ -173,7 +173,8 @@ public class EmployeeAnalyticsService {
                 .filter(u -> u.getStatus() == UserStatus.ACTIVE).count());
         stats.put("turnoverRate", calculateTurnoverRate(LocalDate.now().getYear()));
         stats.put("totalWarnings", warningRepository.count());
-        stats.put("pendingOvertime", 0); // TODO: Update with new overtime model
+        long pendingOvertime = overtimeRepository.findByStatus("PENDING").size();
+        stats.put("pendingOvertime", pendingOvertime);
         stats.put("totalBenefitCost", benefitRepository.sumTotalActiveBenefitCost());
 
         return stats;

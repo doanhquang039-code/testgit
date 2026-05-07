@@ -91,7 +91,7 @@
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2"><i class="bi bi-qr-code me-2 text-primary"></i>Quản lý QR Code</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a th:href="@{/qrcode/admin/create}" class="btn btn-primary">
+                        <a th:href="@{/admin/qrcode/create}" class="btn btn-primary">
                             <i class="bi bi-plus-circle me-1"></i>Tạo QR Code mới
                         </a>
                     </div>
@@ -183,15 +183,15 @@
                                         </td>
                                         <td th:text="${#temporals.format(qr.createdAt, 'dd/MM/yyyy')}">01/01/2024</td>
                                         <td>
-                                            <a th:href="@{/qrcode/admin/view/{id}(id=${qr.id})}" 
+                                            <a th:href="@{/admin/qrcode/view/{id}(id=${qr.id})}" 
                                                class="btn btn-info action-btn" title="Xem chi tiết">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a th:href="@{/qrcode/admin/edit/{id}(id=${qr.id})}" 
+                                            <a th:href="@{/admin/qrcode/edit/{id}(id=${qr.id})}" 
                                                class="btn btn-warning action-btn" title="Sửa">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form th:action="@{/qrcode/admin/delete/{id}(id=${qr.id})}" method="post" style="display:inline;">
+                                            <form th:action="@{/admin/qrcode/delete/{id}(id=${qr.id})}" method="post" style="display:inline;">
                                                 <button type="submit" class="btn btn-danger action-btn" 
                                                         onclick="return confirm('Bạn có chắc muốn xóa QR Code này?')" title="Xóa">
                                                     <i class="bi bi-trash"></i>
@@ -203,7 +203,7 @@
                                         <td colspan="8" class="text-center py-5">
                                             <i class="bi bi-qr-code" style="font-size: 4rem; color: #dee2e6;"></i>
                                             <p class="text-muted mt-3 mb-3">Chưa có QR Code nào</p>
-                                            <a th:href="@{/qrcode/admin/create}" class="btn btn-primary">
+                                            <a th:href="@{/admin/qrcode/create}" class="btn btn-primary">
                                                 <i class="bi bi-plus-circle me-1"></i>Tạo QR Code đầu tiên
                                             </a>
                                         </td>

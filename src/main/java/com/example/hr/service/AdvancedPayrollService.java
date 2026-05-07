@@ -155,10 +155,13 @@ public class AdvancedPayrollService {
         }
         summary.setAllowance(allowance);
 
-        // 3. Overtime pay - TODO: Update with new overtime model
+        // 3. Overtime pay
         BigDecimal hourlyRate = calculateHourlyRate(baseSalary);
-        BigDecimal overtimeHours = BigDecimal.ZERO; // overtimeService.getApprovedHoursInMonth(user.getId(), month, year);
-        BigDecimal overtimePay = BigDecimal.ZERO; // overtimeService.calculateMonthlyOvertimePay(user.getId(), month, year, hourlyRate);
+        java.time.LocalDate startDate = java.time.LocalDate.of(year, month, 1);
+        java.time.LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        Double totalHours = overtimeService.getTotalApprovedHours(user, startDate, endDate);
+        BigDecimal overtimeHours = BigDecimal.valueOf(totalHours);
+        BigDecimal overtimePay = hourlyRate.multiply(overtimeHours).multiply(BigDecimal.valueOf(1.5)); // 1.5 multiplier
         summary.setOvertimeHours(overtimeHours);
         summary.setOvertimePay(overtimePay);
 

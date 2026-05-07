@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -17,7 +17,7 @@
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2"><i class="bi bi-clipboard-data me-2"></i>Quản lý Khảo sát</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="/engagement/admin/surveys/create" class="btn btn-primary">
+                        <a href="/admin/engagement/surveys/create" class="btn btn-primary">
                             <i class="bi bi-plus-circle me-1"></i>Tạo khảo sát mới
                         </a>
                     </div>
@@ -105,13 +105,13 @@
                                             <i th:unless="${survey.isAnonymous}" class="bi bi-x-circle text-danger"></i>
                                         </td>
                                         <td>
-                                            <a th:href="@{/engagement/admin/surveys/{id}(id=${survey.id})}" class="btn btn-sm btn-info" title="Xem chi tiết">
+                                            <a th:href="@{/admin/engagement/surveys/{id}(id=${survey.id})}" class="btn btn-sm btn-info" title="Xem chi tiết">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a th:href="@{/engagement/admin/surveys/{id}/edit(id=${survey.id})}" class="btn btn-sm btn-warning" title="Sửa">
+                                            <a th:href="@{/admin/engagement/surveys/{id}/edit(id=${survey.id})}" class="btn btn-sm btn-warning" title="Sửa">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form th:action="@{/engagement/admin/surveys/{id}/delete(id=${survey.id})}" method="post" style="display:inline;">
+                                            <form th:action="@{/admin/engagement/surveys/{id}/delete(id=${survey.id})}" method="post" style="display:inline;">
                                                 <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa khảo sát này?')" title="Xóa">
                                                     <i class="bi bi-trash"></i>
                                                 </button>

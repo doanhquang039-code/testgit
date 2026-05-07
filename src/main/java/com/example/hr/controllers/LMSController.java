@@ -14,7 +14,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/lms")
 @RequiredArgsConstructor
 public class LMSController {
     
@@ -23,7 +22,7 @@ public class LMSController {
     
     // ===== User Views =====
     
-    @GetMapping("/courses")
+    @GetMapping("/lms/courses")
     @PreAuthorize("isAuthenticated()")
     public String courseCatalog(@RequestParam(required = false) String category,
                                 @RequestParam(required = false) String search,
@@ -45,7 +44,7 @@ public class LMSController {
         return "user1/course-catalog";
     }
     
-    @GetMapping("/my-courses")
+    @GetMapping("/lms/my-courses")
     @PreAuthorize("isAuthenticated()")
     public String myCourses(Authentication auth, Model model) {
         User user = authUserHelper.getCurrentUser(auth);
@@ -57,7 +56,7 @@ public class LMSController {
         return "user1/my-courses";
     }
     
-    @GetMapping("/course/{id}")
+    @GetMapping("/lms/course/{id}")
     @PreAuthorize("isAuthenticated()")
     public String courseDetail(@PathVariable Integer id, Authentication auth, Model model) {
         Course course = courseService.getActiveCourses().stream()
@@ -76,7 +75,7 @@ public class LMSController {
         return "user1/course-detail";
     }
     
-    @PostMapping("/enroll/{courseId}")
+    @PostMapping("/lms/enroll/{courseId}")
     @PreAuthorize("isAuthenticated()")
     public String enrollCourse(@PathVariable Integer courseId, 
                               Authentication auth,
@@ -122,6 +121,6 @@ public class LMSController {
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/lms/admin/courses";
+        return "redirect:/admin/courses";
     }
 }

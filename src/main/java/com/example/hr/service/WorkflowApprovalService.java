@@ -34,17 +34,20 @@ public class WorkflowApprovalService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final HrAuditLogService auditLogService;
+    private final NewOvertimeService newOvertimeService;
 
     public WorkflowApprovalService(LeaveRequestRepository leaveRequestRepository,
                                      OvertimeRequestRepository overtimeRepository,
                                      UserRepository userRepository,
                                      NotificationService notificationService,
-                                     HrAuditLogService auditLogService) {
+                                     HrAuditLogService auditLogService,
+                                     NewOvertimeService newOvertimeService) {
         this.leaveRequestRepository = leaveRequestRepository;
         this.overtimeRepository = overtimeRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
         this.auditLogService = auditLogService;
+        this.newOvertimeService = newOvertimeService;
     }
 
     // ===================== LEAVE APPROVAL =====================
@@ -128,18 +131,20 @@ public class WorkflowApprovalService {
 
     /**
      * Duyệt OT.
-     * TODO: Update with new overtime model
      */
     public OvertimeRequest approveOvertime(Integer overtimeId, Integer approverId) {
-        throw new ApprovalWorkflowException("Chức năng đang được cập nhật");
+        User approver = userRepository.findById(approverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Người duyệt", approverId));
+        return newOvertimeService.approveRequest(overtimeId, approver);
     }
 
     /**
      * Từ chối OT.
-     * TODO: Update with new overtime model
      */
     public OvertimeRequest rejectOvertime(Integer overtimeId, Integer approverId, String reason) {
-        throw new ApprovalWorkflowException("Chức năng đang được cập nhật");
+        User approver = userRepository.findById(approverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Người duyệt", approverId));
+        return newOvertimeService.rejectRequest(overtimeId, approver, reason);
     }
 
     /**
