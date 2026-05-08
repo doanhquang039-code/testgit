@@ -183,7 +183,7 @@
             b.setAttribute('aria-label', s + ' sao');
             b.textContent = '★';
             b.addEventListener('click', function () {
-                fetch('/user1/chatbot/api/rate', {
+                fetch('/api/chatbot/rate', {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: Object.assign({'Content-Type': 'application/json'}, csrfHeaders()),
@@ -206,7 +206,7 @@
         input.value = '';
         appendBubble(text, 'user');
 
-        fetch('/user1/chatbot/api/message', {
+        fetch('/api/chatbot/message', {
             method: 'POST',
             credentials: 'same-origin',
             headers: Object.assign({'Content-Type': 'application/json'}, csrfHeaders()),

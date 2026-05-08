@@ -1,6 +1,6 @@
 /**
  * HRMS Settings Panel v1
- * - 4 languages: VI, EN, ZH (Chinese), JA (Japanese)
+ * - 5 languages: VI, EN, ZH (Chinese), JA (Japanese), KO (Korean)
  * - Background themes
  * - Brightness control
  * - All client-side, saved to localStorage
@@ -19,12 +19,22 @@
       'Chấm công': 'Attendance', 'Công việc': 'Tasks', 'Phân công': 'Assignments',
       'Đánh giá KPI': 'KPI Reviews', 'Báo cáo': 'Reports', 'Thông báo công ty': 'Announcements',
       'Tuyển dụng': 'Recruitment', 'Video đào tạo': 'Training Videos', 'Thêm video mới': 'Upload Video',
-      'Nhật ký hệ thống': 'Audit Log', 'KPI Goals': 'KPI Goals', 'Chi phí': 'Expenses',
-      'Kỹ năng': 'Skills', 'Ca làm việc': 'Work Shifts', 'Phân ca': 'Shift Assignments',
+      'Nhật ký hệ thống': 'Audit Log', 'Nhật ký': 'Audit Log', 'KPI Goals': 'KPI Goals',
+      'Mục tiêu KPI': 'KPI Goals', 'Chi phí': 'Expenses',
+      'Kỹ năng': 'Skills', 'Kỹ năng NV': 'Employee Skills', 'Ca làm việc': 'Work Shifts', 'Phân ca': 'Shift Assignments',
       'Đăng xuất': 'Logout', 'Hồ sơ cá nhân': 'My Profile', 'Làm thêm giờ': 'Overtime',
       'Phiếu lương': 'Payslip', 'Công việc của tôi': 'My Tasks', 'Thông báo': 'Notifications',
       'Nhóm của tôi': 'My Team', 'Duyệt nghỉ phép': 'Approve Leaves', 'Duyệt OT': 'Approve OT',
       'Tin tuyển dụng': 'Job Postings', 'Ứng viên': 'Candidates',
+      'LMS - Khóa học': 'LMS - Courses', 'QR Code': 'QR Code', 'Khảo sát': 'Surveys',
+      'Vinh danh': 'Recognition', 'Onboarding': 'Onboarding', 'OKR': 'OKR',
+      'Cài đặt': 'Settings', 'Phân tích': 'Analytics',
+      'Advanced Dashboard': 'Advanced Dashboard', 'Quản lý User Nâng cao': 'Advanced User Management',
+      'Lương': 'Salary', 'Video': 'Video', 'Analytics': 'Analytics', 'Khóa học': 'Courses',
+      'Khen thưởng': 'Recognition', 'Cấu hình Hệ thống': 'System Configuration',
+      'Audit Logs': 'Audit Logs', 'Backup & Restore': 'Backup & Restore',
+      'System Monitor': 'System Monitor', 'Cache & Email': 'Cache & Email',
+      'Cloud Storage': 'Cloud Storage',
       // Section labels
       'Cá nhân': 'Personal', 'Hỗ trợ': 'Support', 'Đào tạo': 'Training',
       // Page headings
@@ -79,12 +89,22 @@
       'Chấm công': '考勤', 'Công việc': '任务', 'Phân công': '分配',
       'Đánh giá KPI': 'KPI评估', 'Báo cáo': '报告', 'Thông báo công ty': '公司公告',
       'Tuyển dụng': '招聘', 'Video đào tạo': '培训视频', 'Thêm video mới': '上传视频',
-      'Nhật ký hệ thống': '系统日志', 'KPI Goals': 'KPI目标', 'Chi phí': '费用',
-      'Kỹ năng': '技能', 'Ca làm việc': '班次', 'Phân ca': '排班',
+      'Nhật ký hệ thống': '系统日志', 'Nhật ký': '审计日志', 'KPI Goals': 'KPI目标',
+      'Mục tiêu KPI': 'KPI目标', 'Chi phí': '费用',
+      'Kỹ năng': '技能', 'Kỹ năng NV': '员工技能', 'Ca làm việc': '班次', 'Phân ca': '排班',
       'Đăng xuất': '退出登录', 'Hồ sơ cá nhân': '个人资料', 'Làm thêm giờ': '加班',
       'Phiếu lương': '工资条', 'Công việc của tôi': '我的任务', 'Thông báo': '通知',
       'Nhóm của tôi': '我的团队', 'Duyệt nghỉ phép': '审批请假', 'Duyệt OT': '审批加班',
       'Tin tuyển dụng': '招聘信息', 'Ứng viên': '候选人',
+      'LMS - Khóa học': 'LMS - 课程', 'QR Code': '二维码', 'Khảo sát': '调查',
+      'Vinh danh': '表彰', 'Onboarding': '入职', 'OKR': 'OKR',
+      'Cài đặt': '设置', 'Phân tích': '分析',
+      'Advanced Dashboard': '高级仪表板', 'Quản lý User Nâng cao': '高级用户管理',
+      'Lương': '工资', 'Video': '视频', 'Analytics': '分析', 'Khóa học': '课程',
+      'Khen thưởng': '奖励', 'Cấu hình Hệ thống': '系统配置',
+      'Audit Logs': '审计日志', 'Backup & Restore': '备份与恢复',
+      'System Monitor': '系统监控', 'Cache & Email': '缓存和邮件',
+      'Cloud Storage': '云存储',
       // Section labels
       'Cá nhân': '个人', 'Hỗ trợ': '支持', 'Đào tạo': '培训',
       // Page headings
@@ -126,12 +146,22 @@
       'Chấm công': '勤怠', 'Công việc': 'タスク', 'Phân công': '割り当て',
       'Đánh giá KPI': 'KPI評価', 'Báo cáo': 'レポート', 'Thông báo công ty': 'お知らせ',
       'Tuyển dụng': '採用', 'Video đào tạo': 'トレーニング動画', 'Thêm video mới': '動画アップロード',
-      'Nhật ký hệ thống': '監査ログ', 'KPI Goals': 'KPI目標', 'Chi phí': '経費',
-      'Kỹ năng': 'スキル', 'Ca làm việc': 'シフト', 'Phân ca': 'シフト割り当て',
+      'Nhật ký hệ thống': '監査ログ', 'Nhật ký': '監査ログ', 'KPI Goals': 'KPI目標',
+      'Mục tiêu KPI': 'KPI目標', 'Chi phí': '経費',
+      'Kỹ năng': 'スキル', 'Kỹ năng NV': '従業員スキル', 'Ca làm việc': 'シフト', 'Phân ca': 'シフト割り当て',
       'Đăng xuất': 'ログアウト', 'Hồ sơ cá nhân': 'プロフィール', 'Làm thêm giờ': '残業',
       'Phiếu lương': '給与明細', 'Công việc của tôi': '自分のタスク', 'Thông báo': '通知',
       'Nhóm của tôi': '自分のチーム', 'Duyệt nghỉ phép': '休暇承認', 'Duyệt OT': '残業承認',
       'Tin tuyển dụng': '求人情報', 'Ứng viên': '候補者',
+      'LMS - Khóa học': 'LMS - コース', 'QR Code': 'QRコード', 'Khảo sát': 'アンケート',
+      'Vinh danh': '表彰', 'Onboarding': 'オンボーディング', 'OKR': 'OKR',
+      'Cài đặt': '設定', 'Phân tích': '分析',
+      'Advanced Dashboard': '詳細ダッシュボード', 'Quản lý User Nâng cao': '高度なユーザー管理',
+      'Lương': '給与', 'Video': '動画', 'Analytics': '分析', 'Khóa học': 'コース',
+      'Khen thưởng': '報奨', 'Cấu hình Hệ thống': 'システム設定',
+      'Audit Logs': '監査ログ', 'Backup & Restore': 'バックアップと復元',
+      'System Monitor': 'システム監視', 'Cache & Email': 'キャッシュとメール',
+      'Cloud Storage': 'クラウドストレージ',
       // Section labels
       'Cá nhân': '個人', 'Hỗ trợ': 'サポート', 'Đào tạo': 'トレーニング',
       // Page headings
@@ -164,6 +194,64 @@
       'Chưa check-in': '未出勤', 'Đã hoàn thành ca': 'シフト完了',
       'Xem tất cả': 'すべて見る', 'Thêm nhân viên': '従業員追加',
       'Giao việc mới': '新しい割り当て', 'Truy cập nhanh': 'クイックアクセス',
+    }
+    ,
+    ko: {
+      // Navigation
+      'Dashboard': '대시보드', 'Nhân viên': '직원', 'Phòng ban': '부서',
+      'Chức vụ': '직책', 'Hợp đồng': '계약', 'Bảng lương': '급여',
+      'Thanh toán': '지급', 'Tài liệu': '문서', 'Nghỉ phép': '휴가 요청',
+      'Chấm công': '근태', 'Công việc': '업무', 'Phân công': '배정',
+      'Đánh giá KPI': 'KPI 평가', 'Báo cáo': '보고서', 'Thông báo công ty': '회사 공지',
+      'Tuyển dụng': '채용', 'Video đào tạo': '교육 영상', 'Thêm video mới': '영상 업로드',
+      'Nhật ký hệ thống': '시스템 로그', 'Nhật ký': '감사 로그', 'KPI Goals': 'KPI 목표',
+      'Mục tiêu KPI': 'KPI 목표', 'Chi phí': '비용',
+      'Kỹ năng': '기술', 'Kỹ năng NV': '직원 기술', 'Ca làm việc': '근무 교대', 'Phân ca': '교대 배정',
+      'Đăng xuất': '로그아웃', 'Hồ sơ cá nhân': '내 프로필', 'Làm thêm giờ': '초과근무',
+      'Phiếu lương': '급여명세서', 'Công việc của tôi': '내 업무', 'Thông báo': '알림',
+      'Nhóm của tôi': '내 팀', 'Duyệt nghỉ phép': '휴가 승인', 'Duyệt OT': '초과근무 승인',
+      'Tin tuyển dụng': '채용 공고', 'Ứng viên': '지원자',
+      'LMS - Khóa học': 'LMS - 과정', 'QR Code': 'QR 코드', 'Khảo sát': '설문조사',
+      'Vinh danh': '인정', 'Onboarding': '온보딩', 'OKR': 'OKR',
+      'Cài đặt': '설정', 'Phân tích': '분석',
+      'Advanced Dashboard': '고급 대시보드', 'Quản lý User Nâng cao': '고급 사용자 관리',
+      'Lương': '급여', 'Video': '영상', 'Analytics': '분석', 'Khóa học': '과정',
+      'Khen thưởng': '포상', 'Cấu hình Hệ thống': '시스템 구성',
+      'Audit Logs': '감사 로그', 'Backup & Restore': '백업 및 복원',
+      'System Monitor': '시스템 모니터', 'Cache & Email': '캐시 및 이메일',
+      'Cloud Storage': '클라우드 스토리지',
+      // Section labels
+      'Cá nhân': '개인', 'Hỗ trợ': '지원', 'Đào tạo': '교육',
+      // Page headings
+      'Bảng Điều Khiển': '대시보드', 'NHÂN VIÊN': '직원', 'PHÒNG BAN': '부서',
+      'CHỨC VỤ': '직책', 'CHỜ DUYỆT NGHỈ': '승인 대기 휴가', 'CÔNG VIỆC': '업무',
+      'Chấm Công 7 Ngày Qua': '최근 7일 근태', 'Nhân Viên Theo Phòng Ban': '부서별 직원',
+      'Hôm nay:': '오늘:', 'Xem chi tiết': '자세히 보기',
+      // Buttons
+      'Lưu': '저장', 'Hủy': '취소', 'Xóa': '삭제', 'Sửa': '수정', 'Thêm': '추가',
+      'Tìm kiếm': '검색', 'Quay lại': '뒤로', 'Xác nhận': '확인', 'Lọc': '필터',
+      'Tất cả': '전체', 'Trạng thái': '상태', 'Thao tác': '작업', 'Tìm': '검색',
+      // Status
+      'Chờ duyệt': '승인 대기', 'Đã duyệt': '승인됨', 'Từ chối': '거절됨',
+      'Đang thực hiện': '진행 중', 'Hoàn thành': '완료', 'Đã hủy': '취소됨',
+      'Đã thanh toán': '지급 완료', 'Chưa thanh toán': '미지급',
+      // Table headers
+      'Họ và tên': '성명', 'Số điện thoại': '전화번호', 'Ngày vào làm': '입사일',
+      'Mã nhân viên': '직원 코드', 'Số tiền': '금액', 'Ghi chú': '메모',
+      'Lý do': '사유', 'Giờ vào': '출근', 'Giờ ra': '퇴근',
+      'Lương cơ bản': '기본급', 'Thưởng': '상여금', 'Khấu trừ': '공제',
+      'Lương thực nhận': '실수령액', 'Không có dữ liệu': '데이터 없음',
+      // New
+      'Tài chính': '재무', 'Đánh giá': '평가', 'Tài sản': '자산', 'Trợ lý HR': 'HR 도우미',
+      'Danh sách nhân viên': '직원 목록', 'Quản lý': '관리', 'Nhân sự': '인사',
+      'Thiết Bị & Tài Sản': '장비 및 자산', 'Thông Báo Công Ty': '회사 공지',
+      'Yêu Cầu Chi Phí': '비용 청구', 'Tài Liệu Của Tôi': '내 문서',
+      'Ca Làm Việc Của Tôi': '내 근무 교대', 'Đăng Ký Làm Thêm Giờ': '초과근무 신청',
+      'Tiêu đề': '제목', 'Danh mục': '카테고리', 'Ngày chi': '지출일',
+      'Chứng từ': '영수증', 'Đang sử dụng': '사용 중', 'Đã trả': '반납됨',
+      'Chưa check-in': '미출근', 'Đã hoàn thành ca': '근무 완료',
+      'Xem tất cả': '전체 보기', 'Thêm nhân viên': '직원 추가',
+      'Giao việc mới': '새 배정', 'Truy cập nhanh': '빠른 접근',
     }
   };
 
@@ -275,14 +363,14 @@
     var currentBg = getSetting('bg', 'default');
     var currentBrightness = getSetting('brightness', '1');
 
-    var langFlags = { vi: '🇻🇳', en: '🇬🇧', zh: '🇨🇳', ja: '🇯🇵' };
-    var langNames = { vi: 'Tiếng Việt', en: 'English', zh: '中文', ja: '日本語' };
+    var langFlags = { vi: '🇻🇳', en: '🇬🇧', zh: '🇨🇳', ja: '🇯🇵', ko: '🇰🇷' };
+    var langNames = { vi: 'Tiếng Việt', en: 'English', zh: '中文', ja: '日本語', ko: '한국어' };
 
     var panel = document.createElement('div');
     panel.id = 'hrms-settings-panel';
     panel.innerHTML = [
       '<div id="hrms-settings-overlay" style="position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.5);" onclick="document.getElementById(\'hrms-settings-panel\').remove()"></div>',
-      '<div style="position:fixed;right:20px;top:60px;z-index:9999;width:320px;background:#1e293b;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);overflow:hidden;">',
+      '<div style="position:fixed;right:22px;bottom:210px;z-index:10002;width:320px;background:#1e293b;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);overflow:hidden;">',
         // Header
         '<div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">',
           '<div style="display:flex;align-items:center;gap:10px;">',
@@ -389,23 +477,23 @@
 
     var btn = document.createElement('button');
     btn.id = 'hrms-gear-btn';
-    btn.innerHTML = '⚙️';
+    btn.innerHTML = '<i class="bi bi-gear-fill" aria-hidden="true"></i>';
     btn.title = 'Settings';
     btn.setAttribute('onclick', 'HRMS.settings.openPanel()');
     btn.style.cssText = [
       'position:fixed',
-      'bottom:24px',
-      'right:24px',
-      'z-index:9000',
-      'width:48px',
-      'height:48px',
+      'bottom:152px',
+      'right:22px',
+      'z-index:9998',
+      'width:52px',
+      'height:52px',
       'border-radius:50%',
-      'background:linear-gradient(135deg,#6366f1,#8b5cf6)',
+      'background:linear-gradient(135deg,#f59e0b,#f97316)',
       'border:none',
       'color:white',
-      'font-size:1.3rem',
+      'font-size:1.15rem',
       'cursor:pointer',
-      'box-shadow:0 4px 20px rgba(99,102,241,0.5)',
+      'box-shadow:0 12px 28px rgba(249,115,22,0.36)',
       'transition:all 0.2s',
       'display:flex',
       'align-items:center',
@@ -414,11 +502,11 @@
 
     btn.addEventListener('mouseenter', function() {
       this.style.transform = 'scale(1.1) rotate(30deg)';
-      this.style.boxShadow = '0 6px 28px rgba(99,102,241,0.7)';
+      this.style.boxShadow = '0 16px 34px rgba(249,115,22,0.5)';
     });
     btn.addEventListener('mouseleave', function() {
       this.style.transform = 'scale(1) rotate(0deg)';
-      this.style.boxShadow = '0 4px 20px rgba(99,102,241,0.5)';
+      this.style.boxShadow = '0 12px 28px rgba(249,115,22,0.36)';
     });
 
     document.body.appendChild(btn);

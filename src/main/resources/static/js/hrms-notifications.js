@@ -46,7 +46,7 @@
     var btn = document.createElement('button');
     btn.id = 'hrms-notif-btn';
     btn.title = 'Notifications';
-    btn.style.cssText = 'position:fixed;bottom:80px;right:24px;z-index:8999;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#f97316);border:none;color:white;font-size:1.2rem;cursor:pointer;box-shadow:0 4px 20px rgba(245,158,11,0.5);transition:all 0.2s;display:flex;align-items:center;justify-content:center;';
+    btn.style.cssText = 'position:fixed;bottom:86px;right:24px;z-index:8999;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#f97316);border:none;color:white;font-size:1.2rem;cursor:pointer;box-shadow:0 4px 20px rgba(245,158,11,0.5);transition:all 0.2s;display:flex;align-items:center;justify-content:center;';
     btn.innerHTML = '🔔<span class="hrms-notif-badge" style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:white;border-radius:10px;font-size:0.65rem;font-weight:700;padding:2px 5px;min-width:18px;height:18px;display:none;align-items:center;justify-content:center;border:2px solid #1e293b;">0</span>';
 
     btn.addEventListener('mouseenter', function() { this.style.transform = 'scale(1.1)'; });
@@ -63,7 +63,7 @@
     fetchNotificationList().then(function(notifications) {
       var panel = document.createElement('div');
       panel.id = 'hrms-notif-panel';
-      panel.style.cssText = 'position:fixed;bottom:140px;right:24px;z-index:9500;width:340px;background:#1e293b;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);overflow:hidden;';
+      panel.style.cssText = 'position:fixed;bottom:148px;right:24px;z-index:9500;width:340px;background:#1e293b;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);overflow:hidden;';
 
       var notifHtml = notifications.length === 0
         ? '<div style="text-align:center;padding:32px;color:#475569;"><div style="font-size:2rem;margin-bottom:8px;">🔔</div><div>No notifications</div></div>'

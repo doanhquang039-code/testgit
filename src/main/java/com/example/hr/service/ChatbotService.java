@@ -55,6 +55,42 @@ public class ChatbotService {
         String intent;
         String reply;
 
+        if (matches(norm, "tien do cong viec", "tiến độ công việc", "cong viec toi dau", "công việc tới đâu", "task progress", "ket qua cong viec", "kết quả công việc")) {
+            intent = "WORK_PROGRESS";
+            reply = workProgressAnswer(user);
+            return saveAndBuild(user, sessionId, message, intent, reply, false);
+        }
+
+        if (matches(norm, "ket qua kpi", "kết quả kpi", "ket qua", "kết quả", "kpi toi dau", "kpi tới đâu", "danh gia toi dau", "đánh giá tới đâu")) {
+            intent = "KPI_RESULT";
+            reply = kpiResultAnswer(user);
+            return saveAndBuild(user, sessionId, message, intent, reply, false);
+        }
+
+        if (matches(norm, "tinh hinh team", "tình hình team", "tien do muc tieu", "tiến độ mục tiêu", "muc tieu team", "mục tiêu team")) {
+            intent = "TEAM_PROGRESS";
+            reply = workProgressAnswer(user) + "\n" + kpiResultAnswer(user);
+            return saveAndBuild(user, sessionId, message, intent, reply, false);
+        }
+
+        if (matches(norm, "ngan sach", "ngân sách", "budget")) {
+            intent = "BUDGET_INFO";
+            reply = "Ngân sách team xem tại /manager/budget. Báo cáo ngân sách xem tại /manager/reports/budget.";
+            return saveAndBuild(user, sessionId, message, intent, reply, false);
+        }
+
+        if (matches(norm, "pipeline tuyen dung", "pipeline tuyển dụng", "lich phong van", "lịch phỏng vấn", "ung vien moi", "ứng viên mới")) {
+            intent = "HIRING_PROGRESS";
+            reply = "Tiến độ tuyển dụng xem tại /hiring/dashboard. Pipeline ứng viên ở /hiring/candidates, lịch phỏng vấn ở /hiring/interviews.";
+            return saveAndBuild(user, sessionId, message, intent, reply, false);
+        }
+
+        if (matches(norm, "don nghi cho duyet", "đơn nghỉ chờ duyệt", "don nghi cua toi", "đơn nghỉ của tôi")) {
+            intent = "LEAVE_STATUS";
+            reply = leaveAnswer(user, norm);
+            return saveAndBuild(user, sessionId, message, intent, reply, false);
+        }
+
         // ===== TRY AI FIRST (nếu Gemini đã cấu hình) =====
         if (geminiAiService != null && !escalate) {
             String aiReply = tryGeminiReply(user, message, norm);
@@ -171,6 +207,87 @@ public class ChatbotService {
             return base + " Tháng " + m + "/" + y + ": hệ thống đã có bản ghi bảng lương cho bạn.";
         }
         return base + " Tháng " + m + "/" + y + ": chưa thấy bản ghi lương — có thể HR chưa tạo; liên hệ HR nếu cần gấp.";
+    }
+
+    private String workProgressAnswer(User user) {
+        if (user == null) {
+            return "Bạn cần đăng nhập để xem tiến độ công việc.";
+        }
+
+        String role = user.getRole() != null ? user.getRole().name() : "USER";
+        if ("ADMIN".equals(role)) {
+            return buildTaskSummary("Toàn hệ thống", taskAssignmentRepository.findAllWithUser(), "/admin/tasks");
+        }
+        if ("MANAGER".equals(role)) {
+            List<com.example.hr.models.TaskAssignment> all = taskAssignmentRepository.findAllWithUser();
+            Integer deptId = user.getDepartment() != null ? user.getDepartment().getId() : null;
+            List<com.example.hr.models.TaskAssignment> team = new ArrayList<>();
+            for (com.example.hr.models.TaskAssignment a : all) {
+                if (a.getUser() != null && a.getUser().getDepartment() != null
+                        && Objects.equals(a.getUser().getDepartment().getId(), deptId)) {
+                    team.add(a);
+                }
+            }
+            return buildTaskSummary("Team của bạn", team, "/manager/team");
+        }
+        if ("HIRING".equals(role)) {
+            return "Tiến độ tuyển dụng xem tại /hiring/dashboard, gồm pipeline ứng viên, lịch phỏng vấn và tin đăng tuyển dụng. Xem chi tiết ở Candidates hoặc Interviews.";
+        }
+
+        return buildTaskSummary("Công việc của bạn", taskAssignmentRepository.findByUser(user), "/user1/tasks");
+    }
+
+    private String buildTaskSummary(String scope, List<com.example.hr.models.TaskAssignment> rows, String link) {
+        int total = rows != null ? rows.size() : 0;
+        long pending = 0;
+        long inProgress = 0;
+        long completed = 0;
+        long canceled = 0;
+
+        if (rows != null) {
+            for (com.example.hr.models.TaskAssignment a : rows) {
+                String status = a.getStatus() != null ? a.getStatus().name() : "";
+                if ("PENDING".equals(status)) pending++;
+                else if ("IN_PROGRESS".equals(status)) inProgress++;
+                else if ("COMPLETED".equals(status) || "DONE".equals(status)) completed++;
+                else if ("CANCELED".equals(status)) canceled++;
+            }
+        }
+
+        return scope + ": tổng " + total + " công việc. "
+                + "Chưa bắt đầu: " + pending + ", đang làm: " + inProgress
+                + ", hoàn thành: " + completed + ", đã hủy: " + canceled + ". "
+                + "Xem chi tiết tại " + link + ".";
+    }
+
+    private String kpiResultAnswer(User user) {
+        if (user == null) {
+            return "Bạn cần đăng nhập để xem kết quả KPI.";
+        }
+
+        String role = user.getRole() != null ? user.getRole().name() : "USER";
+        if ("ADMIN".equals(role)) {
+            long active = kpiGoalRepository.findByStatus(com.example.hr.enums.KpiStatus.ACTIVE).size();
+            long completed = kpiGoalRepository.findByStatus(com.example.hr.enums.KpiStatus.COMPLETED).size();
+            return "KPI toàn hệ thống: đang thực hiện " + active + ", đã hoàn thành " + completed
+                    + ". Xem chi tiết tại /admin/kpi.";
+        }
+        if ("MANAGER".equals(role) && user.getDepartment() != null) {
+            List<com.example.hr.models.KpiGoal> goals = kpiGoalRepository.findByDepartmentId(user.getDepartment().getId());
+            long active = goals.stream().filter(k -> k.getStatus() != null && "ACTIVE".equals(k.getStatus().name())).count();
+            long completed = goals.stream().filter(k -> k.getStatus() != null && "COMPLETED".equals(k.getStatus().name())).count();
+            return "KPI của team: tổng " + goals.size() + ", đang thực hiện " + active + ", đã hoàn thành " + completed
+                    + ". Xem thêm ở /manager/performance.";
+        }
+        if ("HIRING".equals(role)) {
+            return "Kết quả tuyển dụng xem tại /hiring/analytics/performance và /hiring/reports.";
+        }
+
+        List<com.example.hr.models.KpiGoal> activeGoals = kpiGoalRepository.findActiveGoalsByUser(user.getId(), LocalDate.now());
+        Double avg = kpiGoalRepository.avgAchievementByUser(user.getId());
+        return "KPI của bạn: đang active " + activeGoals.size()
+                + ", điểm trung bình KPI đã hoàn thành: " + (avg != null ? String.format(Locale.ROOT, "%.1f%%", avg) : "chưa có")
+                + ". Xem chi tiết tại /user1/kpi và /user1/reviews.";
     }
 
     private static boolean wantsEscalation(String norm, String raw) {

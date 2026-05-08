@@ -3,6 +3,7 @@
 <body>
     <!-- Hiring Sidebar Fragment -->
     <nav th:fragment="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <link rel="stylesheet" th:href="@{/css/chatbot-widget.css}">
         <div class="position-sticky pt-3">
             <ul class="nav flex-column">
                 <li class="nav-item">
@@ -137,6 +138,7 @@
                 </li>
             </ul>
         </div>
+        <script th:src="@{/js/chatbot-widget.js}"></script>
     </nav>
 </body>
 </html>
