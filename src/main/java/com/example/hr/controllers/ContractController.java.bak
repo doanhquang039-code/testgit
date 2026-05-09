@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.hr.enums.UserStatus;
 import com.example.hr.models.Contract;
 import com.example.hr.repository.ContractRepository;
-import com.example.hr.repository.DepartmentRepository;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.service.HrAuditLogService;
 
@@ -31,25 +30,14 @@ public class ContractController {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private DepartmentRepository departmentRepository;
-    @Autowired
     private HrAuditLogService hrAuditLogService;
 
     @GetMapping
     public String list(@RequestParam(name = "keyword", required = false) String keyword,
                        @RequestParam(name = "contractType", required = false) String contractType,
-                       @RequestParam(name = "deptId", required = false) Integer deptId,
                        @RequestParam(name = "status", required = false) String status,
                        Model model) {
         List<Contract> contracts = contractRepository.findAllWithUser(keyword);
-
-        if (deptId != null) {
-            contracts = contracts.stream()
-                    .filter(c -> c.getUser() != null
-                            && c.getUser().getDepartment() != null
-                            && deptId.equals(c.getUser().getDepartment().getId()))
-                    .collect(Collectors.toList());
-        }
 
         // Filter by contract type
         if (contractType != null && !contractType.isBlank()) {
@@ -72,9 +60,7 @@ public class ContractController {
         model.addAttribute("contracts", contracts);
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedContractType", contractType);
-        model.addAttribute("selectedDeptId", deptId);
         model.addAttribute("selectedStatus", status);
-        model.addAttribute("departments", departmentRepository.findAll());
         return "admin/contract-list";
     }
 

@@ -1,8 +1,6 @@
 package com.example.hr.controllers;
 
 import com.example.hr.models.Department;
-import com.example.hr.models.User;
-import com.example.hr.repository.UserRepository;
 import com.example.hr.repository.DepartmentRepository;
 import com.example.hr.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Controller
 @RequestMapping("/admin/departments")
 public class DepartmentController {
@@ -27,9 +22,6 @@ public class DepartmentController {
 
     @Autowired
     private DepartmentRepository departmentRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @GetMapping
     public String list(@RequestParam(name = "keyword", required = false) String keyword,
@@ -65,36 +57,5 @@ public class DepartmentController {
     public String delete(@PathVariable Integer id) {
         departmentService.deleteDepartment(id);
         return "redirect:/admin/departments";
-    }
-
-    @GetMapping("/{id}/members")
-    public String viewDepartmentMembers(@PathVariable("id") Integer id,
-                                        @RequestParam(name = "keyword", required = false) String keyword,
-                                        @RequestParam(name = "role", required = false) String role,
-                                        Model model) {
-        Department department = departmentService.getDepartmentById(id);
-        List<User> members = userRepository.findByDepartment(department);
-
-        if (keyword != null && !keyword.isBlank()) {
-            String normalized = keyword.trim().toLowerCase();
-            members = members.stream()
-                    .filter(u ->
-                            (u.getFullName() != null && u.getFullName().toLowerCase().contains(normalized)) ||
-                            (u.getEmail() != null && u.getEmail().toLowerCase().contains(normalized)) ||
-                            (u.getEmployeeCode() != null && u.getEmployeeCode().toLowerCase().contains(normalized)))
-                    .collect(Collectors.toList());
-        }
-
-        if (role != null && !role.isBlank()) {
-            members = members.stream()
-                    .filter(u -> u.getRole() != null && role.equalsIgnoreCase(u.getRole().name()))
-                    .collect(Collectors.toList());
-        }
-
-        model.addAttribute("department", department);
-        model.addAttribute("members", members);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("selectedRole", role);
-        return "admin/department-members";
     }
 }

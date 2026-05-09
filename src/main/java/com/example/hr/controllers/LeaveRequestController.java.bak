@@ -14,7 +14,6 @@ import com.example.hr.enums.UserStatus;
 import com.example.hr.models.LeaveRequest;
 import com.example.hr.models.User;
 import com.example.hr.repository.LeaveRequestRepository;
-import com.example.hr.repository.DepartmentRepository;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.service.HrAuditLogService;
 import com.example.hr.service.NotificationService;
@@ -31,8 +30,6 @@ public class LeaveRequestController {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private DepartmentRepository departmentRepository;
-    @Autowired
     private NotificationService notificationService;
     @Autowired
     private HrAuditLogService hrAuditLogService;
@@ -46,19 +43,10 @@ public class LeaveRequestController {
     public String listAll(@RequestParam(required = false) String keyword,
                           @RequestParam(required = false) String status,
                           @RequestParam(required = false) String leaveType,
-                          @RequestParam(required = false) Integer deptId,
                           @RequestParam(required = false) String fromDate,
                           @RequestParam(required = false) String toDate,
                           Model model) {
         var all = leaveRepository.findAllWithUser(keyword);
-
-        if (deptId != null) {
-            all = all.stream()
-                    .filter(l -> l.getUser() != null
-                            && l.getUser().getDepartment() != null
-                            && deptId.equals(l.getUser().getDepartment().getId()))
-                    .collect(java.util.stream.Collectors.toList());
-        }
 
         // Filter by leave type
         if (leaveType != null && !leaveType.isBlank()) {
@@ -94,10 +82,8 @@ public class LeaveRequestController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("selectedLeaveType", leaveType);
-        model.addAttribute("selectedDeptId", deptId);
         model.addAttribute("fromDate", fromDate);
         model.addAttribute("toDate", toDate);
-        model.addAttribute("departments", departmentRepository.findAll());
         model.addAttribute("countPending",  countPending);
         model.addAttribute("countApproved", countApproved);
         model.addAttribute("countRejected", countRejected);
