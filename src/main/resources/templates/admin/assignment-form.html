@@ -167,6 +167,8 @@
                                                 th:text="${t.taskName}"
                                                 th:data-type="${t.taskType}"
                                                 th:data-reward="${t.baseReward}"
+                                                th:data-start="${t.startDate}"
+                                                th:data-end="${t.endDate}"
                                                 th:data-desc="${t.description}">
                                         </option>
                                     </select>
@@ -180,6 +182,10 @@
                                             <div class="col-4">
                                                 <div class="label">Thưởng cơ bản</div>
                                                 <div class="value" id="prev-reward">-</div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="label">Thời gian</div>
+                                                <div class="value" id="prev-date-range">-</div>
                                             </div>
                                             <div class="col-12" id="prev-desc-wrap">
                                                 <div class="label">Mô tả</div>
@@ -258,6 +264,9 @@
             document.getElementById('prev-reward').textContent = reward > 0
                 ? new Intl.NumberFormat('vi-VN').format(reward) + ' ₫'
                 : 'Không có thưởng';
+            const startDate = selected.getAttribute('data-start') || '---';
+            const endDate = selected.getAttribute('data-end') || '---';
+            document.getElementById('prev-date-range').textContent = startDate + ' - ' + endDate;
             const desc = selected.getAttribute('data-desc');
             document.getElementById('prev-desc').textContent = desc || 'Không có mô tả';
             document.getElementById('prev-desc-wrap').style.display = desc ? 'block' : 'none';

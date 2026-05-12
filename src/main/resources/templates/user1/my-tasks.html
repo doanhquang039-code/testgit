@@ -239,6 +239,11 @@
             <div class="task-meta">
                 <div class="task-meta-item"><i class="bi bi-tag"></i> <span th:text="${a.task.taskType}">Loại</span></div>
                 <div class="task-meta-item"><i class="bi bi-calendar3"></i> Ngày giao: <span th:text="${a.assignedDate}">01/01</span></div>
+                <div class="task-meta-item" th:if="${a.task.startDate != null or a.task.endDate != null}">
+                    <i class="bi bi-calendar-range"></i>
+                    Hạn task:
+                    <span th:text="${(a.task.startDate != null ? #temporals.format(a.task.startDate, 'dd/MM/yyyy') : '---') + ' - ' + (a.task.endDate != null ? #temporals.format(a.task.endDate, 'dd/MM/yyyy') : '---')}">01/01 - 02/01</span>
+                </div>
                 <div class="task-meta-item" th:if="${a.actualHours != null}"><i class="bi bi-clock"></i> Giờ thực tế: <span th:text="${a.actualHours} + 'h'">0h</span></div>
             </div>
         </div>

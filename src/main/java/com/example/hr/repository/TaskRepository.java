@@ -1,7 +1,9 @@
 package com.example.hr.repository;
 
 import java.util.List;
+import java.time.LocalDate;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,6 +24,12 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     @Query("SELECT t FROM Task t WHERE " +
            "(:keyword IS NULL OR LOWER(t.taskName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
            "OR LOWER(t.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-           "AND (:taskType IS NULL OR t.taskType = :taskType)")
-    List<Task> searchTasks(@Param("keyword") String keyword, @Param("taskType") TaskType taskType);
+           "AND (:taskType IS NULL OR t.taskType = :taskType) " +
+           "AND (:startDate IS NULL OR t.startDate >= :startDate) " +
+           "AND (:endDate IS NULL OR t.endDate <= :endDate)")
+    List<Task> searchTasks(@Param("keyword") String keyword,
+                           @Param("taskType") TaskType taskType,
+                           @Param("startDate") LocalDate startDate,
+                           @Param("endDate") LocalDate endDate,
+                           Sort sort);
 }

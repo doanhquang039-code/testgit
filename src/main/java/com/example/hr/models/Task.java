@@ -1,6 +1,7 @@
 package com.example.hr.models;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.example.hr.enums.TaskType;
@@ -39,6 +40,12 @@ public class Task {
     private BigDecimal baseReward = BigDecimal.ZERO;
 
     private Boolean isExtraShift = false;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -101,6 +108,22 @@ public class Task {
 	public void setIsExtraShift(Boolean isExtraShift) {
 		this.isExtraShift = isExtraShift;
 	}
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
