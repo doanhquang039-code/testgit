@@ -79,6 +79,11 @@ if ($env:MVNW_REPOURL) {
 $distributionUrlName = $distributionUrl -replace '^.*/',''
 $distributionUrlNameMain = $distributionUrlName -replace '\.[^.]*$','' -replace '-bin$',''
 
+# In sandboxed/CI environments, default wrapper cache to the project directory.
+if (-not $env:MAVEN_USER_HOME) {
+  $env:MAVEN_USER_HOME = (Join-Path $PWD.Path ".m2")
+}
+
 $MAVEN_M2_PATH = "$HOME/.m2"
 if ($env:MAVEN_USER_HOME) {
   $MAVEN_M2_PATH = "$env:MAVEN_USER_HOME"
@@ -89,10 +94,16 @@ if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
 }
 
 $MAVEN_WRAPPER_DISTS = $null
-if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
+$m2PathItem = Get-Item -LiteralPath $MAVEN_M2_PATH
+$m2Target = $null
+if ($m2PathItem.PSObject.Properties.Name -contains "Target") {
+  $m2Target = $m2PathItem.Target
+}
+
+if (($null -eq $m2Target) -or ($m2Target.Count -eq 0) -or [string]::IsNullOrWhiteSpace($m2Target[0])) {
   $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
 } else {
-  $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"
+  $MAVEN_WRAPPER_DISTS = "$($m2Target[0])/wrapper/dists"
 }
 
 $MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"

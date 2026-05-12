@@ -9,16 +9,26 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.hr.enums.NotificationType;
+import com.example.hr.enums.Role;
 import com.example.hr.enums.TaskStatus;
 import com.example.hr.enums.UserStatus;
+import com.example.hr.models.Department;
 import com.example.hr.models.TaskAssignment;
+import com.example.hr.models.User;
+import com.example.hr.repository.DepartmentRepository;
 import com.example.hr.repository.TaskAssignmentRepository;
 import com.example.hr.repository.TaskRepository;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.service.NotificationService;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/assignments")
@@ -32,13 +42,66 @@ public class TaskAssignmentController {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private DepartmentRepository departmentRepository;
+    @Autowired
     private NotificationService notificationService;
 
     // 1. Hiển thị danh sách phân công
     @GetMapping
     @Transactional(readOnly = true)
-    public String list(Model model) {
-        model.addAttribute("assignments", assignmentRepository.findAll());
+    public String list(@RequestParam(name = "departmentId", required = false) Integer departmentId,
+                       @RequestParam(name = "keyword", required = false) String keyword,
+                       Model model) {
+        List<TaskAssignment> assignments = assignmentRepository.findAllWithUser();
+
+        if (departmentId != null) {
+            assignments = assignments.stream()
+                    .filter(a -> a.getUser() != null
+                            && a.getUser().getDepartment() != null
+                            && departmentId.equals(a.getUser().getDepartment().getId()))
+                    .collect(Collectors.toList());
+        }
+
+        if (keyword != null && !keyword.isBlank()) {
+            String normalized = keyword.trim().toLowerCase();
+            assignments = assignments.stream()
+                    .filter(a -> (a.getUser() != null
+                            && a.getUser().getFullName() != null
+                            && a.getUser().getFullName().toLowerCase().contains(normalized))
+                            || (a.getTask() != null
+                            && a.getTask().getTaskName() != null
+                            && a.getTask().getTaskName().toLowerCase().contains(normalized)))
+                    .collect(Collectors.toList());
+        }
+
+        List<User> activeManagers = userRepository.findByRoleInAndStatus(
+                List.of(Role.MANAGER, Role.ADMIN), UserStatus.ACTIVE);
+        Map<Integer, List<User>> managersByDepartmentId = activeManagers.stream()
+                .filter(u -> u.getDepartment() != null && u.getDepartment().getId() != null)
+                .collect(Collectors.groupingBy(u -> u.getDepartment().getId()));
+
+        Map<Integer, String> assignmentManagers = assignments.stream()
+                .collect(Collectors.toMap(
+                        TaskAssignment::getId,
+                        a -> {
+                            Integer depId = a.getUser() != null && a.getUser().getDepartment() != null
+                                    ? a.getUser().getDepartment().getId() : null;
+                            if (depId == null) return "Chưa có quản lý";
+                            List<User> managers = managersByDepartmentId.getOrDefault(depId, new ArrayList<>());
+                            if (managers.isEmpty()) return "Chưa có quản lý";
+                            return managers.stream()
+                                    .limit(3)
+                                    .map(User::getFullName)
+                                    .collect(Collectors.joining(", "));
+                        }
+                ));
+
+        List<Department> departments = departmentRepository.findAll();
+        model.addAttribute("assignments", assignments);
+        model.addAttribute("departments", departments);
+        model.addAttribute("selectedDepartmentId", departmentId);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("assignmentManagers", assignmentManagers);
         model.addAttribute("statuses", TaskStatus.values());
         return "admin/assignment-list";
     }

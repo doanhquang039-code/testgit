@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.hr.enums.NotificationType;
 import com.example.hr.enums.PaymentStatus;
 import com.example.hr.models.Contract;
+import com.example.hr.models.Department;
 import com.example.hr.models.Payroll;
 import com.example.hr.models.User;
 import com.example.hr.repository.ContractRepository;
+import com.example.hr.repository.DepartmentRepository;
 import com.example.hr.repository.PayrollRepository;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.service.EmailFacade;
@@ -41,6 +43,8 @@ public class PayrollController {
 
     @Autowired
     private ContractRepository contractRepository;
+    @Autowired
+    private DepartmentRepository departmentRepository;
 
     @Autowired
     private NotificationService notificationService;
@@ -56,8 +60,17 @@ public class PayrollController {
                        @RequestParam(name = "month", required = false) Integer month,
                        @RequestParam(name = "year", required = false) Integer year,
                        @RequestParam(name = "status", required = false) String status,
+                       @RequestParam(name = "departmentId", required = false) Integer departmentId,
                        Model model) {
         List<Payroll> payrolls = payrollRepository.findAllWithUser(keyword);
+
+        if (departmentId != null) {
+            payrolls = payrolls.stream()
+                    .filter(p -> p.getUser() != null
+                            && p.getUser().getDepartment() != null
+                            && departmentId.equals(p.getUser().getDepartment().getId()))
+                    .collect(java.util.stream.Collectors.toList());
+        }
 
         // Filter by month
         if (month != null) {
@@ -78,11 +91,24 @@ public class PayrollController {
                     .collect(java.util.stream.Collectors.toList());
         }
 
+        long pendingCount = payrolls.stream()
+                .filter(p -> p.getPaymentStatus() != null && p.getPaymentStatus().name().equals("PENDING"))
+                .count();
+        BigDecimal totalNetSalary = payrolls.stream()
+                .map(Payroll::getNetSalary)
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<Department> departments = departmentRepository.findAll();
         model.addAttribute("payrolls", payrolls);
+        model.addAttribute("departments", departments);
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedMonth", month);
         model.addAttribute("selectedYear", year);
         model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedDepartmentId", departmentId);
+        model.addAttribute("pendingCount", pendingCount);
+        model.addAttribute("totalNetSalary", totalNetSalary);
         return "admin/payroll-list";
     }
 

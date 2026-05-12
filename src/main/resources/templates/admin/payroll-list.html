@@ -185,7 +185,7 @@
             <div>
                 <div class="stats-label">Phiếu chờ thanh toán</div>
                 <div class="stats-value"
-                     th:text="${payrolls.stream().filter(p -> p.paymentStatus != null and p.paymentStatus.name() == 'PENDING').count()}">0</div>
+                     th:text="${pendingCount}">0</div>
                 <div class="stats-sub">Đây là nhóm cần hoàn tất trước để tránh treo chu kỳ chi trả.</div>
             </div>
             <div class="d-flex justify-content-between align-items-end">
@@ -200,7 +200,7 @@
             <div class="sum-icon" style="background:#dcfce7;">💰</div>
             <div class="sum-label">Tổng quỹ lương</div>
             <div class="sum-value" style="color:#16a34a;">
-                <span th:text="${#numbers.formatDecimal(payrolls.stream().mapToDouble(p -> p.netSalary != null ? p.netSalary.doubleValue() : 0).sum(), 1, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</span>
+                <span th:text="${#numbers.formatDecimal(totalNetSalary, 1, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</span>
             </div>
         </div>
         <div class="sum-card">
@@ -212,7 +212,7 @@
             <div class="sum-icon" style="background:#fff7ed;">⏳</div>
             <div class="sum-label">Chờ thanh toán</div>
             <div class="sum-value" style="color:#ea580c;"
-                 th:text="${payrolls.stream().filter(p -> p.paymentStatus != null and p.paymentStatus.name() == 'PENDING').count()}">0</div>
+                 th:text="${pendingCount}">0</div>
         </div>
     </section>
 
@@ -227,21 +227,29 @@
                     <label class="form-label">Tìm nhân viên</label>
                     <input type="text" name="keyword" class="form-control" placeholder="Tên nhân viên..." th:value="${keyword}">
                 </div>
-                <div class="col-lg-2 col-md-6">
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Phòng ban</label>
+                    <select name="departmentId" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.departmentName}"
+                                th:selected="${selectedDepartmentId != null and d.id == selectedDepartmentId}"></option>
+                    </select>
+                </div>
+                <div class="col-lg-1 col-md-6">
                     <label class="form-label">Tháng</label>
                     <select name="month" class="form-select">
                         <option value="">Tất cả</option>
                         <option th:each="m : ${#numbers.sequence(1,12)}" th:value="${m}" th:text="${'Tháng ' + m}" th:selected="${m == selectedMonth}"></option>
                     </select>
                 </div>
-                <div class="col-lg-2 col-md-6">
+                <div class="col-lg-1 col-md-6">
                     <label class="form-label">Năm</label>
                     <select name="year" class="form-select">
                         <option value="">Tất cả</option>
                         <option th:each="y : ${#numbers.sequence(2023,2027)}" th:value="${y}" th:text="${y}" th:selected="${y == selectedYear}"></option>
                     </select>
                 </div>
-                <div class="col-lg-2 col-md-6">
+                <div class="col-lg-1 col-md-6">
                     <label class="form-label">Trạng thái</label>
                     <select name="status" class="form-select">
                         <option value="">Tất cả</option>
@@ -301,19 +309,19 @@
                     <td>
                         <span class="period-pill">
                             <i class="bi bi-calendar3"></i>
-                            <span th:text="${p.month} + '/' + ${p.year}">4/2026</span>
+                            <span th:text="${p.month + '/' + p.year}">4/2026</span>
                         </span>
                     </td>
                     <td><span class="money-main" th:text="${#numbers.formatDecimal(p.baseSalary, 1, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</span></td>
                     <td>
-                        <span th:if="${p.bonus != null and p.bonus.compareTo(java.math.BigDecimal.ZERO) > 0}" class="money-positive"
-                              th:text="'+' + ${#numbers.formatDecimal(p.bonus, 1, 'COMMA', 0, 'POINT')} + ' ₫'">+0 ₫</span>
-                        <span th:if="${p.bonus == null or p.bonus.compareTo(java.math.BigDecimal.ZERO) == 0}" class="text-muted">—</span>
+                        <span th:if="${p.bonus != null and p.bonus.compareTo(T(java.math.BigDecimal).ZERO) > 0}" class="money-positive"
+                              th:text="${'+' + #numbers.formatDecimal(p.bonus, 1, 'COMMA', 0, 'POINT') + ' ₫'}">+0 ₫</span>
+                        <span th:if="${p.bonus == null or p.bonus.compareTo(T(java.math.BigDecimal).ZERO) == 0}" class="text-muted">—</span>
                     </td>
                     <td>
-                        <span th:if="${p.deductions != null and p.deductions.compareTo(java.math.BigDecimal.ZERO) > 0}" class="money-negative"
-                              th:text="'-' + ${#numbers.formatDecimal(p.deductions, 1, 'COMMA', 0, 'POINT')} + ' ₫'">-0 ₫</span>
-                        <span th:if="${p.deductions == null or p.deductions.compareTo(java.math.BigDecimal.ZERO) == 0}" class="text-muted">—</span>
+                        <span th:if="${p.deductions != null and p.deductions.compareTo(T(java.math.BigDecimal).ZERO) > 0}" class="money-negative"
+                              th:text="${'-' + #numbers.formatDecimal(p.deductions, 1, 'COMMA', 0, 'POINT') + ' ₫'}">-0 ₫</span>
+                        <span th:if="${p.deductions == null or p.deductions.compareTo(T(java.math.BigDecimal).ZERO) == 0}" class="text-muted">—</span>
                     </td>
                     <td><span class="money-net" th:text="${p.netSalary != null ? #numbers.formatDecimal(p.netSalary, 1, 'COMMA', 0, 'POINT') + ' ₫' : 'N/A'}">0 ₫</span></td>
                     <td>
