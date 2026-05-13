@@ -11,10 +11,7 @@
 }
 
 body {
-  background:
-    radial-gradient(circle at 20% 0%, rgba(59, 130, 246, 0.08), transparent 28rem),
-    radial-gradient(circle at 86% 6%, rgba(16, 185, 129, 0.08), transparent 24rem),
-    var(--role-page-bg) !important;
+  background: var(--role-page-bg) !important;
   color: var(--role-ink);
   font-family: Inter, Arial, sans-serif;
 }
@@ -288,6 +285,48 @@ main h4 {
   gap: 12px;
 }
 
+.role-manager main,
+.role-hiring main,
+.role-user .main-content {
+  max-width: 1480px;
+}
+
+.role-manager .row,
+.role-hiring .row,
+.role-user .row {
+  row-gap: 18px;
+}
+
+.role-manager .card,
+.role-hiring .card,
+.role-user .content-card {
+  height: 100%;
+}
+
+.role-manager .progress,
+.role-hiring .progress,
+.role-user .progress-bar-custom {
+  background: #edf2f7;
+}
+
+.role-manager canvas,
+.role-hiring canvas {
+  max-height: 320px;
+}
+
+.role-hiring .pipeline-stage small {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.role-user .sidebar {
+  scrollbar-gutter: stable;
+}
+
+.role-user .main-content {
+  width: calc(100% - 260px);
+}
+
 @media (max-width: 767.98px) {
   main,
   .main-content {
@@ -303,5 +342,28 @@ main h4 {
 
   .metric-card {
     min-height: 116px;
+  }
+
+  .role-user .sidebar {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding-bottom: 0 !important;
+  }
+
+  .role-user .sidebar-logout {
+    position: static !important;
+  }
+
+  .role-user .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .checkin-box {
+    align-items: flex-start !important;
+    flex-direction: column;
+    gap: 18px;
   }
 }

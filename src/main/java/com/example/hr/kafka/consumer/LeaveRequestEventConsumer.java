@@ -3,6 +3,10 @@ package com.example.hr.kafka.consumer;
 import com.example.hr.kafka.events.LeaveRequestEvent;
 import com.example.hr.kafka.events.NotificationEvent;
 import com.example.hr.kafka.producer.HREventProducer;
+import com.example.hr.enums.LeaveType;
+import com.example.hr.models.User;
+import com.example.hr.repository.UserRepository;
+import com.example.hr.service.AdvancedLeaveService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -21,6 +25,8 @@ import java.util.Collections;
 public class LeaveRequestEventConsumer {
 
     private final HREventProducer eventProducer;
+    private final UserRepository userRepository;
+    private final AdvancedLeaveService advancedLeaveService;
 
     @KafkaListener(topics = "${kafka.topics.leave-requests}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeLeaveRequestEvent(LeaveRequestEvent event) {
@@ -47,6 +53,7 @@ public class LeaveRequestEventConsumer {
             
         } catch (Exception e) {
             log.error("Error processing leave request event: userId={}", event.getUserId(), e);
+            throw new IllegalStateException("Failed to process leave request event", e);
         }
     }
 
@@ -74,6 +81,16 @@ public class LeaveRequestEventConsumer {
     private void handleLeaveApproved(LeaveRequestEvent event) {
         log.info("Processing leave approval: user={}, approver={}", 
                 event.getFullName(), event.getApproverName());
+
+        User user = userRepository.findById(event.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + event.getUserId()));
+        advancedLeaveService.updateLeaveBalance(
+                user,
+                LeaveType.valueOf(event.getLeaveType()),
+                event.getStartDate().getYear(),
+                event.getTotalDays(),
+                "USE"
+        );
         
         // Gửi notification cho employee
         NotificationEvent notification = new NotificationEvent(
@@ -114,6 +131,18 @@ public class LeaveRequestEventConsumer {
 
     private void handleLeaveCancelled(LeaveRequestEvent event) {
         log.info("Processing leave cancellation: user={}", event.getFullName());
-        // TODO: Update leave balance, notify manager
+        NotificationEvent notification = new NotificationEvent(
+                "IN_APP",
+                Collections.singletonList(event.getUserId()),
+                "Don nghi phep da huy",
+                String.format("Don nghi phep %s tu %s den %s da duoc huy",
+                        event.getLeaveType(), event.getStartDate(), event.getEndDate()),
+                "MEDIUM",
+                "LEAVE",
+                event.getLeaveRequestId(),
+                "LEAVE_REQUEST",
+                LocalDateTime.now()
+        );
+        eventProducer.publishNotificationEvent(notification);
     }
 }

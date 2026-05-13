@@ -81,6 +81,19 @@ public class EmailService {
     }
 
     // ✅ Helper gửi HTML email
+    public void sendNotificationEmail(String toEmail, String fullName, String subject, String message) throws MessagingException {
+        String safeSubject = subject == null || subject.isBlank() ? "HRMS Notification" : subject;
+        String safeMessage = message == null ? "" : message;
+        String content = """
+            <h2>Xin chao %s!</h2>
+            <p>%s</p>
+            <br/>
+            <p>Tran trong,<br/>HR Team</p>
+        """.formatted(fullName, safeMessage.replace("\n", "<br/>"));
+
+        sendHtmlEmail(toEmail, safeSubject, content);
+    }
+
     private void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

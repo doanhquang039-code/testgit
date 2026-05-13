@@ -46,11 +46,21 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic attendanceDeadLetterTopic() {
+        return deadLetterTopic(attendanceTopic, 3);
+    }
+
+    @Bean
     public NewTopic leaveRequestsTopic() {
         return TopicBuilder.name(leaveRequestsTopic)
                 .partitions(3)
                 .replicas(1)
                 .build();
+    }
+
+    @Bean
+    public NewTopic leaveRequestsDeadLetterTopic() {
+        return deadLetterTopic(leaveRequestsTopic, 3);
     }
 
     @Bean
@@ -62,11 +72,21 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic payrollDeadLetterTopic() {
+        return deadLetterTopic(payrollTopic, 3);
+    }
+
+    @Bean
     public NewTopic notificationsTopic() {
         return TopicBuilder.name(notificationsTopic)
                 .partitions(5)
                 .replicas(1)
                 .build();
+    }
+
+    @Bean
+    public NewTopic notificationsDeadLetterTopic() {
+        return deadLetterTopic(notificationsTopic, 5);
     }
 
     @Bean
@@ -78,11 +98,21 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic performanceReviewsDeadLetterTopic() {
+        return deadLetterTopic(performanceReviewsTopic, 2);
+    }
+
+    @Bean
     public NewTopic recruitmentTopic() {
         return TopicBuilder.name(recruitmentTopic)
                 .partitions(3)
                 .replicas(1)
                 .build();
+    }
+
+    @Bean
+    public NewTopic recruitmentDeadLetterTopic() {
+        return deadLetterTopic(recruitmentTopic, 3);
     }
 
     @Bean
@@ -94,9 +124,26 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic trainingDeadLetterTopic() {
+        return deadLetterTopic(trainingTopic, 2);
+    }
+
+    @Bean
     public NewTopic employeeLifecycleTopic() {
         return TopicBuilder.name(employeeLifecycleTopic)
                 .partitions(2)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic employeeLifecycleDeadLetterTopic() {
+        return deadLetterTopic(employeeLifecycleTopic, 2);
+    }
+
+    private NewTopic deadLetterTopic(String topicName, int partitions) {
+        return TopicBuilder.name(topicName + ".DLT")
+                .partitions(partitions)
                 .replicas(1)
                 .build();
     }
