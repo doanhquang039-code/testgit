@@ -1,6 +1,8 @@
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
+.m2/repository/
+.m2/wrapper/dists/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -36,4 +38,3 @@ google-drive-service-account.json
 ### Local secrets / overrides ###
 src/main/resources/application-local.properties
 .env
-
