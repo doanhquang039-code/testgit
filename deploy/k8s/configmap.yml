@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hrms-config
+  namespace: hrms
+data:
+  SPRING_PROFILES_ACTIVE: docker
+  SPRING_REDIS_HOST: redis
+  SPRING_REDIS_PORT: "6379"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SPRING_RABBITMQ_HOST: rabbitmq
+  SPRING_RABBITMQ_PORT: "5672"
+  SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+  MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+  AI_GEMINI_ENABLED: "false"
+  AI_GEMINI_MODEL: gemini-1.5-flash
+  TZ: Asia/Ho_Chi_Minh

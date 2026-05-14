@@ -157,4 +157,8 @@ public class GeminiAiService {
     public boolean isAvailable() {
         return apiKey != null && !apiKey.isBlank();
     }
+
+    public String getModel() {
+        return model;
+    }
 }

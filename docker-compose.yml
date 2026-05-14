@@ -207,6 +207,9 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      AI_GEMINI_ENABLED: ${AI_GEMINI_ENABLED:-false}
+      AI_GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      AI_GEMINI_MODEL: ${AI_GEMINI_MODEL:-gemini-1.5-flash}
       TZ: Asia/Ho_Chi_Minh
     ports:
       - "8080:8080"
