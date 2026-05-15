@@ -2,10 +2,13 @@ package com.example.hr.controllers;
 
 import com.example.hr.models.Department;
 import com.example.hr.models.User;
+import com.example.hr.enums.Role;
+import com.example.hr.enums.UserStatus;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.repository.DepartmentRepository;
 import com.example.hr.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +21,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequestMapping("/admin/departments")
+@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
 public class DepartmentController {
 
     @Autowired
@@ -46,24 +52,41 @@ public class DepartmentController {
     @GetMapping("/add")
     public String showAddForm(Model model) {
         model.addAttribute("department", new Department());
+        addDepartmentFormData(model);
         return "admin/department-form";
     }
 
     @PostMapping("/save")
-    public String save(@ModelAttribute("department") Department dept) {
-        departmentService.saveDepartment(dept);
+    public String save(@ModelAttribute("department") Department dept,
+                       @RequestParam(name = "managerId", required = false) Integer managerId,
+                       Authentication authentication) {
+        if (managerId != null) {
+            userRepository.findById(managerId).ifPresent(dept::setManager);
+        } else {
+            dept.setManager(null);
+        }
+
+        departmentService.saveDepartment(dept, authentication);
         return "redirect:/admin/departments";
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable("id") Integer id, Model model) {
         model.addAttribute("department", departmentService.getDepartmentById(id));
+        addDepartmentFormData(model);
         return "admin/department-form";
     }
 
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Integer id) {
-        departmentService.deleteDepartment(id);
+    public String delete(@PathVariable Integer id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        try {
+            departmentService.deleteDepartment(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa phòng ban thành công.");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Đã xảy ra lỗi khi xóa phòng ban.");
+        }
         return "redirect:/admin/departments";
     }
 
@@ -73,28 +96,28 @@ public class DepartmentController {
                                         @RequestParam(name = "role", required = false) String role,
                                         Model model) {
         Department department = departmentService.getDepartmentById(id);
-        List<User> members = userRepository.findByDepartment(department);
-
-        if (keyword != null && !keyword.isBlank()) {
-            String normalized = keyword.trim().toLowerCase();
-            members = members.stream()
-                    .filter(u ->
-                            (u.getFullName() != null && u.getFullName().toLowerCase().contains(normalized)) ||
-                            (u.getEmail() != null && u.getEmail().toLowerCase().contains(normalized)) ||
-                            (u.getEmployeeCode() != null && u.getEmployeeCode().toLowerCase().contains(normalized)))
-                    .collect(Collectors.toList());
-        }
-
+        
+        Role roleEnum = null;
         if (role != null && !role.isBlank()) {
-            members = members.stream()
-                    .filter(u -> u.getRole() != null && role.equalsIgnoreCase(u.getRole().name()))
-                    .collect(Collectors.toList());
+            try {
+                roleEnum = Role.valueOf(role.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid role
+            }
         }
+        
+        List<User> members = userRepository.searchDepartmentMembers(department, keyword, roleEnum);
 
         model.addAttribute("department", department);
         model.addAttribute("members", members);
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedRole", role);
         return "admin/department-members";
+    }
+
+    private void addDepartmentFormData(Model model) {
+        model.addAttribute("managers", userRepository.findByRoleInAndStatus(
+                List.of(Role.ADMIN, Role.MANAGER),
+                UserStatus.ACTIVE));
     }
 }

@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -93,5 +97,27 @@ public class Candidate {
 
     public void setStatus(String status) {
         this.currentStage = status;
+    }
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    public LocalDateTime getAppliedAt() {
+        return appliedAt;
+    }
+
+    public void setAppliedAt(LocalDateTime appliedAt) {
+        this.appliedAt = appliedAt;
     }
 }

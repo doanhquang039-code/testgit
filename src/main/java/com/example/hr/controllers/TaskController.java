@@ -52,19 +52,29 @@ public class TaskController {
                        @RequestParam(name = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                        @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
                        @RequestParam(name = "direction", defaultValue = "desc") String direction,
+                       @RequestParam(name = "page", defaultValue = "0") int page,
+                       @RequestParam(name = "size", defaultValue = "10") int size,
                        Model model) {
         TaskType type = parseTaskType(taskType);
         String normalizedSortBy = normalizeSortBy(sortBy);
         String normalizedDirection = normalizeDirection(direction);
-        List<Task> tasks = findTasks(keyword, type, startDate, endDate, buildSort(normalizedSortBy, normalizedDirection));
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, buildSort(normalizedSortBy, normalizedDirection));
+        
+        String normalizedKeyword = keyword != null && !keyword.isBlank() ? keyword.trim() : null;
+        org.springframework.data.domain.Page<Task> taskPage = taskRepository.searchTasks(normalizedKeyword, type, startDate, endDate, pageable);
 
-        model.addAttribute("tasks", tasks);
+        model.addAttribute("tasks", taskPage.getContent());
+        model.addAttribute("taskPage", taskPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", taskPage.getTotalPages());
+        model.addAttribute("totalItems", taskPage.getTotalElements());
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedTaskType", taskType);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
         model.addAttribute("sortBy", normalizedSortBy);
         model.addAttribute("direction", normalizedDirection);
+        model.addAttribute("reverseSortDir", "asc".equalsIgnoreCase(normalizedDirection) ? "desc" : "asc");
         model.addAttribute("taskTypes", TaskType.values());
         return "admin/task-list";
     }
@@ -122,8 +132,9 @@ public class TaskController {
                             @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
                             @RequestParam(name = "direction", defaultValue = "desc") String direction,
                             HttpServletResponse response) throws IOException {
-        List<Task> tasks = findTasks(keyword, parseTaskType(taskType), startDate, endDate,
-                buildSort(normalizeSortBy(sortBy), normalizeDirection(direction)));
+        String normalizedKeyword = keyword != null && !keyword.isBlank() ? keyword.trim() : null;
+        List<Task> tasks = taskRepository.searchTasks(normalizedKeyword, parseTaskType(taskType), startDate, endDate,
+                org.springframework.data.domain.PageRequest.of(0, Integer.MAX_VALUE, buildSort(normalizeSortBy(sortBy), normalizeDirection(direction)))).getContent();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=tasks.xlsx");
@@ -161,8 +172,8 @@ public class TaskController {
                           @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
                           @RequestParam(name = "direction", defaultValue = "desc") String direction,
                           HttpServletResponse response) throws IOException {
-        List<Task> tasks = findTasks(keyword, parseTaskType(taskType), startDate, endDate,
-                buildSort(normalizeSortBy(sortBy), normalizeDirection(direction)));
+        String normalizedKeyword = keyword != null && !keyword.isBlank() ? keyword.trim() : null;
+        List<Task> tasks = taskRepository.searchTasks(normalizedKeyword, parseTaskType(taskType), startDate, endDate, org.springframework.data.domain.PageRequest.of(0, Integer.MAX_VALUE, buildSort(normalizeSortBy(sortBy), normalizeDirection(direction)))).getContent();
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=tasks.pdf");
@@ -191,11 +202,6 @@ public class TaskController {
 
         document.add(table);
         document.close();
-    }
-
-    private List<Task> findTasks(String keyword, TaskType taskType, LocalDate startDate, LocalDate endDate, Sort sort) {
-        String normalizedKeyword = keyword != null && !keyword.isBlank() ? keyword.trim() : null;
-        return taskRepository.searchTasks(normalizedKeyword, taskType, startDate, endDate, sort);
     }
 
     private TaskType parseTaskType(String taskType) {

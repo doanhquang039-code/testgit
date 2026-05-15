@@ -1,5 +1,7 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,6 +44,15 @@ public class AnalyticsMetric {
 
     @PrePersist
     protected void onCreate() {
+        updatedAt = LocalDateTime.now();
         createdAt = LocalDateTime.now();
+    }
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

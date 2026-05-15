@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import com.example.hr.enums.TrainingStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -143,5 +147,42 @@ public class TrainingProgram {
             case COMPLETED -> "bi-check-circle";
             case CANCELLED -> "bi-x-circle";
         };
+    }
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public Integer getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public void setMaxCapacity(Integer maxCapacity) {
+        this.maxCapacity = maxCapacity;
+    }
+
+    public TrainingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TrainingStatus status) {
+        this.status = status;
     }
 }

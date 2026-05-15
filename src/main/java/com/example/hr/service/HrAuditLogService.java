@@ -3,6 +3,8 @@ package com.example.hr.service;
 import com.example.hr.models.HrAuditLog;
 import com.example.hr.repository.HrAuditLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,9 @@ public class HrAuditLogService {
 
     @Autowired
     private HrAuditLogRepository hrAuditLogRepository;
+
+    @Autowired
+    private AuditEncryptionService auditEncryptionService;
 
     @Transactional
     public void log(String actorUsername, String action, String entityType, String entityId, String detail) {
@@ -36,9 +41,36 @@ public class HrAuditLogService {
         row.setAction(action);
         row.setEntityType(entityType);
         row.setEntityId(entityId);
-        row.setDetail(detail);
+        row.setDetail(auditEncryptionService.encrypt(detail));
+        row.setDetailEncrypted(detail != null && !detail.isBlank());
         row.setIpAddress(ipAddress);
         row.setCreatedAt(LocalDateTime.now());
         hrAuditLogRepository.save(row);
+    }
+
+    public String decryptDetail(HrAuditLog auditLog) {
+        return auditLog == null ? null : auditEncryptionService.decrypt(auditLog.getDetail());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<HrAuditLog> findLogs(String query, Pageable pageable) {
+        Page<HrAuditLog> logs = query == null || query.isBlank()
+                ? hrAuditLogRepository.findAllByOrderByCreatedAtDesc(pageable)
+                : hrAuditLogRepository.search(query.trim(), pageable);
+        return logs.map(this::copyForDisplay);
+    }
+
+    private HrAuditLog copyForDisplay(HrAuditLog source) {
+        HrAuditLog copy = new HrAuditLog();
+        copy.setId(source.getId());
+        copy.setActorUsername(source.getActorUsername());
+        copy.setAction(source.getAction());
+        copy.setEntityType(source.getEntityType());
+        copy.setEntityId(source.getEntityId());
+        copy.setDetail(auditEncryptionService.decrypt(source.getDetail()));
+        copy.setDetailEncrypted(source.isDetailEncrypted());
+        copy.setIpAddress(source.getIpAddress());
+        copy.setCreatedAt(source.getCreatedAt());
+        return copy;
     }
 }

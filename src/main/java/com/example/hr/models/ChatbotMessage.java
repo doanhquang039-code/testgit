@@ -29,4 +29,17 @@ public class ChatbotMessage { // 2. Tên class PHẢI khớp chính xác với t
     private Integer rating;
     private Boolean isEscalated = false;
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -55,4 +59,21 @@ public class QRCodeScan {
 
     @Column(name = "error_message")
     private String errorMessage;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

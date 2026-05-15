@@ -115,16 +115,30 @@ public class WorkflowApprovalService {
      * Duyệt hàng loạt nghỉ phép.
      */
     public int batchApproveLeaves(List<Integer> leaveIds, Integer approverId) {
-        int count = 0;
-        for (Integer id : leaveIds) {
+        User approver = userRepository.findById(approverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Người duyệt", approverId));
+        List<LeaveRequest> requests = leaveRequestRepository.findAllById(leaveIds);
+        List<LeaveRequest> approvedList = new java.util.ArrayList<>();
+        
+        for (LeaveRequest leave : requests) {
             try {
-                approveLeave(id, approverId);
-                count++;
+                validateLeaveApproval(leave, approver);
+                leave.setStatus(LeaveStatus.APPROVED);
+                leave.setApprovedBy(approver);
+                approvedList.add(leave);
+                
+                sendApprovalNotification(leave.getUser(), "Đơn nghỉ phép", true, null);
+                auditLogService.log(approver.getUsername(), "APPROVE_LEAVE",
+                    "LeaveRequest", String.valueOf(leave.getId()),
+                    "Đã duyệt nghỉ phép cho " + leave.getUser().getFullName(), "N/A");
             } catch (Exception e) {
-                log.error("Failed to approve leave {}: {}", id, e.getMessage());
+                log.error("Failed to approve leave {}: {}", leave.getId(), e.getMessage());
             }
         }
-        return count;
+        if (!approvedList.isEmpty()) {
+            leaveRequestRepository.saveAll(approvedList);
+        }
+        return approvedList.size();
     }
 
     // ===================== OVERTIME APPROVAL =====================

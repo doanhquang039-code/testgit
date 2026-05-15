@@ -2,6 +2,8 @@ package com.example.hr.service;
 
 import com.example.hr.dto.LeaveBalanceDTO;
 import com.example.hr.enums.LeaveType;
+import com.example.hr.enums.LeaveStatus;
+import com.example.hr.enums.BalanceOperation;
 import com.example.hr.models.LeaveBalance;
 import com.example.hr.models.LeaveRequest;
 import com.example.hr.models.PublicHoliday;
@@ -88,7 +90,7 @@ public class AdvancedLeaveService {
         List<LeaveRequest> pendingRequests = leaveRequestRepository
                 .findByUserAndStatusAndStartDateBetween(
                         user, 
-                        "PENDING",
+                        LeaveStatus.PENDING,
                         LocalDate.of(year, 1, 1),
                         LocalDate.of(year, 12, 31)
                 );
@@ -100,7 +102,7 @@ public class AdvancedLeaveService {
     }
     
     @Transactional
-    public void updateLeaveBalance(User user, LeaveType leaveType, Integer year, Double days, String operation) {
+    public void updateLeaveBalance(User user, LeaveType leaveType, Integer year, Double days, BalanceOperation operation) {
         Optional<LeaveBalance> balanceOpt = leaveBalanceRepository
                 .findByUserAndLeaveTypeAndYear(user, leaveType, year);
         
@@ -117,9 +119,9 @@ public class AdvancedLeaveService {
             balance.setCarriedForward(0.0);
         }
         
-        if ("ADD".equals(operation)) {
+        if (operation == BalanceOperation.ADD_USED_DAYS) {
             balance.setUsedDays(balance.getUsedDays() + days);
-        } else if ("SUBTRACT".equals(operation)) {
+        } else if (operation == BalanceOperation.SUBTRACT_USED_DAYS) {
             balance.setUsedDays(Math.max(0, balance.getUsedDays() - days));
         }
         
@@ -153,6 +155,7 @@ public class AdvancedLeaveService {
     @Transactional
     public void carryForwardLeaves(Integer fromYear, Integer toYear) {
         List<LeaveBalance> balances = leaveBalanceRepository.findByYear(fromYear);
+        List<LeaveBalance> balancesToSave = new ArrayList<>();
         
         for (LeaveBalance oldBalance : balances) {
             if (oldBalance.getLeaveType() == LeaveType.ANNUAL && oldBalance.getRemainingDays() > 0) {
@@ -176,8 +179,11 @@ public class AdvancedLeaveService {
                 
                 newBalance.setCarriedForward(carryForward);
                 newBalance.calculateRemaining();
-                leaveBalanceRepository.save(newBalance);
+                balancesToSave.add(newBalance);
             }
+        }
+        if (!balancesToSave.isEmpty()) {
+            leaveBalanceRepository.saveAll(balancesToSave);
         }
     }
     
@@ -188,7 +194,7 @@ public class AdvancedLeaveService {
         
         List<LeaveRequest> approvedLeaves = leaveRequestRepository
                 .findByStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                        "APPROVED", endDate, startDate);
+                        LeaveStatus.APPROVED, endDate, startDate);
         
         List<PublicHoliday> holidays = publicHolidayRepository
                 .findByDateBetweenAndIsActive(startDate, endDate, true);

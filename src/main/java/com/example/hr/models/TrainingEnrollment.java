@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import com.example.hr.enums.EnrollmentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -107,5 +111,30 @@ public class TrainingEnrollment {
      */
     public boolean hasCertificate() {
         return certificateUrl != null && !certificateUrl.isBlank();
+    }
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    public String getCertificateUrl() {
+        return certificateUrl;
+    }
+
+    public void setCertificateUrl(String certificateUrl) {
+        this.certificateUrl = certificateUrl;
     }
 }

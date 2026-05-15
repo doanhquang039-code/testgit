@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HrAuditLogRepository extends JpaRepository<HrAuditLog, Long> {
 
+    Page<HrAuditLog> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
     @Query("""
             SELECT h FROM HrAuditLog h WHERE
             LOWER(h.action) LIKE LOWER(CONCAT('%', :q, '%')) OR
@@ -18,6 +20,7 @@ public interface HrAuditLogRepository extends JpaRepository<HrAuditLog, Long> {
             LOWER(h.actorUsername) LIKE LOWER(CONCAT('%', :q, '%')) OR
             LOWER(COALESCE(h.detail, '')) LIKE LOWER(CONCAT('%', :q, '%')) OR
             LOWER(COALESCE(h.entityId, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+            ORDER BY h.createdAt DESC
             """)
     Page<HrAuditLog> search(@Param("q") String q, Pageable pageable);
 }

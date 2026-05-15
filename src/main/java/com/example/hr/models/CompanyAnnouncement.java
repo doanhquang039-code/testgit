@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import com.example.hr.enums.AnnouncementPriority;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -46,4 +50,17 @@ public class CompanyAnnouncement {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

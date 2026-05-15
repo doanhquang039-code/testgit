@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
- public class Department {
+public class Department {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
     @Column(name = "phone_number", length = 15)
     private String phoneNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "manager_id")
     private User manager;
 
@@ -28,11 +28,45 @@ import java.time.LocalDateTime;
     @JoinColumn(name = "parent_department_id")
     private Department parentDepartment;
 
+    @Column(name = "employee_count", nullable = false)
+    private Integer employeeCount = 0;
+
+    @Column(name = "working_hours", length = 100)
+    private String workingHours;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "created_by_encrypted", length = 1000)
+    private String createdByEncrypted;
+
+    @Column(name = "updated_by_encrypted", length = 1000)
+    private String updatedByEncrypted;
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
+        if (employeeCount == null) {
+            employeeCount = 0;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+        if (employeeCount == null) {
+            employeeCount = 0;
+        }
+    }
 
 	public Integer getId() {
 		return id;
@@ -74,6 +108,22 @@ import java.time.LocalDateTime;
 		this.parentDepartment = parentDepartment;
 	}
 
+    public Integer getEmployeeCount() {
+        return employeeCount;
+    }
+
+    public void setEmployeeCount(Integer employeeCount) {
+        this.employeeCount = employeeCount;
+    }
+
+    public String getWorkingHours() {
+        return workingHours;
+    }
+
+    public void setWorkingHours(String workingHours) {
+        this.workingHours = workingHours;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -88,6 +138,22 @@ import java.time.LocalDateTime;
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getCreatedByEncrypted() {
+        return createdByEncrypted;
+    }
+
+    public void setCreatedByEncrypted(String createdByEncrypted) {
+        this.createdByEncrypted = createdByEncrypted;
+    }
+
+    public String getUpdatedByEncrypted() {
+        return updatedByEncrypted;
+    }
+
+    public void setUpdatedByEncrypted(String updatedByEncrypted) {
+        this.updatedByEncrypted = updatedByEncrypted;
     }
 
     // Alias method for compatibility with services

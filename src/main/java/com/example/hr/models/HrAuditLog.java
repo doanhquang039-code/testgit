@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -26,6 +30,9 @@ public class HrAuditLog {
 
     @Column(columnDefinition = "TEXT")
     private String detail;
+
+    @Column(name = "detail_encrypted", nullable = false)
+    private boolean detailEncrypted = false;
 
     @Column(name = "ip_address", length = 45)
     private String ipAddress;
@@ -96,6 +103,14 @@ public class HrAuditLog {
         this.detail = detail;
     }
 
+    public boolean isDetailEncrypted() {
+        return detailEncrypted;
+    }
+
+    public void setDetailEncrypted(boolean detailEncrypted) {
+        this.detailEncrypted = detailEncrypted;
+    }
+
     public String getIpAddress() {
         return ipAddress;
     }
@@ -110,5 +125,18 @@ public class HrAuditLog {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

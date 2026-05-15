@@ -27,7 +27,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     // Hàm tìm kiếm theo tên (Hết lỗi findByFullNameContainingAndStatus)
     List<User> findByFullNameContainingAndStatus(String fullName, UserStatus status);
-    List<User> findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email, Sort sort);
+    org.springframework.data.domain.Page<User> findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email, org.springframework.data.domain.Pageable pageable);
     
     // Lọc theo phòng ban và sắp xếp
     List<User> findByDepartmentId(Integer deptId, Sort sort);
@@ -35,6 +35,16 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findByRoleInAndStatus(List<Role> roles, UserStatus status);
 
     // UserApiController methods
+    @Query("SELECT u FROM User u WHERE u.status = 'ACTIVE' AND " +
+           "(:keyword IS NULL OR :keyword = '' OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.employeeCode) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(:deptId IS NULL OR u.department.id = :deptId) AND " +
+           "(:roleEnum IS NULL OR u.role = :roleEnum)")
+    org.springframework.data.domain.Page<User> searchActiveUsersForAdmin(
+        @Param("keyword") String keyword, 
+        @Param("deptId") Integer deptId, 
+        @Param("roleEnum") com.example.hr.enums.Role roleEnum, 
+        org.springframework.data.domain.Pageable pageable);
+
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
     boolean existsByEmployeeCode(String employeeCode);
@@ -53,6 +63,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     long countByCreatedAtGreaterThanEqual(LocalDateTime createdAt);
 
     long countByStatus(UserStatus status);
+    long countByDepartmentAndStatus(com.example.hr.models.Department department, UserStatus status);
 
     @Query("""
             SELECT COALESCE(d.departmentName, 'Unassigned'), COUNT(u)
@@ -72,4 +83,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     // Additional method for manager tools
     List<User> findByDepartment(com.example.hr.models.Department department);
+
+    @Query("SELECT u FROM User u WHERE u.department = :department AND " +
+           "(:keyword IS NULL OR :keyword = '' OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.employeeCode) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(:roleEnum IS NULL OR u.role = :roleEnum)")
+    List<User> searchDepartmentMembers(
+        @Param("department") com.example.hr.models.Department department,
+        @Param("keyword") String keyword, 
+        @Param("roleEnum") com.example.hr.enums.Role roleEnum);
 }

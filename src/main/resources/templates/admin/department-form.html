@@ -7,7 +7,7 @@
 </head>
 <body class="bg-light">
     <div class="container py-5">
-        <div class="card shadow-sm border-0 mx-auto" style="max-width: 600px;">
+        <div class="card shadow-sm border-0 mx-auto" style="max-width: 720px;">
             <div class="card-header bg-primary text-white py-3">
                 <h5 class="mb-0" th:text="${department.id == null ? 'THÊM PHÒNG BAN MỚI' : 'CHỈNH SỬA PHÒNG BAN'}"></h5>
             </div>
@@ -23,6 +23,30 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Số điện thoại</label>
                         <input type="text" th:field="*{phoneNumber}" class="form-control" placeholder="Ví dụ: 024.1234.567" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Trưởng phòng</label>
+                        <select name="managerId" class="form-select">
+                            <option value="">Chưa chọn trưởng phòng</option>
+                            <option th:each="manager : ${managers}"
+                                    th:value="${manager.id}"
+                                    th:text="${manager.fullName + ' - ' + manager.username}"
+                                    th:selected="${department.manager != null and department.manager.id == manager.id}">
+                                Nguyễn Văn A - manager
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Thời gian làm việc của phòng ban</label>
+                        <input type="text" th:field="*{workingHours}" class="form-control" placeholder="Ví dụ: 08:00 - 17:00, Thứ 2 - Thứ 6" />
+                    </div>
+
+                    <div class="mb-3" th:if="${department.id != null}">
+                        <label class="form-label fw-bold">Số lượng nhân viên hiện tại</label>
+                        <input type="text" class="form-control" th:value="${department.employeeCount != null ? department.employeeCount : 0}" readonly />
+                        <div class="form-text">Số lượng này được hệ thống tính theo nhân viên đang thuộc phòng ban.</div>
                     </div>
 
                     <div class="d-flex justify-content-between pt-3">

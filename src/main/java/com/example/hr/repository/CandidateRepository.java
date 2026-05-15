@@ -23,6 +23,12 @@ public interface CandidateRepository extends JpaRepository<Candidate, Integer> {
     @Query("SELECT c FROM Candidate c WHERE c.fullName LIKE %:keyword% OR c.email LIKE %:keyword% OR c.skills LIKE %:keyword%")
     List<Candidate> searchByKeyword(@Param("keyword") String keyword);
 
+    @Query("SELECT c FROM Candidate c WHERE " +
+           "(:keyword IS NULL OR :keyword = '' OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(c.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND (:stage IS NULL OR :stage = '' OR c.currentStage = :stage)")
+    org.springframework.data.domain.Page<Candidate> searchCandidates(@Param("keyword") String keyword, @Param("stage") String stage, org.springframework.data.domain.Pageable pageable);
+
     List<Candidate> findBySourceOrderByAppliedAtDesc(String source);
 
     @Query("SELECT c FROM Candidate c WHERE c.overallScore >= :minScore ORDER BY c.overallScore DESC")

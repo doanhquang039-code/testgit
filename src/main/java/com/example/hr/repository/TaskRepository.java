@@ -27,9 +27,9 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
            "AND (:taskType IS NULL OR t.taskType = :taskType) " +
            "AND (:startDate IS NULL OR t.startDate >= :startDate) " +
            "AND (:endDate IS NULL OR t.endDate <= :endDate)")
-    List<Task> searchTasks(@Param("keyword") String keyword,
+    org.springframework.data.domain.Page<Task> searchTasks(@Param("keyword") String keyword,
                            @Param("taskType") TaskType taskType,
                            @Param("startDate") LocalDate startDate,
                            @Param("endDate") LocalDate endDate,
-                           Sort sort);
+                           org.springframework.data.domain.Pageable pageable);
 }

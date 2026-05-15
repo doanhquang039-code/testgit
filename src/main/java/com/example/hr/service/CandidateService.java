@@ -156,8 +156,16 @@ public class CandidateService {
     /**
      * Search candidates
      */
-    public List<Candidate> searchCandidates(String keyword) {
-        return candidateRepository.searchByKeyword(keyword);
+    public org.springframework.data.domain.Page<Candidate> searchCandidates(String keyword, String stage, org.springframework.data.domain.Pageable pageable) {
+        return candidateRepository.searchCandidates(keyword, stage, pageable);
+    }
+
+    /**
+     * Delete candidate
+     */
+    @Transactional
+    public void deleteCandidate(Integer id) {
+        candidateRepository.deleteById(id);
     }
 
     /**

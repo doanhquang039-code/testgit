@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import com.example.hr.enums.BenefitStatus;
 import com.example.hr.enums.BenefitType;
 import jakarta.persistence.*;
@@ -134,5 +138,18 @@ public class EmployeeBenefit {
             case PHONE -> "bi-phone";
             case OTHER -> "bi-gift";
         };
+    }
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

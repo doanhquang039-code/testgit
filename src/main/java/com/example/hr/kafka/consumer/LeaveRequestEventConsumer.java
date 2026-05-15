@@ -4,6 +4,7 @@ import com.example.hr.kafka.events.LeaveRequestEvent;
 import com.example.hr.kafka.events.NotificationEvent;
 import com.example.hr.kafka.producer.HREventProducer;
 import com.example.hr.enums.LeaveType;
+import com.example.hr.enums.BalanceOperation;
 import com.example.hr.models.User;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.service.AdvancedLeaveService;
@@ -89,7 +90,7 @@ public class LeaveRequestEventConsumer {
                 LeaveType.valueOf(event.getLeaveType()),
                 event.getStartDate().getYear(),
                 event.getTotalDays(),
-                "USE"
+                BalanceOperation.ADD_USED_DAYS
         );
         
         // Gửi notification cho employee

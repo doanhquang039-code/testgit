@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import com.example.hr.enums.AssetStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -162,5 +166,18 @@ public class CompanyAsset {
         BigDecimal dep = calculateDepreciation(usefulLifeYears);
         return dep.divide(purchasePrice, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100)).doubleValue();
+    }
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

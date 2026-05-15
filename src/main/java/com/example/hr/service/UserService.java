@@ -44,10 +44,11 @@ public class UserService {
         this.cloudinaryService = cloudinaryService;
     }
 
-    @CacheEvict(value = "users", allEntries = true)
+    @CacheEvict(value = {"users", "departments"}, allEntries = true)
     public void registerNewUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        User saved = userRepository.save(user);
+        refreshDepartmentEmployeeCount(saved.getDepartment());
     }
     
     // Get user by username
@@ -69,27 +70,27 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<User> findAdminUsers(String keyword, Integer deptId, String role, String sortBy) {
-        List<User> users = getActiveUsers().stream()
-                .filter(user -> matchesKeyword(user, keyword))
-                .filter(user -> matchesDepartment(user, deptId))
-                .filter(user -> matchesRole(user, role))
-                .toList();
-
-        return users.stream()
-                .sorted(resolveComparator(sortBy))
-                .toList();
+    public org.springframework.data.domain.Page<User> findAdminUsers(String keyword, Integer deptId, String role, org.springframework.data.domain.Pageable pageable) {
+        com.example.hr.enums.Role roleEnum = null;
+        if (role != null && !role.isBlank()) {
+            try {
+                roleEnum = com.example.hr.enums.Role.valueOf(role);
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid role
+            }
+        }
+        return userRepository.searchActiveUsersForAdmin(keyword, deptId, roleEnum, pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<User> searchUsers(String keyword, Sort sort) {
+    public org.springframework.data.domain.Page<User> searchUsers(String keyword, org.springframework.data.domain.Pageable pageable) {
         if (keyword != null && !keyword.isBlank()) {
-            return userRepository.findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, sort);
+            return userRepository.findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, pageable);
         }
-        return userRepository.findAll(sort);
+        return userRepository.findAll(pageable);
     }
 
-    @CacheEvict(value = "users", allEntries = true)
+    @CacheEvict(value = {"users", "departments"}, allEntries = true)
     public User saveAdminUser(User user,
                               MultipartFile file,
                               Integer departmentId,
@@ -101,6 +102,7 @@ public class UserService {
                               String employeeCode,
                               String hireDate) throws IOException {
         User existing = user.getId() != null ? getUserById(user.getId()) : null;
+        Department oldDepartment = existing != null ? existing.getDepartment() : null;
 
         applyRelations(user, departmentId, positionId);
         applyEditableFields(user, phoneNumber, gender, dateOfBirth, address, employeeCode, hireDate, existing);
@@ -108,15 +110,20 @@ public class UserService {
         handlePassword(user, existing);
         touchAuditFields(user, existing == null);
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        refreshDepartmentEmployeeCount(oldDepartment);
+        refreshDepartmentEmployeeCount(saved.getDepartment());
+        return saved;
     }
 
-    @CacheEvict(value = "users", allEntries = true)
+    @CacheEvict(value = {"users", "departments"}, allEntries = true)
     public void softDeleteUser(Integer id) {
         User user = getUserById(id);
+        Department oldDepartment = user.getDepartment();
         user.setStatus(UserStatus.INACTIVE);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
+        refreshDepartmentEmployeeCount(oldDepartment);
     }
 
     private void applyRelations(User user, Integer departmentId, Integer positionId) {
@@ -303,6 +310,21 @@ public class UserService {
         } catch (Exception ignored) {
             return fallback;
         }
+    }
+
+    private void refreshDepartmentEmployeeCount(Department department) {
+        if (department == null || department.getId() == null) {
+            return;
+        }
+
+        Department managedDepartment = departmentRepository.findById(department.getId()).orElse(null);
+        if (managedDepartment == null) {
+            return;
+        }
+
+        managedDepartment.setEmployeeCount((int) userRepository.countByDepartmentAndStatus(managedDepartment, UserStatus.ACTIVE));
+        managedDepartment.setUpdatedAt(LocalDateTime.now());
+        departmentRepository.save(managedDepartment);
     }
 
     /**

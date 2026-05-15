@@ -76,7 +76,7 @@ public class AdminController {
             LocalDate date = today.minusDays(i);
             attLabels.add(date.format(DateTimeFormatter.ofPattern("dd/MM")));
             List<Attendance> dayAtt = attendanceRepository
-                    .findByAttendanceDateBetween(date, date);
+                    .findByAttendanceDateBetween(date, date, org.springframework.data.domain.Pageable.unpaged()).getContent();
             long present = dayAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.PRESENT).count();
             long late    = dayAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.LATE).count();
             long absent  = Math.max(0, totalEmployees - dayAtt.size());

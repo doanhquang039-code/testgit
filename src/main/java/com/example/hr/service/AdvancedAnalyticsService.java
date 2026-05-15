@@ -2,6 +2,7 @@ package com.example.hr.service;
 
 import com.example.hr.dto.AnalyticsDashboardDTO;
 import com.example.hr.enums.AttendanceStatus;
+import com.example.hr.enums.LeaveStatus;
 import com.example.hr.enums.UserStatus;
 import com.example.hr.models.*;
 import com.example.hr.repository.*;
@@ -46,7 +47,7 @@ public class AdvancedAnalyticsService {
         dashboard.setAverageSalary(calculateAverageSalary());
         
         // Leave metrics
-        dashboard.setPendingLeaveRequests(leaveRequestRepository.countByStatusString("PENDING"));
+        dashboard.setPendingLeaveRequests(leaveRequestRepository.countByStatusString(LeaveStatus.PENDING));
         dashboard.setApprovedLeavesToday(getApprovedLeavesToday());
         
         // Training metrics
@@ -135,7 +136,7 @@ public class AdvancedAnalyticsService {
         LocalDate today = LocalDate.now();
         // countByStartDateLessThanEqualAndEndDateGreaterThanEqualAndStatus: endDate param first, startDate second (Spring naming)
         return leaveRequestRepository.countByStartDateLessThanEqualAndEndDateGreaterThanEqualAndStatus(
-                today, today, "APPROVED");
+                today, today, LeaveStatus.APPROVED);
     }
     
     private Double calculateTrainingCompletionRate() {

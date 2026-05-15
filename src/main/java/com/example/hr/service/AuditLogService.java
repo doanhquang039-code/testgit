@@ -23,6 +23,7 @@ import java.util.Map;
 public class AuditLogService {
 
     private final AuditLogRepository auditLogRepository;
+    private final AuditEncryptionService auditEncryptionService;
 
     /**
      * Log một action của user
@@ -36,8 +37,8 @@ public class AuditLogService {
             auditLog.setAction(action);
             auditLog.setEntityType(entityType);
             auditLog.setEntityId(entityId);
-            auditLog.setOldValue(oldValue);
-            auditLog.setNewValue(newValue);
+            auditLog.setOldValue(auditEncryptionService.encrypt(oldValue));
+            auditLog.setNewValue(auditEncryptionService.encrypt(newValue));
             auditLog.setIpAddress(getClientIP(request));
             auditLog.setUserAgent(request.getHeader("User-Agent"));
             auditLog.setRequestMethod(request.getMethod());
@@ -61,7 +62,7 @@ public class AuditLogService {
             auditLog.setUser(user);
             auditLog.setAction(action);
             auditLog.setStatus("FAILED");
-            auditLog.setErrorMessage(errorMessage);
+            auditLog.setErrorMessage(auditEncryptionService.encrypt(errorMessage));
             auditLog.setIpAddress(getClientIP(request));
             auditLog.setUserAgent(request.getHeader("User-Agent"));
             auditLog.setRequestMethod(request.getMethod());
@@ -78,35 +79,35 @@ public class AuditLogService {
      * Lấy tất cả audit logs với phân trang
      */
     public Page<AuditLog> getAllAuditLogs(Pageable pageable) {
-        return auditLogRepository.findAllByOrderByTimestampDesc(pageable);
+        return auditLogRepository.findAllByOrderByTimestampDesc(pageable).map(this::copyForDisplay);
     }
 
     /**
      * Lấy audit logs của một user
      */
     public Page<AuditLog> getAuditLogsByUser(User user, Pageable pageable) {
-        return auditLogRepository.findByUserOrderByTimestampDesc(user, pageable);
+        return auditLogRepository.findByUserOrderByTimestampDesc(user, pageable).map(this::copyForDisplay);
     }
 
     /**
      * Tìm kiếm audit logs theo action
      */
     public Page<AuditLog> searchByAction(String action, Pageable pageable) {
-        return auditLogRepository.findByActionContainingIgnoreCaseOrderByTimestampDesc(action, pageable);
+        return auditLogRepository.findByActionContainingIgnoreCaseOrderByTimestampDesc(action, pageable).map(this::copyForDisplay);
     }
 
     /**
      * Lấy audit logs theo entity type
      */
     public Page<AuditLog> getAuditLogsByEntityType(String entityType, Pageable pageable) {
-        return auditLogRepository.findByEntityTypeOrderByTimestampDesc(entityType, pageable);
+        return auditLogRepository.findByEntityTypeOrderByTimestampDesc(entityType, pageable).map(this::copyForDisplay);
     }
 
     /**
      * Lấy audit logs theo khoảng thời gian
      */
     public Page<AuditLog> getAuditLogsByDateRange(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
-        return auditLogRepository.findByDateRange(startDate, endDate, pageable);
+        return auditLogRepository.findByDateRange(startDate, endDate, pageable).map(this::copyForDisplay);
     }
 
     /**
@@ -156,6 +157,7 @@ public class AuditLogService {
         return auditLogRepository.findTop10ByOrderByTimestampDesc()
                 .stream()
                 .limit(limit)
+                .map(this::copyForDisplay)
                 .toList();
     }
 
@@ -171,6 +173,7 @@ public class AuditLogService {
      */
     public AuditLog getLogById(Integer id) {
         return auditLogRepository.findById(id)
+                .map(this::copyForDisplay)
                 .orElseThrow(() -> new RuntimeException("Audit log not found with id: " + id));
     }
 
@@ -198,6 +201,28 @@ public class AuditLogService {
         return auditLogRepository.findByUserIdOrderByTimestampDesc(userId)
                 .stream()
                 .limit(limit)
+                .map(this::copyForDisplay)
                 .toList();
+    }
+
+    private AuditLog copyForDisplay(AuditLog source) {
+        AuditLog copy = new AuditLog();
+        copy.setId(source.getId());
+        copy.setUser(source.getUser());
+        copy.setAction(source.getAction());
+        copy.setEntityType(source.getEntityType());
+        copy.setEntityId(source.getEntityId());
+        copy.setOldValue(auditEncryptionService.decrypt(source.getOldValue()));
+        copy.setNewValue(auditEncryptionService.decrypt(source.getNewValue()));
+        copy.setIpAddress(source.getIpAddress());
+        copy.setUserAgent(source.getUserAgent());
+        copy.setTimestamp(source.getTimestamp());
+        copy.setStatus(source.getStatus());
+        copy.setErrorMessage(auditEncryptionService.decrypt(source.getErrorMessage()));
+        copy.setRequestMethod(source.getRequestMethod());
+        copy.setRequestUrl(source.getRequestUrl());
+        copy.setResponseCode(source.getResponseCode());
+        copy.setExecutionTime(source.getExecutionTime());
+        return copy;
     }
 }

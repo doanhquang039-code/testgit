@@ -64,10 +64,7 @@ public class AdvancedPayrollService {
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên", userId));
 
         // Tìm payroll record
-        Payroll payroll = payrollRepository.findAll().stream()
-                .filter(p -> p.getUser().getId().equals(userId)
-                        && p.getMonth() == month && p.getYear() == year)
-                .findFirst()
+        Payroll payroll = payrollRepository.findByUserIdAndMonthAndYear(userId, month, year)
                 .orElse(null);
 
         BigDecimal baseSalary = payroll != null ? payroll.getBaseSalary() : BigDecimal.ZERO;

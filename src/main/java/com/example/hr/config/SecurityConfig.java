@@ -34,8 +34,7 @@ public class SecurityConfig {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .ignoringRequestMatchers(
                         "/admin/payments/ipn/momo", "/admin/payment/ipn/momo",
-                        "/admin/payments/ipn/vnpay", "/admin/payment/ipn/vnpay",
-                        "/api/**"))
+                        "/admin/payments/ipn/vnpay", "/admin/payment/ipn/vnpay"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/", "/index.html", "/login", "/login/**",
@@ -73,7 +72,7 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/videos/**").permitAll()
                 .requestMatchers("/user1/**", "/user/**", "/notifications/**").authenticated()
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
             )
             .formLogin(login -> login
                 .loginPage("/login")

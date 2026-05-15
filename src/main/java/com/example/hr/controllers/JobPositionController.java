@@ -15,8 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequestMapping("/admin/positions")
+@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
 public class JobPositionController {
 
     @Autowired
@@ -24,24 +27,29 @@ public class JobPositionController {
 
     @GetMapping
     public String list(@RequestParam(name = "keyword", required = false) String keyword,
-                       @RequestParam(name = "level", required = false) String level,
+                       @RequestParam(name = "level", required = false) Integer level,
+                       @RequestParam(defaultValue = "0") int page,
+                       @RequestParam(defaultValue = "10") int size,
+                       @RequestParam(defaultValue = "id") String sortBy,
+                       @RequestParam(defaultValue = "asc") String sortDir,
                        Model model) {
-        List<JobPosition> positions = positionRepository.findByActiveTrue();
+        
+        org.springframework.data.domain.Sort sort = sortDir.equalsIgnoreCase(org.springframework.data.domain.Sort.Direction.ASC.name()) ? 
+                org.springframework.data.domain.Sort.by(sortBy).ascending() : 
+                org.springframework.data.domain.Sort.by(sortBy).descending();
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        
+        org.springframework.data.domain.Page<JobPosition> positionPage = positionRepository.searchPositions(keyword, level, pageable);
 
-        if (keyword != null && !keyword.isBlank()) {
-            String normalized = keyword.trim().toLowerCase();
-            positions = positions.stream()
-                    .filter(p -> p.getPositionName() != null && p.getPositionName().toLowerCase().contains(normalized))
-                    .collect(Collectors.toList());
-        }
-
-        if (level != null && !level.isBlank()) {
-            positions = positions.stream()
-                    .filter(p -> p.getJobLevel() != null && level.equalsIgnoreCase(String.valueOf(p.getJobLevel())))
-                    .collect(Collectors.toList());
-        }
-
-        model.addAttribute("positions", positions);
+        model.addAttribute("positionPage", positionPage);
+        model.addAttribute("positions", positionPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", positionPage.getTotalPages());
+        model.addAttribute("totalItems", positionPage.getTotalElements());
+        model.addAttribute("sortField", sortBy);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedLevel", level);
         return "admin/position-list";

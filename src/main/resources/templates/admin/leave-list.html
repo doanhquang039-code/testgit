@@ -330,6 +330,27 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Pagination Component -->
+        <div class="table-pagination" th:if="${totalPages > 1}" style="padding: 16px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #fff;">
+            <div style="color: #64748b; font-size: 0.85rem;">
+                Hiển thị trang <strong th:text="${currentPage + 1}">1</strong> / <strong th:text="${totalPages}">10</strong> 
+                (<span th:text="${totalItems}">0</span> bản ghi)
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0" style="gap: 5px;">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/leaves(page=${currentPage - 1}, keyword=${keyword}, status=${selectedStatus}, leaveType=${selectedLeaveType}, deptId=${selectedDeptId}, fromDate=${fromDate}, toDate=${toDate})}" style="border-radius: 8px;">Trước</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/leaves(page=${i}, keyword=${keyword}, status=${selectedStatus}, leaveType=${selectedLeaveType}, deptId=${selectedDeptId}, fromDate=${fromDate}, toDate=${toDate})}" th:text="${i + 1}" style="border-radius: 8px;">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/leaves(page=${currentPage + 1}, keyword=${keyword}, status=${selectedStatus}, leaveType=${selectedLeaveType}, deptId=${selectedDeptId}, fromDate=${fromDate}, toDate=${toDate})}" style="border-radius: 8px;">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </section>
 </main>
 

@@ -86,10 +86,10 @@ public class AdvancedAttendanceService {
     public FaceRecognitionData registerFaceData(User user, String faceEncoding, String imageUrl) {
         // Deactivate old face data
         List<FaceRecognitionData> oldData = faceRecognitionRepository.findByUserAndIsActiveTrue(user);
-        oldData.forEach(data -> {
-            data.setIsActive(false);
-            faceRecognitionRepository.save(data);
-        });
+        oldData.forEach(data -> data.setIsActive(false));
+        if (!oldData.isEmpty()) {
+            faceRecognitionRepository.saveAll(oldData);
+        }
         
         // Create new face data
         FaceRecognitionData faceData = new FaceRecognitionData();
@@ -170,5 +170,51 @@ public class AdvancedAttendanceService {
     @Transactional(readOnly = true)
     public List<ShiftAssignment> getAssignmentsByDate(LocalDate date) {
         return shiftAssignmentRepository.findByAssignedDate(date);
+    }
+
+    // ===== Monthly Closing =====
+    
+    /**
+     * Tính tổng công trong tháng cho 1 nhân viên
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> calculateMonthlySummary(User user, int year, int month) {
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        
+        List<Attendance> attendances = attendanceRepository.findByUserAndAttendanceDateBetweenOrderByAttendanceDateDesc(user, startDate, endDate);
+            
+        long totalDaysPresent = attendances.stream()
+            .map(a -> a.getAttendanceDate())
+            .distinct()
+            .count();
+            
+        double totalWorkHours = 0;
+        for (Attendance a : attendances) {
+            if (a.getCheckOutTime() != null && a.getCheckInTime() != null) {
+                totalWorkHours += java.time.Duration.between(a.getCheckInTime(), a.getCheckOutTime()).toMinutes() / 60.0;
+            }
+        }
+        
+        java.util.Map<String, Object> summary = new java.util.HashMap<>();
+        summary.put("year", year);
+        summary.put("month", month);
+        summary.put("totalDaysPresent", totalDaysPresent);
+        summary.put("totalWorkHours", Math.round(totalWorkHours * 100.0) / 100.0);
+        summary.put("attendanceCount", attendances.size());
+        
+        return summary;
+    }
+    
+    /**
+     * Chốt công hàng tháng cho toàn bộ nhân viên (Batch)
+     */
+    public List<java.util.Map<String, Object>> closeMonthlyAttendance(int year, int month, List<User> activeUsers) {
+        List<java.util.Map<String, Object>> summaries = new java.util.ArrayList<>();
+        for (User user : activeUsers) {
+            summaries.add(calculateMonthlySummary(user, year, month));
+        }
+        // Thường ở đây sẽ lưu vào DB (bảng MonthlyAttendanceSummary hoặc Payroll)
+        return summaries;
     }
 }

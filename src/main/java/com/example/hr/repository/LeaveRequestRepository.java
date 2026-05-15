@@ -20,6 +20,44 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
 @Query("SELECT l FROM LeaveRequest l LEFT JOIN FETCH l.user WHERE (:keyword IS NULL OR l.user.fullName LIKE %:keyword%)")
 List<LeaveRequest> findAllWithUser(@Param("keyword") String keyword);
 
+    @Query(value = "SELECT l FROM LeaveRequest l JOIN FETCH l.user u LEFT JOIN FETCH u.department d WHERE " +
+           "(:keyword IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(:deptId IS NULL OR d.id = :deptId) AND " +
+           "(:leaveType IS NULL OR l.leaveType = :leaveType) AND " +
+           "(:status IS NULL OR l.status = :status) AND " +
+           "(:fromDate IS NULL OR l.startDate >= :fromDate) AND " +
+           "(:toDate IS NULL OR l.startDate <= :toDate)",
+           countQuery = "SELECT COUNT(l) FROM LeaveRequest l JOIN l.user u LEFT JOIN u.department d WHERE " +
+           "(:keyword IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(:deptId IS NULL OR d.id = :deptId) AND " +
+           "(:leaveType IS NULL OR l.leaveType = :leaveType) AND " +
+           "(:status IS NULL OR l.status = :status) AND " +
+           "(:fromDate IS NULL OR l.startDate >= :fromDate) AND " +
+           "(:toDate IS NULL OR l.startDate <= :toDate)")
+    org.springframework.data.domain.Page<LeaveRequest> searchLeaves(
+            @Param("keyword") String keyword, 
+            @Param("deptId") Integer deptId, 
+            @Param("leaveType") com.example.hr.enums.LeaveType leaveType, 
+            @Param("status") com.example.hr.enums.LeaveStatus status, 
+            @Param("fromDate") java.time.LocalDate fromDate, 
+            @Param("toDate") java.time.LocalDate toDate, 
+            org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT COUNT(l) FROM LeaveRequest l JOIN l.user u LEFT JOIN u.department d WHERE " +
+           "(:keyword IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(:deptId IS NULL OR d.id = :deptId) AND " +
+           "(:leaveType IS NULL OR l.leaveType = :leaveType) AND " +
+           "l.status = :status AND " +
+           "(:fromDate IS NULL OR l.startDate >= :fromDate) AND " +
+           "(:toDate IS NULL OR l.startDate <= :toDate)")
+    long countLeavesByFiltersAndStatus(
+            @Param("keyword") String keyword, 
+            @Param("deptId") Integer deptId, 
+            @Param("leaveType") com.example.hr.enums.LeaveType leaveType, 
+            @Param("fromDate") java.time.LocalDate fromDate, 
+            @Param("toDate") java.time.LocalDate toDate, 
+            @Param("status") com.example.hr.enums.LeaveStatus status);
+
    long countByStatus(LeaveStatus status);
 
    @EntityGraph(attributePaths = "user")
@@ -27,15 +65,15 @@ List<LeaveRequest> findAllWithUser(@Param("keyword") String keyword);
    
    // Advanced Leave Management methods — dùng @Query để tránh ambiguous với countByStatus(LeaveStatus)
    @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.status = :statusStr")
-   long countByStatusString(@Param("statusStr") String statusStr);
+   long countByStatusString(@Param("statusStr") LeaveStatus statusStr);
 
    long countByStartDateLessThanEqualAndEndDateGreaterThanEqualAndStatus(
-       java.time.LocalDate endDate, java.time.LocalDate startDate, String status);
+       java.time.LocalDate endDate, java.time.LocalDate startDate, LeaveStatus status);
    List<LeaveRequest> findByUserAndStatusAndStartDateBetween(
-       User user, String status, java.time.LocalDate startDate, java.time.LocalDate endDate);
+       User user, LeaveStatus status, java.time.LocalDate startDate, java.time.LocalDate endDate);
    List<LeaveRequest> findByStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-       String status, java.time.LocalDate endDate, java.time.LocalDate startDate);
-   long countByUserAndStatus(User user, String status);
+       LeaveStatus status, java.time.LocalDate endDate, java.time.LocalDate startDate);
+   long countByUserAndStatus(User user, LeaveStatus status);
    List<LeaveRequest> findTop5ByOrderByCreatedAtDesc();
    
    // Team Analytics methods

@@ -40,9 +40,11 @@ public class LeaveBalanceService {
     private static final int MAX_CARRY_OVER = 5;
 
     private final LeaveRequestRepository leaveRequestRepository;
+    private final com.example.hr.repository.UserRepository userRepository;
 
-    public LeaveBalanceService(LeaveRequestRepository leaveRequestRepository) {
+    public LeaveBalanceService(LeaveRequestRepository leaveRequestRepository, com.example.hr.repository.UserRepository userRepository) {
         this.leaveRequestRepository = leaveRequestRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -74,10 +76,18 @@ public class LeaveBalanceService {
     }
 
     /**
-     * Lấy entitlement cho loại nghỉ phép.
+     * Lấy entitlement cho loại nghỉ phép, tính thêm phép thâm niên.
      */
-    public int getEntitlement(LeaveType leaveType) {
-        return ANNUAL_ENTITLEMENTS.getOrDefault(leaveType, 0);
+    public int getEntitlement(LeaveType leaveType, Integer userId) {
+        int base = ANNUAL_ENTITLEMENTS.getOrDefault(leaveType, 0);
+        if (leaveType == LeaveType.ANNUAL && userId != null) {
+            com.example.hr.models.User user = userRepository.findById(userId).orElse(null);
+            if (user != null && user.getHireDate() != null) {
+                long years = java.time.temporal.ChronoUnit.YEARS.between(user.getHireDate(), java.time.LocalDate.now());
+                base += (int) (years / 5); // Mỗi 5 năm +1 ngày phép
+            }
+        }
+        return base;
     }
 
     /**
@@ -85,7 +95,7 @@ public class LeaveBalanceService {
      */
     @Transactional(readOnly = true)
     public long getRemainingDays(Integer userId, LeaveType leaveType, int year) {
-        int entitlement = getEntitlement(leaveType);
+        int entitlement = getEntitlement(leaveType, userId);
         long used = getUsedDays(userId, leaveType, year);
         return Math.max(0, entitlement - used);
     }
@@ -98,7 +108,7 @@ public class LeaveBalanceService {
         Map<LeaveType, Map<String, Long>> balance = new HashMap<>();
 
         for (LeaveType type : LeaveType.values()) {
-            int entitlement = getEntitlement(type);
+            int entitlement = getEntitlement(type, userId);
             if (entitlement == 0) continue;
 
             long used = getUsedDays(userId, type, year);

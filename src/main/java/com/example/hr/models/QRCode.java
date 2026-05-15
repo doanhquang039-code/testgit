@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import com.example.hr.enums.QRCodeType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -72,5 +76,18 @@ public class QRCode {
     public void incrementScanCount() {
         this.scanCount++;
         this.lastScannedAt = LocalDateTime.now();
+    }
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

@@ -1,6 +1,7 @@
 package com.example.hr.controllers;
 
 import com.example.hr.dto.LeaveBalanceDTO;
+import com.example.hr.enums.LeaveStatus;
 import com.example.hr.models.*;
 import com.example.hr.repository.*;
 import com.example.hr.service.AdvancedLeaveService;
@@ -42,7 +43,7 @@ public class SelfServiceController {
         LocalDate today = LocalDate.now();
         boolean checkedInToday = attendanceRepository.existsByUserAndAttendanceDate(user, today);
         
-        long pendingLeaves = leaveRequestRepository.countByUserAndStatus(user, "PENDING");
+        long pendingLeaves = leaveRequestRepository.countByUserAndStatus(user, LeaveStatus.PENDING);
         long activeTrainings = trainingEnrollmentRepository.countByUserAndStatusString(user, "IN_PROGRESS");
         
         model.addAttribute("user", user);

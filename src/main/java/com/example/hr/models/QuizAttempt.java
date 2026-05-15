@@ -1,5 +1,7 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,6 +42,19 @@ public class QuizAttempt {
     
     @PrePersist
     protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
         startedAt = LocalDateTime.now();
+    }
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

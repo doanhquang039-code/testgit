@@ -24,22 +24,46 @@ public class CandidateController {
     public String listCandidates(
             @RequestParam(required = false) String stage,
             @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
             Model model) {
         
-        var candidates = (search != null && !search.trim().isEmpty()) 
-                ? candidateService.searchCandidates(search)
-                : (stage != null && !stage.trim().isEmpty())
-                    ? candidateService.getCandidatesByStage(stage)
-                    : candidateService.getAllCandidates();
+        org.springframework.data.domain.Sort sort = sortDir.equalsIgnoreCase(org.springframework.data.domain.Sort.Direction.ASC.name()) ? 
+                org.springframework.data.domain.Sort.by(sortBy).ascending() : 
+                org.springframework.data.domain.Sort.by(sortBy).descending();
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        
+        org.springframework.data.domain.Page<Candidate> candidatePage = candidateService.searchCandidates(search, stage, pageable);
         
         var statistics = candidateService.getCandidateStatistics();
         
-        model.addAttribute("candidates", candidates);
+        model.addAttribute("candidatePage", candidatePage);
+        model.addAttribute("candidates", candidatePage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", candidatePage.getTotalPages());
+        model.addAttribute("totalItems", candidatePage.getTotalElements());
+        model.addAttribute("sortField", sortBy);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
         model.addAttribute("statistics", statistics);
         model.addAttribute("selectedStage", stage);
         model.addAttribute("searchKeyword", search);
         
         return "hiring/candidates/list";
+    }
+
+    @PostMapping("/{id}/delete")
+    public String deleteCandidate(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            candidateService.deleteCandidate(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Candidate deleted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting candidate: " + e.getMessage());
+        }
+        return "redirect:/hiring/candidates";
     }
 
     @GetMapping("/create")

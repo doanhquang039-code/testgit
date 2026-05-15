@@ -39,20 +39,28 @@ public class AttendanceController {
     public String adminList(@RequestParam(required = false) String keyword,
                             @RequestParam(required = false) Integer month,
                             @RequestParam(required = false) Integer year,
+                            @RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "10") int size,
                             Model model) {
         int currentMonth = (month != null) ? month : LocalDate.now().getMonthValue();
         int currentYear  = (year  != null) ? year  : LocalDate.now().getYear();
 
-        List<Attendance> list;
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "attendanceDate"));
+        org.springframework.data.domain.Page<Attendance> attendancePage;
+
         if (keyword != null && !keyword.isBlank()) {
-            list = attendanceRepository.findAllWithUser(keyword);
+            attendancePage = attendanceRepository.findAllWithUser(keyword.trim(), pageable);
         } else {
             LocalDate start = LocalDate.of(currentYear, currentMonth, 1);
             LocalDate end   = start.withDayOfMonth(start.lengthOfMonth());
-            list = attendanceRepository.findByAttendanceDateBetween(start, end);
+            attendancePage = attendanceRepository.findByAttendanceDateBetween(start, end, pageable);
         }
 
-        model.addAttribute("attendances", list);
+        model.addAttribute("attendances", attendancePage.getContent());
+        model.addAttribute("attendancePage", attendancePage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", attendancePage.getTotalPages());
+        model.addAttribute("totalItems", attendancePage.getTotalElements());
         model.addAttribute("keyword", keyword);
         model.addAttribute("month", currentMonth);
         model.addAttribute("year", currentYear);

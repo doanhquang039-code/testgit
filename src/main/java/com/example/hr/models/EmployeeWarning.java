@@ -1,5 +1,9 @@
 package com.example.hr.models;
 
+import jakarta.persistence.PreUpdate;
+
+import jakarta.persistence.PrePersist;
+
 import com.example.hr.enums.WarningLevel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -107,5 +111,18 @@ public class EmployeeWarning {
     public long getDaysSinceIssued() {
         if (issuedDate == null) return 0;
         return java.time.temporal.ChronoUnit.DAYS.between(issuedDate, LocalDate.now());
+    }
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

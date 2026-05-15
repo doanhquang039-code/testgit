@@ -16,4 +16,11 @@ public interface JobPositionRepository extends JpaRepository<JobPosition, Intege
 
     // ✅ Giữ lại
     List<JobPosition> findByActive(Boolean active);
+
+    @org.springframework.data.jpa.repository.Query("SELECT j FROM JobPosition j WHERE j.active = true " +
+           "AND (:keyword IS NULL OR LOWER(j.positionName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND (:level IS NULL OR j.jobLevel = :level)")
+    org.springframework.data.domain.Page<JobPosition> searchPositions(@org.springframework.data.repository.query.Param("keyword") String keyword, 
+                                                                      @org.springframework.data.repository.query.Param("level") Integer level, 
+                                                                      org.springframework.data.domain.Pageable pageable);
 }

@@ -105,7 +105,7 @@
                                 <tbody>
                                     <tr th:each="log : ${logs.content}">
                                         <td th:text="${log.id}">1</td>
-                                        <td th:text="${log.user.fullName}">User Name</td>
+                                        <td th:text="${log.user != null ? log.user.fullName : 'System'}">User Name</td>
                                         <td>
                                             <span class="badge bg-primary" th:text="${log.action}">CREATE</span>
                                         </td>

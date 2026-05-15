@@ -150,11 +150,15 @@ public class TrainingService {
         program.setStatus(TrainingStatus.IN_PROGRESS);
         // Auto-update enrollments to IN_PROGRESS
         List<TrainingEnrollment> enrollments = enrollmentRepository.findByProgramId(id);
+        List<TrainingEnrollment> enrollmentsToUpdate = new java.util.ArrayList<>();
         for (TrainingEnrollment enrollment : enrollments) {
             if (enrollment.getStatus() == EnrollmentStatus.ENROLLED) {
                 enrollment.setStatus(EnrollmentStatus.IN_PROGRESS);
-                enrollmentRepository.save(enrollment);
+                enrollmentsToUpdate.add(enrollment);
             }
+        }
+        if (!enrollmentsToUpdate.isEmpty()) {
+            enrollmentRepository.saveAll(enrollmentsToUpdate);
         }
         return programRepository.save(program);
     }
@@ -179,9 +183,15 @@ public class TrainingService {
         program.setStatus(TrainingStatus.CANCELLED);
         // Drop all enrollments
         List<TrainingEnrollment> enrollments = enrollmentRepository.findByProgramId(id);
+        List<TrainingEnrollment> enrollmentsToUpdate = new java.util.ArrayList<>();
         for (TrainingEnrollment enrollment : enrollments) {
-            enrollment.drop();
-            enrollmentRepository.save(enrollment);
+            if (enrollment.getStatus() != EnrollmentStatus.DROPPED) {
+                enrollment.drop();
+                enrollmentsToUpdate.add(enrollment);
+            }
+        }
+        if (!enrollmentsToUpdate.isEmpty()) {
+            enrollmentRepository.saveAll(enrollmentsToUpdate);
         }
         return programRepository.save(program);
     }
@@ -245,6 +255,12 @@ public class TrainingService {
 
         enrollment.setFeedback(feedback);
         enrollment.complete(score);
+
+        // Auto-generate certificate if passed
+        if (enrollment.isPassed() && !enrollment.hasCertificate()) {
+            String certUrl = "/api/certificates/download/" + enrollmentId + "-" + System.currentTimeMillis() + ".pdf";
+            enrollment.setCertificateUrl(certUrl);
+        }
 
         return enrollmentRepository.save(enrollment);
     }

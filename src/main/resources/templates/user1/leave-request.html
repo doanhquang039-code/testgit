@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -240,6 +240,7 @@
                                 <th>Số ngày</th>
                                 <th>Lý do</th>
                                 <th>Trạng thái</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -259,8 +260,12 @@
                                     th:text="${lr.reason != null ? #strings.abbreviate(lr.reason, 60) : ''}"></td>
                                 <td>
                                     <span class="status-badge"
+                                          th:classappend="${lr.status.name() == 'PENDING' ? 'badge-p' : (lr.status.name() == 'APPROVED' ? 'badge-a' : 'badge-r')}"
                                           th:text="${lr.status.name() == 'PENDING' ? '⏳ Chờ duyệt' : (lr.status.name() == 'APPROVED' ? '✅ Đã duyệt' : '❌ Từ chối')}">
                                     </span>
+                                </td>
+                                <td>
+                                    <a th:if="${lr.status.name() == 'PENDING'}" th:href="@{/user/leaves/cancel/{id}(id=${lr.id})}" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn nghỉ phép này không?')" style="color:#ef4444;text-decoration:none;font-size:0.8rem;font-weight:600;"><i class="bi bi-x-circle me-1"></i>Hủy</a>
                                 </td>
                             </tr>
                         </tbody>

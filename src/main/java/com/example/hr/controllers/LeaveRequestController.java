@@ -49,48 +49,30 @@ public class LeaveRequestController {
                           @RequestParam(required = false) Integer deptId,
                           @RequestParam(required = false) String fromDate,
                           @RequestParam(required = false) String toDate,
+                          @RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "10") int size,
                           Model model) {
-        var all = leaveRepository.findAllWithUser(keyword);
+                          
+        LeaveType parsedLeaveType = (leaveType != null && !leaveType.isBlank()) ? LeaveType.valueOf(leaveType) : null;
+        LeaveStatus parsedStatus = (status != null && !status.isBlank()) ? LeaveStatus.valueOf(status) : null;
+        LocalDate parsedFromDate = (fromDate != null && !fromDate.isBlank()) ? LocalDate.parse(fromDate) : null;
+        LocalDate parsedToDate = (toDate != null && !toDate.isBlank()) ? LocalDate.parse(toDate) : null;
+        String parsedKeyword = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
 
-        if (deptId != null) {
-            all = all.stream()
-                    .filter(l -> l.getUser() != null
-                            && l.getUser().getDepartment() != null
-                            && deptId.equals(l.getUser().getDepartment().getId()))
-                    .collect(java.util.stream.Collectors.toList());
-        }
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+        org.springframework.data.domain.Page<LeaveRequest> leavePage = leaveRepository.searchLeaves(
+                parsedKeyword, deptId, parsedLeaveType, parsedStatus, parsedFromDate, parsedToDate, pageable);
 
-        // Filter by leave type
-        if (leaveType != null && !leaveType.isBlank()) {
-            all = all.stream()
-                    .filter(l -> l.getLeaveType() != null && l.getLeaveType().name().equals(leaveType))
-                    .collect(java.util.stream.Collectors.toList());
-        }
+        long countPending  = leaveRepository.countLeavesByFiltersAndStatus(parsedKeyword, deptId, parsedLeaveType, parsedFromDate, parsedToDate, LeaveStatus.PENDING);
+        long countApproved = leaveRepository.countLeavesByFiltersAndStatus(parsedKeyword, deptId, parsedLeaveType, parsedFromDate, parsedToDate, LeaveStatus.APPROVED);
+        long countRejected = leaveRepository.countLeavesByFiltersAndStatus(parsedKeyword, deptId, parsedLeaveType, parsedFromDate, parsedToDate, LeaveStatus.REJECTED);
 
-        // Filter by date range
-        if (fromDate != null && !fromDate.isBlank()) {
-            java.time.LocalDate from = java.time.LocalDate.parse(fromDate);
-            all = all.stream()
-                    .filter(l -> l.getStartDate() != null && !l.getStartDate().isBefore(from))
-                    .collect(java.util.stream.Collectors.toList());
-        }
-        if (toDate != null && !toDate.isBlank()) {
-            java.time.LocalDate to = java.time.LocalDate.parse(toDate);
-            all = all.stream()
-                    .filter(l -> l.getStartDate() != null && !l.getStartDate().isAfter(to))
-                    .collect(java.util.stream.Collectors.toList());
-        }
-
-        // Filter by status
-        var leaves = (status != null && !status.isBlank())
-                ? all.stream().filter(l -> l.getStatus() != null && l.getStatus().name().equals(status)).toList()
-                : all;
-
-        long countPending  = all.stream().filter(l -> l.getStatus() == LeaveStatus.PENDING).count();
-        long countApproved = all.stream().filter(l -> l.getStatus() == LeaveStatus.APPROVED).count();
-        long countRejected = all.stream().filter(l -> l.getStatus() == LeaveStatus.REJECTED).count();
-
-        model.addAttribute("leaves", leaves);
+        model.addAttribute("leaves", leavePage.getContent());
+        model.addAttribute("leavePage", leavePage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", leavePage.getTotalPages());
+        model.addAttribute("totalItems", leavePage.getTotalElements());
+        
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("selectedLeaveType", leaveType);
@@ -244,6 +226,19 @@ public class LeaveRequestController {
             "/user/leaves"
         );
 
+        return "redirect:/user/leaves";
+    }
+
+    @GetMapping("/user/leaves/cancel/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public String cancelLeave(@PathVariable Integer id, Authentication auth) {
+        User currentUser = userRepository.findByUsername(auth.getName())
+                .orElseGet(() -> userRepository.findByEmail(auth.getName()).orElseThrow());
+                
+        LeaveRequest lr = leaveRepository.findById(id).orElseThrow();
+        if (lr.getStatus() == LeaveStatus.PENDING && lr.getUser() != null && lr.getUser().getId().equals(currentUser.getId())) {
+            leaveRepository.delete(lr);
+        }
         return "redirect:/user/leaves";
     }
 }

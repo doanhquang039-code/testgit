@@ -20,12 +20,17 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
 
     Optional<Attendance> findByUserAndAttendanceDate(User user, LocalDate date);
 
-    List<Attendance> findByAttendanceDateBetween(LocalDate start, LocalDate end);
+    @Query(value = "SELECT a FROM Attendance a JOIN FETCH a.user u " +
+           "WHERE a.attendanceDate BETWEEN :start AND :end",
+           countQuery = "SELECT COUNT(a) FROM Attendance a " +
+           "WHERE a.attendanceDate BETWEEN :start AND :end")
+    org.springframework.data.domain.Page<Attendance> findByAttendanceDateBetween(@Param("start") LocalDate start, @Param("end") LocalDate end, org.springframework.data.domain.Pageable pageable);
 
-    @Query("SELECT a FROM Attendance a JOIN FETCH a.user u " +
-           "WHERE (:keyword IS NULL OR u.fullName LIKE %:keyword%) " +
-           "ORDER BY a.attendanceDate DESC")
-    List<Attendance> findAllWithUser(@Param("keyword") String keyword);
+    @Query(value = "SELECT a FROM Attendance a JOIN FETCH a.user u " +
+           "WHERE (:keyword IS NULL OR u.fullName LIKE %:keyword%)",
+           countQuery = "SELECT COUNT(a) FROM Attendance a JOIN a.user u " +
+           "WHERE (:keyword IS NULL OR u.fullName LIKE %:keyword%)")
+    org.springframework.data.domain.Page<Attendance> findAllWithUser(@Param("keyword") String keyword, org.springframework.data.domain.Pageable pageable);
 
     @Query("SELECT a FROM Attendance a JOIN FETCH a.user u " +
            "WHERE u = :user AND YEAR(a.attendanceDate) = :year AND MONTH(a.attendanceDate) = :month " +

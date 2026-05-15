@@ -56,8 +56,25 @@ public class UserController {
                             @RequestParam(name = "deptId", required = false) Integer deptId,
                             @RequestParam(name = "role", required = false) String role,
                             @RequestParam(name = "sortBy", defaultValue = "fullName") String sortBy,
+                            @RequestParam(defaultValue = "asc") String sortDir,
+                            @RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "10") int size,
                             Model model) {
-        model.addAttribute("users", userService.findAdminUsers(keyword, deptId, role, sortBy));
+        
+        org.springframework.data.domain.Sort sort = sortDir.equalsIgnoreCase(org.springframework.data.domain.Sort.Direction.ASC.name()) ? 
+                org.springframework.data.domain.Sort.by(sortBy).ascending() : 
+                org.springframework.data.domain.Sort.by(sortBy).descending();
+        
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        org.springframework.data.domain.Page<User> userPage = userService.findAdminUsers(keyword, deptId, role, pageable);
+        
+        model.addAttribute("users", userPage.getContent());
+        model.addAttribute("userPage", userPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("totalItems", userPage.getTotalElements());
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedDeptId", deptId);
         model.addAttribute("selectedRole", role);
@@ -204,12 +221,22 @@ public class UserController {
     public String listAllUsers(@RequestParam(required = false) String keyword,
                                @RequestParam(defaultValue = "id") String sortBy,
                                @RequestParam(defaultValue = "asc") String direction,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "10") int size,
                                Model model) {
         Sort sort = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        org.springframework.data.domain.Page<User> userPage = userService.searchUsers(keyword, pageable);
 
-        model.addAttribute("users", userService.searchUsers(keyword, sort));
+        model.addAttribute("users", userPage.getContent());
+        model.addAttribute("userPage", userPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("totalItems", userPage.getTotalElements());
+        model.addAttribute("sortDir", direction);
+        model.addAttribute("reverseSortDir", direction.equals("asc") ? "desc" : "asc");
         model.addAttribute("keyword", keyword);
         return "user_list";
     }

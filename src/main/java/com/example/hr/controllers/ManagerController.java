@@ -55,7 +55,7 @@ public class ManagerController {
             long completedTasks = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.COMPLETED).count();
             long pendingTasks   = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.PENDING).count();
 
-            long checkedInToday = attendanceRepository.findByAttendanceDateBetween(today, today).size();
+            long checkedInToday = attendanceRepository.findByAttendanceDateBetween(today, today, org.springframework.data.domain.Pageable.unpaged()).getContent().size();
             long absentToday    = Math.max(0, totalEmployees - checkedInToday);
 
             List<String> attLabels   = new ArrayList<>();
@@ -66,7 +66,7 @@ public class ManagerController {
             for (int i = 6; i >= 0; i--) {
                 LocalDate date = today.minusDays(i);
                 attLabels.add(date.format(DateTimeFormatter.ofPattern("dd/MM")));
-                List<Attendance> dayAtt = attendanceRepository.findByAttendanceDateBetween(date, date);
+                List<Attendance> dayAtt = attendanceRepository.findByAttendanceDateBetween(date, date, org.springframework.data.domain.Pageable.unpaged()).getContent();
                 long present = dayAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.PRESENT).count();
                 long late    = dayAtt.stream().filter(a -> a.getStatus() == AttendanceStatus.LATE).count();
                 long absent  = Math.max(0, totalEmployees - dayAtt.size());
@@ -327,8 +327,9 @@ public class ManagerController {
             
             List<Attendance> attendances = attendanceRepository.findByAttendanceDateBetween(
                     selectedDate, 
-                    selectedDate
-            );
+                    selectedDate,
+                    org.springframework.data.domain.Pageable.unpaged()
+            ).getContent();
             
             List<User> allMembers = userRepository.findByStatus(UserStatus.ACTIVE);
             long presentCount = attendances.stream()
@@ -405,8 +406,9 @@ public class ManagerController {
             List<User> teamMembers = userRepository.findByStatus(UserStatus.ACTIVE);
             List<Attendance> monthAttendance = attendanceRepository.findByAttendanceDateBetween(
                     startOfMonth, 
-                    today
-            );
+                    today,
+                    org.springframework.data.domain.Pageable.unpaged()
+            ).getContent();
             List<PerformanceReview> reviews = reviewRepository.findAllWithUsers();
             
             model.addAttribute("teamMembers", teamMembers);
