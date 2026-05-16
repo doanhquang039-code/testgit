@@ -182,18 +182,19 @@
                             th:text="${r.reason != null ? #strings.abbreviate(r.reason, 50) : '—'}"></td>
                         <td>
                             <span class="status-badge"
-                                  th:text="${r.status.name() == 'PENDING' ? '⏳ Chờ duyệt' : (r.status.name() == 'APPROVED' ? '✅ Đã duyệt' : '❌ Từ chối')}">
+                                  th:classappend="${r.status == 'PENDING' ? ' badge-p' : (r.status == 'APPROVED' ? ' badge-a' : ' badge-r')}"
+                                  th:text="${r.status == 'PENDING' ? '⏳ Chờ duyệt' : (r.status == 'APPROVED' ? '✅ Đã duyệt' : '❌ Từ chối')}">
                             </span>
                         </td>
                         <td>
-                            <div th:if="${r.status.name() == 'PENDING'}" class="d-flex gap-1">
+                            <div th:if="${r.status == 'PENDING'}" class="d-flex gap-1">
                                 <a th:href="@{/manager/overtime/approve/{id}(id=${r.id})}"
                                    class="btn-sm-action" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0;">✓ Duyệt</a>
                                 <button type="button" class="btn-sm-action"
                                         style="background:#fee2e2;color:#ef4444;border-color:#fecaca;cursor:pointer;"
                                         onclick="showRejectModal(this)" th:data-id="${r.id}">✗ Từ chối</button>
                             </div>
-                            <span th:unless="${r.status.name() == 'PENDING'}" style="color:#94a3b8;font-size:0.8rem;">—</span>
+                            <span th:unless="${r.status == 'PENDING'}" style="color:#94a3b8;font-size:0.8rem;">—</span>
                         </td>
                     </tr>
                 </tbody>

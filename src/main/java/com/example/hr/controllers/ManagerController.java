@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,7 +49,7 @@ public class ManagerController {
 
             long totalEmployees = userRepository.findByStatus(UserStatus.ACTIVE).size();
             long pendingLeaves  = leaveRepository.countByStatus(LeaveStatus.PENDING);
-            long pendingOT      = 0; // TODO: Update with new overtime model
+            long pendingOT      = overtimeRepository.countByStatus("PENDING");
 
             var allAssignments = taskAssignmentRepository.findAllWithUser();
             long activeTasks    = allAssignments.stream().filter(a -> a.getStatus() == TaskStatus.IN_PROGRESS).count();
@@ -161,15 +162,30 @@ public class ManagerController {
     public String overtimeList(@RequestParam(required = false) String status,
                                @RequestParam(required = false) String keyword,
                                Model model) {
-        // TODO: Update with new overtime model
-        List<OvertimeRequest> requests = new ArrayList<>();
+        String selectedStatus = normalizeOvertimeStatus(status);
+        List<OvertimeRequest> requests = selectedStatus != null
+                ? overtimeRepository.findByStatusOrderByCreatedAtDesc(selectedStatus)
+                : overtimeRepository.findAll().stream()
+                        .sorted(Comparator.comparing(OvertimeRequest::getCreatedAt,
+                                Comparator.nullsLast(Comparator.reverseOrder())))
+                        .collect(Collectors.toList());
+
+        if (keyword != null && !keyword.isBlank()) {
+            String kw = keyword.trim().toLowerCase();
+            requests = requests.stream()
+                    .filter(r -> containsIgnoreCase(r.getReason(), kw)
+                            || (r.getUser() != null && (
+                                    containsIgnoreCase(r.getUser().getFullName(), kw)
+                                    || containsIgnoreCase(r.getUser().getEmail(), kw))))
+                    .collect(Collectors.toList());
+        }
         
-        long countPending  = 0;
-        long countApproved = 0;
-        long countRejected = 0;
+        long countPending  = overtimeRepository.countByStatus("PENDING");
+        long countApproved = overtimeRepository.countByStatus("APPROVED");
+        long countRejected = overtimeRepository.countByStatus("REJECTED");
 
         model.addAttribute("requests", requests);
-        model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedStatus", selectedStatus);
         model.addAttribute("keyword", keyword);
         model.addAttribute("countPending",  countPending);
         model.addAttribute("countApproved", countApproved);
@@ -179,8 +195,17 @@ public class ManagerController {
 
     @GetMapping("/overtime/approve/{id}")
     public String approveOT(@PathVariable Integer id, Authentication auth, RedirectAttributes ra) {
-        // TODO: Update with new overtime model
-        ra.addFlashAttribute("info", "Chức năng đang được cập nhật");
+        User approver = authUserHelper.getCurrentUser(auth);
+        if (approver == null) {
+            ra.addFlashAttribute("error", "Khong tim thay nguoi duyet");
+            return "redirect:/manager/overtime";
+        }
+        try {
+            OvertimeRequest request = overtimeService.approveRequest(id, approver);
+            ra.addFlashAttribute("success", "Da duyet don OT cua " + request.getUser().getFullName());
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/manager/overtime";
     }
 
@@ -189,8 +214,17 @@ public class ManagerController {
                             @RequestParam String reason,
                             Authentication auth,
                             RedirectAttributes ra) {
-        // TODO: Update with new overtime model
-        ra.addFlashAttribute("info", "Chức năng đang được cập nhật");
+        User approver = authUserHelper.getCurrentUser(auth);
+        if (approver == null) {
+            ra.addFlashAttribute("error", "Khong tim thay nguoi duyet");
+            return "redirect:/manager/overtime";
+        }
+        try {
+            OvertimeRequest request = overtimeService.rejectRequest(id, approver, reason);
+            ra.addFlashAttribute("success", "Da tu choi don OT cua " + request.getUser().getFullName());
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/manager/overtime";
     }
 
@@ -201,8 +235,7 @@ public class ManagerController {
     public String userOvertimeList(Authentication auth, Model model) {
         User currentUser = authUserHelper.getCurrentUser(auth);
         if (currentUser == null) return "redirect:/login";
-        // TODO: Update with new overtime model
-        List<OvertimeRequest> myRequests = new ArrayList<>();
+        List<OvertimeRequest> myRequests = overtimeRepository.findByUserOrderByCreatedAtDesc(currentUser);
         model.addAttribute("myRequests", myRequests);
         model.addAttribute("currentUser", currentUser);
         return "user1/overtime";
@@ -434,6 +467,21 @@ public class ManagerController {
             model.addAttribute("errorMessage", "Lỗi tải budget reports: " + e.getMessage());
             return "error/500";
         }
+    }
+
+    private String normalizeOvertimeStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+        String normalized = status.trim().toUpperCase();
+        return switch (normalized) {
+            case "PENDING", "APPROVED", "REJECTED" -> normalized;
+            default -> null;
+        };
+    }
+
+    private boolean containsIgnoreCase(String value, String lowerKeyword) {
+        return value != null && value.toLowerCase().contains(lowerKeyword);
     }
 
 }

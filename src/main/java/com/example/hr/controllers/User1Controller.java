@@ -7,11 +7,13 @@ import com.example.hr.models.User;
 import com.example.hr.repository.*;
 import com.example.hr.service.AuthUserHelper;
 import com.example.hr.service.CloudinaryService;
+import com.example.hr.service.NewOvertimeService;
 import com.example.hr.service.NotificationService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,8 @@ public class User1Controller {
     @Autowired private AuthUserHelper authUserHelper;
     @Autowired private NotificationService notificationService;
     @Autowired private CloudinaryService cloudinaryService;
+    @Autowired private NewOvertimeService overtimeService;
+    @Autowired private OvertimeRequestRepository overtimeRepository;
 
     private static final String UPLOAD_DIR = "public/test1/";
 
@@ -300,5 +304,38 @@ public class User1Controller {
             }
         }
         return "redirect:/user1/tasks";
+    }
+
+    // ==================== OVERTIME ====================
+
+    @GetMapping("/overtime")
+    public String overtime(Authentication authentication, Model model) {
+        User user = getCurrentUser(authentication);
+        if (user == null) return "redirect:/login";
+
+        model.addAttribute("currentUser", user);
+        model.addAttribute("myRequests", overtimeRepository.findByUserOrderByCreatedAtDesc(user));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(user));
+        return "user1/overtime";
+    }
+
+    @PostMapping("/overtime")
+    public String submitOvertime(@RequestParam LocalDate overtimeDate,
+                                 @RequestParam LocalTime startTime,
+                                 @RequestParam LocalTime endTime,
+                                 @RequestParam String reason,
+                                 Authentication authentication,
+                                 RedirectAttributes redirectAttributes) {
+        User user = getCurrentUser(authentication);
+        if (user == null) return "redirect:/login";
+
+        try {
+            overtimeService.createRequest(user, overtimeDate, startTime, endTime, reason);
+            redirectAttributes.addFlashAttribute("success", "Da gui don OT thanh cong");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/user1/overtime";
     }
 }
