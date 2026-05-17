@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Khen thưởng - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .stat-card { border: none; border-radius: 12px; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); }
+        .recognition-item { transition: background 0.2s; }
+        .recognition-item:hover { background: #f8f9fa; }
+        .type-badge { border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 600; }
+        .type-excellence { background: #fff3cd; color: #856404; }
+        .type-teamwork { background: #d1e7dd; color: #0a3622; }
+        .type-innovation { background: #cff4fc; color: #055160; }
+        .type-leadership { background: #e2d9f3; color: #432874; }
+        .type-other { background: #e9ecef; color: #495057; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <nav th:replace="fragments/admin-sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1"><i class="fas fa-award me-2 text-warning"></i>Quản lý Khen thưởng</h2>
+                        <small class="text-muted">Xem và quản lý tất cả hoạt động vinh danh nhân viên</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i>In báo cáo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                    <i class="fas fa-check-circle me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card card" style="background:linear-gradient(135deg,#f6d365,#fda085);color:white;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <small class="opacity-75">Tổng vinh danh</small>
+                                        <div class="h3 mb-0" th:text="${stats != null ? stats.total : 0}">0</div>
+                                    </div>
+                                    <i class="fas fa-award fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card card" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:white;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <small class="opacity-75">Tháng này</small>
+                                        <div class="h3 mb-0" th:text="${stats != null ? stats.thisMonth : 0}">0</div>
+                                    </div>
+                                    <i class="fas fa-calendar fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card card" style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:white;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <small class="opacity-75">Tổng điểm tặng</small>
+                                        <div class="h3 mb-0" th:text="${stats != null ? stats.totalPoints : 0}">0</div>
+                                    </div>
+                                    <i class="fas fa-star fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card card" style="background:linear-gradient(135deg,#fa709a,#fee140);color:white;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <small class="opacity-75">Nhân viên tham gia</small>
+                                        <div class="h3 mb-0" th:text="${stats != null ? stats.participants : 0}">0</div>
+                                    </div>
+                                    <i class="fas fa-users fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Recognition List -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0 pt-4 pb-2">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h5 class="mb-0">Tất cả vinh danh</h5>
+                                    </div>
+                                    <div class="col-auto">
+                                        <select class="form-select form-select-sm" id="typeFilter" onchange="filterByType()">
+                                            <option value="">Tất cả loại</option>
+                                            <option value="EXCELLENCE">🏆 Xuất sắc</option>
+                                            <option value="TEAMWORK">🤝 Đồng đội</option>
+                                            <option value="INNOVATION">💡 Sáng tạo</option>
+                                            <option value="LEADERSHIP">👑 Lãnh đạo</option>
+                                            <option value="CUSTOMER_SERVICE">😊 Khách hàng</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div th:if="${recognitions != null and !recognitions.empty}">
+                                    <div th:each="rec : ${recognitions}"
+                                         class="recognition-item p-3 border-bottom"
+                                         th:data-type="${rec.type}">
+                                        <div class="d-flex align-items-start">
+                                            <img th:src="${'https://ui-avatars.com/api/?name=' + (rec.recipient != null ? rec.recipient.fullName : 'User') + '&background=random'}"
+                                                 class="rounded-circle me-3 flex-shrink-0" width="42" height="42">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <strong th:text="${rec.recipient != null ? rec.recipient.fullName : 'N/A'}">Nhân viên</strong>
+                                                        <small class="text-muted ms-1">từ</small>
+                                                        <strong class="text-primary" th:text="${' ' + (rec.giver != null ? rec.giver.fullName : 'N/A')}">Người tặng</strong>
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="type-badge"
+                                                              th:classappend="'type-' + ${#strings.toLowerCase(rec.type)}"
+                                                              th:text="${rec.type == 'EXCELLENCE'} ? '🏆 Xuất sắc' :
+                                                                        (${rec.type == 'TEAMWORK'} ? '🤝 Đồng đội' :
+                                                                        (${rec.type == 'INNOVATION'} ? '💡 Sáng tạo' :
+                                                                        (${rec.type == 'LEADERSHIP'} ? '👑 Lãnh đạo' : '🌟 Khác')))">
+                                                            Loại
+                                                        </span>
+                                                        <span class="badge bg-warning text-dark">
+                                                            +<span th:text="${rec.points != null ? rec.points : 0}">0</span>⭐
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="text-primary fw-semibold small mt-1" th:text="${rec.title}">Tiêu đề</div>
+                                                <div class="text-muted small mt-1" th:text="${rec.message}">Nội dung</div>
+                                                <small class="text-muted mt-1 d-block">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    <span th:text="${rec.createdAt != null ? #temporals.format(rec.createdAt, 'dd/MM/yyyy HH:mm') : '--'}">--</span>
+                                                    <span th:if="${rec.isPublic}" class="ms-2">
+                                                        <i class="fas fa-globe me-1 text-info"></i>Công khai
+                                                    </span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div th:if="${recognitions == null or recognitions.empty}" class="text-center py-5">
+                                    <i class="fas fa-award fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">Chưa có vinh danh nào</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Recipients -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-header bg-white border-0 pt-3 pb-2">
+                                <h6 class="fw-bold mb-0"><i class="fas fa-trophy me-2 text-warning"></i>Top nhân viên được khen</h6>
+                                <small class="text-muted">Tháng này</small>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="badge bg-warning text-dark me-2 fs-6">1</span>
+                                    <img src="https://ui-avatars.com/api/?name=Nguyen+A&background=ffd700" class="rounded-circle me-2" width="32" height="32">
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-semibold">Nguyen Van A</div>
+                                    </div>
+                                    <span class="badge bg-warning text-dark">120⭐</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="badge bg-secondary me-2 fs-6">2</span>
+                                    <img src="https://ui-avatars.com/api/?name=Tran+B&background=c0c0c0" class="rounded-circle me-2" width="32" height="32">
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-semibold">Tran Thi B</div>
+                                    </div>
+                                    <span class="badge bg-secondary">80⭐</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge me-2 fs-6" style="background:#cd7f32;color:white;">3</span>
+                                    <img src="https://ui-avatars.com/api/?name=Le+C&background=cd7f32" class="rounded-circle me-2" width="32" height="32">
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-semibold">Le Van C</div>
+                                    </div>
+                                    <span class="badge text-white" style="background:#cd7f32;">60⭐</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Type Distribution -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0 pt-3 pb-2">
+                                <h6 class="fw-bold mb-0"><i class="fas fa-chart-pie me-2 text-info"></i>Phân bổ loại khen</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>🏆 Xuất sắc</span><span class="fw-semibold">35%</span>
+                                    </div>
+                                    <div class="progress" style="height:6px;">
+                                        <div class="progress-bar bg-warning" style="width:35%"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>🤝 Đồng đội</span><span class="fw-semibold">28%</span>
+                                    </div>
+                                    <div class="progress" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:28%"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>💡 Sáng tạo</span><span class="fw-semibold">20%</span>
+                                    </div>
+                                    <div class="progress" style="height:6px;">
+                                        <div class="progress-bar bg-info" style="width:20%"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-0">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>👑 Lãnh đạo</span><span class="fw-semibold">17%</span>
+                                    </div>
+                                    <div class="progress" style="height:6px;">
+                                        <div class="progress-bar bg-purple" style="width:17%;background:#9c27b0;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterByType() {
+            const type = document.getElementById('typeFilter').value;
+            const items = document.querySelectorAll('.recognition-item');
+            items.forEach(item => {
+                if (!type || item.dataset.type === type) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

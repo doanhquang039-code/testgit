@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OKR Công ty - HR System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8f9fa; }
+        .okr-header {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white; border-radius: 16px; padding: 32px; margin-bottom: 24px;
+        }
+        .level-tab { border-radius: 8px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+        .level-tab.active { background: white; color: #302b63; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .okr-card {
+            border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            margin-bottom: 16px; overflow: hidden; transition: box-shadow 0.2s;
+        }
+        .okr-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .okr-card .card-header-bar {
+            height: 4px; background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+        .okr-card.dept .card-header-bar { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+        .okr-card.individual .card-header-bar { background: linear-gradient(90deg, #fa709a, #fee140); }
+        .progress-ring-text { font-size: 22px; font-weight: 700; fill: #333; }
+        .kr-item { padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .kr-item:last-child { border-bottom: none; }
+        .kr-progress { height: 8px; border-radius: 4px; }
+        .status-pill {
+            border-radius: 20px; padding: 3px 12px; font-size: 11px; font-weight: 600;
+        }
+        .hierarchy-tree { border-left: 3px solid #dee2e6; padding-left: 20px; margin-left: 16px; }
+    </style>
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="container mt-4 mb-5">
+        <!-- Header -->
+        <div class="okr-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-white bg-opacity-25 text-white">🎯 OKR</span>
+                        <span class="badge bg-white bg-opacity-25 text-white">Q2 2026</span>
+                    </div>
+                    <h2 class="mb-1" th:text="${pageTitle != null ? pageTitle : 'Company OKRs'}">OKR Công ty</h2>
+                    <p class="opacity-75 mb-0">Mục tiêu và kết quả then chốt của toàn tổ chức</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="text-white">
+                        <div class="fs-5 fw-bold">
+                            <span th:text="${objectives != null ? objectives.size() : 0}">0</span> Objectives
+                        </div>
+                        <small class="opacity-75">Đang theo dõi</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Tabs -->
+        <div class="d-flex gap-2 mb-4 p-2 bg-white rounded-3 shadow-sm d-inline-flex">
+            <div class="level-tab active px-4 py-2" onclick="filterLevel('ALL', this)">🌐 Tất cả</div>
+            <div class="level-tab px-4 py-2" onclick="filterLevel('COMPANY', this)">🏢 Công ty</div>
+            <div class="level-tab px-4 py-2" onclick="filterLevel('DEPARTMENT', this)">👥 Phòng ban</div>
+            <div class="level-tab px-4 py-2" onclick="filterLevel('INDIVIDUAL', this)">👤 Cá nhân</div>
+        </div>
+
+        <!-- OKR Cards -->
+        <div th:if="${objectives != null and !objectives.empty}">
+            <div th:each="obj : ${objectives}"
+                 class="okr-card card"
+                 th:classappend="${obj.level == 'DEPARTMENT'} ? ' dept' : (${obj.level == 'INDIVIDUAL'} ? ' individual' : '')"
+                 th:data-level="${obj.level}">
+                <div class="card-header-bar"></div>
+                <div class="card-body p-4">
+                    <div class="row align-items-start">
+                        <div class="col-md-8">
+                            <!-- Header -->
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="status-pill"
+                                      th:classappend="${obj.status?.name() == 'ON_TRACK'} ? 'bg-success bg-opacity-10 text-success' :
+                                                      (${obj.status?.name() == 'AT_RISK'} ? 'bg-warning bg-opacity-10 text-warning' :
+                                                      (${obj.status?.name() == 'COMPLETED'} ? 'bg-primary bg-opacity-10 text-primary' :
+                                                      'bg-secondary bg-opacity-10 text-secondary'))"
+                                      th:text="${obj.status?.name() == 'ON_TRACK'} ? '✅ Đúng tiến độ' :
+                                               (${obj.status?.name() == 'AT_RISK'} ? '⚠️ Cần chú ý' :
+                                               (${obj.status?.name() == 'COMPLETED'} ? '🎉 Hoàn thành' :
+                                               (${obj.status?.name() == 'OFF_TRACK'} ? '❌ Chậm tiến độ' : '⏸️ Draft')))">
+                                    Status
+                                </span>
+                                <span class="badge"
+                                      th:classappend="${obj.level == 'COMPANY'} ? 'bg-dark' : (${obj.level == 'DEPARTMENT'} ? 'bg-success' : 'bg-info')"
+                                      th:text="${obj.level == 'COMPANY'} ? '🏢 Công ty' : (${obj.level == 'DEPARTMENT'} ? '👥 Phòng ban' : '👤 Cá nhân')">
+                                    Level
+                                </span>
+                            </div>
+
+                            <h5 class="mb-1" th:text="${obj.title}">Objective Title</h5>
+                            <p class="text-muted small mb-3" th:text="${obj.description}">Description</p>
+
+                            <!-- Key Results -->
+                            <div th:if="${obj.keyResults != null and !obj.keyResults.empty}">
+                                <small class="text-uppercase fw-semibold text-muted d-block mb-2">Key Results</small>
+                                <div th:each="kr : ${obj.keyResults}" class="kr-item">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small" th:text="${kr.title}">KR Title</span>
+                                        <small class="text-muted fw-semibold">
+                                            <span th:text="${kr.currentValue != null ? kr.currentValue : 0}">0</span>/<span th:text="${kr.targetValue != null ? kr.targetValue : 100}">100</span>
+                                        </small>
+                                    </div>
+                                    <div class="progress kr-progress">
+                                        <div class="progress-bar"
+                                             th:style="'width:' + (${kr.targetValue != null and kr.targetValue > 0 ? (kr.currentValue != null ? kr.currentValue : 0) * 100 / kr.targetValue : 0}) + '%'"
+                                             th:classappend="${(kr.currentValue != null ? kr.currentValue : 0) >= (kr.targetValue != null ? kr.targetValue : 100)} ? 'bg-success' : 'bg-primary'">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- No KRs placeholder -->
+                            <div th:if="${obj.keyResults == null or obj.keyResults.empty}" class="text-muted small">
+                                <i class="fas fa-list-ul me-1"></i>Chưa có Key Results
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 text-center mt-3 mt-md-0">
+                            <!-- Progress Circle -->
+                            <svg width="90" height="90" viewBox="0 0 90 90">
+                                <circle cx="45" cy="45" r="38" fill="none" stroke="#e9ecef" stroke-width="8"/>
+                                <circle cx="45" cy="45" r="38" fill="none" stroke="#4facfe" stroke-width="8"
+                                        stroke-dasharray="239"
+                                        th:stroke-dashoffset="${239 - (obj.progress != null ? obj.progress : 0) * 2.39}"
+                                        stroke-linecap="round" transform="rotate(-90 45 45)"/>
+                                <text x="45" y="50" text-anchor="middle" class="progress-ring-text"
+                                      th:text="${(obj.progress != null ? obj.progress : 0) + '%'}">0%</text>
+                            </svg>
+                            <div class="small text-muted mt-1">Hoàn thành</div>
+
+                            <div class="mt-2">
+                                <a th:href="@{/okr/objectives/{id}(id=${obj.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>Chi tiết
+                                </a>
+                            </div>
+
+                            <!-- Timeline -->
+                            <div class="mt-2">
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <span th:text="${obj.startDate != null ? #temporals.format(obj.startDate, 'dd/MM') : '--'}">--</span>
+                                    →
+                                    <span th:text="${obj.endDate != null ? #temporals.format(obj.endDate, 'dd/MM/yyyy') : '--'}">--</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${objectives == null or objectives.empty}" class="text-center py-5">
+            <div style="font-size: 4rem;" class="mb-3">🎯</div>
+            <h4 class="text-muted">Chưa có OKR nào được thiết lập</h4>
+            <p class="text-muted">Các mục tiêu công ty sẽ được hiển thị ở đây</p>
+            <a href="/admin/okr/objectives/new" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Tạo Objective đầu tiên
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <div class="text-center mt-4">
+            <a href="/okr/my-objectives" class="btn btn-outline-primary me-2">
+                <i class="fas fa-user me-2"></i>OKR của tôi
+            </a>
+            <a href="/user1/dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-home me-2"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterLevel(level, tab) {
+            document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            const cards = document.querySelectorAll('.okr-card');
+            cards.forEach(card => {
+                if (level === 'ALL' || card.dataset.level === level) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

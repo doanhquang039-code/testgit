@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tặng vinh danh - HR System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8f9fa; }
+        .page-header {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            border-radius: 16px; padding: 32px; color: white; margin-bottom: 24px;
+        }
+        .recognition-type-card {
+            cursor: pointer; border: 2px solid #dee2e6; border-radius: 12px;
+            padding: 16px; transition: all 0.2s; text-align: center;
+        }
+        .recognition-type-card:hover { border-color: #fa709a; background: #fff5f8; }
+        .recognition-type-card.selected {
+            border-color: #fa709a; background: #fff0f5;
+            box-shadow: 0 4px 15px rgba(250,112,154,0.2);
+        }
+        .recognition-type-card input[type="radio"] { display: none; }
+        .rec-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+        .points-badge { background: linear-gradient(135deg, #f6d365, #fda085); color: white; border-radius: 20px; padding: 4px 12px; font-weight: 600; }
+        .preview-card { border: 2px solid #dee2e6; border-radius: 12px; padding: 20px; background: white; }
+        .preview-card.active { border-color: #fa709a; }
+        .char-counter { font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="container mt-4 mb-5" style="max-width: 780px;">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/user1/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/engagement/recognition">Tường vinh danh</a></li>
+                <li class="breadcrumb-item active">Tặng vinh danh</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h2 class="mb-1"><i class="fas fa-award me-2"></i>Tặng vinh danh</h2>
+            <p class="opacity-85 mb-0">Công nhận và tôn vinh những đóng góp tuyệt vời của đồng nghiệp</p>
+        </div>
+
+        <!-- Flash messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i><span th:text="${success}">Thành công!</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i><span th:text="${error}">Lỗi!</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <form id="recognitionForm" th:action="@{/engagement/recognition/give}" method="post">
+                    <input type="hidden" name="_csrf" th:value="${_csrf != null ? _csrf.token : ''}">
+
+                    <!-- Step 1: Choose Recipient -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3">
+                                <span class="badge bg-primary rounded-circle me-2">1</span>
+                                Chọn người nhận vinh danh
+                            </h6>
+                            <label class="form-label">Nhân viên <span class="text-danger">*</span></label>
+                            <select class="form-select" name="recipientId" id="recipientSelect" required onchange="updatePreview()">
+                                <option value="">-- Tìm kiếm nhân viên --</option>
+                                <option value="1">Nguyen Van A - IT Department</option>
+                                <option value="2">Tran Thi B - HR Department</option>
+                                <option value="3">Le Van C - Sales Department</option>
+                                <option value="4">Pham Thi D - Finance Department</option>
+                                <option value="5">Hoang Van E - Operations</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Recognition Type -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3">
+                                <span class="badge bg-primary rounded-circle me-2">2</span>
+                                Loại vinh danh
+                            </h6>
+                            <div class="row g-2" id="typeGrid">
+                                <div class="col-6 col-md-4">
+                                    <label class="recognition-type-card w-100" for="type_excellence">
+                                        <input type="radio" name="type" value="EXCELLENCE" id="type_excellence" required onchange="selectType(this)">
+                                        <span class="rec-icon">🏆</span>
+                                        <div class="fw-semibold small">Xuất sắc</div>
+                                        <div><span class="points-badge small">+50 điểm</span></div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="recognition-type-card w-100" for="type_teamwork">
+                                        <input type="radio" name="type" value="TEAMWORK" id="type_teamwork" onchange="selectType(this)">
+                                        <span class="rec-icon">🤝</span>
+                                        <div class="fw-semibold small">Đồng đội</div>
+                                        <div><span class="points-badge small">+30 điểm</span></div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="recognition-type-card w-100" for="type_innovation">
+                                        <input type="radio" name="type" value="INNOVATION" id="type_innovation" onchange="selectType(this)">
+                                        <span class="rec-icon">💡</span>
+                                        <div class="fw-semibold small">Sáng tạo</div>
+                                        <div><span class="points-badge small">+40 điểm</span></div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="recognition-type-card w-100" for="type_leadership">
+                                        <input type="radio" name="type" value="LEADERSHIP" id="type_leadership" onchange="selectType(this)">
+                                        <span class="rec-icon">👑</span>
+                                        <div class="fw-semibold small">Lãnh đạo</div>
+                                        <div><span class="points-badge small">+50 điểm</span></div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="recognition-type-card w-100" for="type_customer">
+                                        <input type="radio" name="type" value="CUSTOMER_SERVICE" id="type_customer" onchange="selectType(this)">
+                                        <span class="rec-icon">😊</span>
+                                        <div class="fw-semibold small">Khách hàng</div>
+                                        <div><span class="points-badge small">+30 điểm</span></div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="recognition-type-card w-100" for="type_other">
+                                        <input type="radio" name="type" value="OTHER" id="type_other" onchange="selectType(this)">
+                                        <span class="rec-icon">🌟</span>
+                                        <div class="fw-semibold small">Khác</div>
+                                        <div><span class="points-badge small">+20 điểm</span></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Message -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3">
+                                <span class="badge bg-primary rounded-circle me-2">3</span>
+                                Nội dung vinh danh
+                            </h6>
+                            <div class="mb-3">
+                                <label class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="title" id="titleInput"
+                                       placeholder="Ví dụ: Cảm ơn vì đã hỗ trợ tuyệt vời!" 
+                                       maxlength="100" required onkeyup="updatePreview(); updateCharCount(this, 'titleCount')">
+                                <div class="d-flex justify-content-end mt-1">
+                                    <span class="char-counter text-muted"><span id="titleCount">0</span>/100</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Thông điệp <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="message" id="messageInput" rows="4" maxlength="500" required
+                                          placeholder="Mô tả chi tiết lý do bạn muốn vinh danh người này. Hãy cụ thể và chân thành..."
+                                          onkeyup="updatePreview(); updateCharCount(this, 'msgCount')"></textarea>
+                                <div class="d-flex justify-content-end mt-1">
+                                    <span class="char-counter text-muted"><span id="msgCount">0</span>/500</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="isPublic" name="isPublic" value="true" checked>
+                                    <label class="form-check-label" for="isPublic">
+                                        <i class="fas fa-globe me-1"></i>
+                                        Hiển thị công khai trên tường vinh danh
+                                    </label>
+                                </div>
+                            </div>
+                            <input type="hidden" name="points" value="50">
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <a href="/engagement/recognition" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Hủy
+                        </a>
+                        <button type="submit" class="btn btn-danger flex-grow-1" id="submitBtn">
+                            <i class="fas fa-paper-plane me-2"></i>Gửi vinh danh
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="col-lg-5">
+                <div class="sticky-top" style="top: 80px;">
+                    <h6 class="fw-bold mb-3 text-muted text-uppercase" style="font-size:11px;letter-spacing:1px;">
+                        <i class="fas fa-eye me-1"></i>Xem trước
+                    </h6>
+                    <div class="preview-card" id="previewCard">
+                        <div class="d-flex align-items-center mb-3">
+                            <img id="previewAvatar" src="https://ui-avatars.com/api/?name=?&background=random"
+                                 class="rounded-circle me-3" width="44" height="44">
+                            <div>
+                                <div class="fw-semibold small" id="previewRecipient">Chọn người nhận...</div>
+                                <div class="text-muted small">nhận vinh danh từ <strong>Bạn</strong></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-warning text-dark me-2" id="previewTypeBadge">
+                                🏆 Loại vinh danh
+                            </span>
+                            <span class="badge bg-primary" id="previewPoints">+50 điểm</span>
+                        </div>
+                        <h6 class="mb-2 text-muted" id="previewTitle">Tiêu đề hiển thị ở đây...</h6>
+                        <p class="mb-2 small text-muted" id="previewMessage">Nội dung vinh danh sẽ hiển thị ở đây...</p>
+                        <small class="text-muted"><i class="fas fa-clock me-1"></i>Vừa xong</small>
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="alert alert-info mt-3 border-0" style="background:#e8f4f8;">
+                        <h6 class="alert-heading"><i class="fas fa-lightbulb me-2 text-info"></i>Gợi ý</h6>
+                        <ul class="mb-0 small">
+                            <li>Hãy cụ thể về hành động hoặc thành tích</li>
+                            <li>Đề cập đến tác động tích cực đến team</li>
+                            <li>Sử dụng ngôn ngữ chân thành, tích cực</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const typeMap = {
+            'EXCELLENCE': { label: '🏆 Xuất sắc', points: 50 },
+            'TEAMWORK': { label: '🤝 Đồng đội', points: 30 },
+            'INNOVATION': { label: '💡 Sáng tạo', points: 40 },
+            'LEADERSHIP': { label: '👑 Lãnh đạo', points: 50 },
+            'CUSTOMER_SERVICE': { label: '😊 Khách hàng', points: 30 },
+            'OTHER': { label: '🌟 Khác', points: 20 }
+        };
+
+        function selectType(radio) {
+            document.querySelectorAll('.recognition-type-card').forEach(c => c.classList.remove('selected'));
+            radio.closest('.recognition-type-card').classList.add('selected');
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const recipientEl = document.getElementById('recipientSelect');
+            const recipient = recipientEl.options[recipientEl.selectedIndex]?.text || 'Chọn người nhận...';
+            const name = recipient.includes(' - ') ? recipient.split(' - ')[0] : recipient;
+
+            document.getElementById('previewRecipient').textContent = name;
+            document.getElementById('previewAvatar').src =
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+
+            const typeEl = document.querySelector('input[name="type"]:checked');
+            if (typeEl) {
+                const t = typeMap[typeEl.value];
+                document.getElementById('previewTypeBadge').textContent = t.label;
+                document.getElementById('previewPoints').textContent = '+' + t.points + ' điểm';
+                document.getElementById('previewCard').classList.add('active');
+            }
+
+            const title = document.getElementById('titleInput').value;
+            const msg = document.getElementById('messageInput').value;
+            if (title) document.getElementById('previewTitle').textContent = title;
+            if (msg) document.getElementById('previewMessage').textContent = msg;
+        }
+
+        function updateCharCount(el, countId) {
+            document.getElementById(countId).textContent = el.value.length;
+        }
+
+        document.getElementById('recognitionForm').addEventListener('submit', function() {
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi...';
+            btn.disabled = true;
+        });
+    </script>
+</body>
+</html>

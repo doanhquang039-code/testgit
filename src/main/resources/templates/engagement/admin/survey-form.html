@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo/Sửa Khảo sát - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .form-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <nav th:replace="fragments/admin-sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="fas fa-clipboard-plus me-2 text-primary"></i>
+                            <span th:text="${survey != null and survey.id != null} ? 'Chỉnh sửa khảo sát' : 'Tạo khảo sát mới'">Khảo sát</span>
+                        </h2>
+                        <small class="text-muted">Thu thập ý kiến và phản hồi từ nhân viên</small>
+                    </div>
+                    <a href="/admin/engagement/surveys" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <form th:action="${survey != null and survey.id != null}
+                                        ? @{/admin/engagement/surveys/{id}/update(id=${survey.id})}
+                                        : @{/admin/engagement/surveys/create}"
+                              method="post">
+                            <input type="hidden" name="_csrf" th:value="${_csrf != null ? _csrf.token : ''}">
+
+                            <!-- Basic Info -->
+                            <div class="form-card card mb-4">
+                                <div class="card-header bg-white border-0 pt-4 pb-2">
+                                    <h6 class="fw-bold mb-0"><i class="fas fa-info-circle me-2 text-primary"></i>Thông tin cơ bản</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Tiêu đề khảo sát <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="title"
+                                               th:value="${survey?.title}"
+                                               placeholder="Ví dụ: Khảo sát hài lòng nhân viên Q2 2026"
+                                               required maxlength="200">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Mô tả</label>
+                                        <textarea class="form-control" name="description" rows="3"
+                                                  th:text="${survey?.description}"
+                                                  placeholder="Mô tả mục đích và nội dung của khảo sát này..."></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Câu hỏi khảo sát <span class="text-danger">*</span></label>
+                                        <div class="alert alert-info py-2">
+                                            <small><i class="fas fa-info-circle me-1"></i>
+                                            Nhập JSON format hoặc các câu hỏi phân cách bằng dấu | Ví dụ: <code>Bạn hài lòng với công việc?|Môi trường làm việc?</code></small>
+                                        </div>
+                                        <textarea class="form-control" name="questions" rows="5"
+                                                  th:text="${survey?.questions}"
+                                                  placeholder="Bạn hài lòng với công việc hiện tại không?|Môi trường làm việc có thân thiện?|Bạn có đề xuất cải thiện gì không?"
+                                                  required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Schedule -->
+                            <div class="form-card card mb-4">
+                                <div class="card-header bg-white border-0 pt-4 pb-2">
+                                    <h6 class="fw-bold mb-0"><i class="fas fa-calendar me-2 text-success"></i>Lịch trình</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Ngày bắt đầu <span class="text-danger">*</span></label>
+                                            <input type="datetime-local" class="form-control" name="startDate"
+                                                   th:value="${survey?.startDate != null ? #temporals.format(survey.startDate, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                                   required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Ngày kết thúc <span class="text-danger">*</span></label>
+                                            <input type="datetime-local" class="form-control" name="endDate"
+                                                   th:value="${survey?.endDate != null ? #temporals.format(survey.endDate, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                                   required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Settings -->
+                            <div class="form-card card mb-4">
+                                <div class="card-header bg-white border-0 pt-4 pb-2">
+                                    <h6 class="fw-bold mb-0"><i class="fas fa-cog me-2 text-warning"></i>Cài đặt</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="isAnonymous" name="isAnonymous" value="true"
+                                                   th:checked="${survey?.isAnonymous == true}">
+                                            <label class="form-check-label" for="isAnonymous">
+                                                <strong><i class="fas fa-user-secret me-2 text-info"></i>Khảo sát ẩn danh</strong>
+                                                <div class="text-muted small">Nhân viên trả lời mà không tiết lộ danh tính</div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="isActive" name="isActive" value="true"
+                                                   th:checked="${survey == null or survey.id == null or survey.isActive == true}">
+                                            <label class="form-check-label" for="isActive">
+                                                <strong><i class="fas fa-toggle-on me-2 text-success"></i>Kích hoạt ngay</strong>
+                                                <div class="text-muted small">Cho phép nhân viên tham gia ngay sau khi tạo</div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-3">
+                                <a href="/admin/engagement/surveys" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Hủy
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>
+                                    <span th:text="${survey != null and survey.id != null} ? 'Cập nhật' : 'Tạo khảo sát'">Lưu</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Sidebar Tips -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-body">
+                                <h6 class="fw-bold"><i class="fas fa-lightbulb me-2 text-warning"></i>Mẹo tạo khảo sát hay</h6>
+                                <ul class="small text-muted mb-0">
+                                    <li class="mb-2">Giữ khảo sát ngắn gọn (5-10 câu)</li>
+                                    <li class="mb-2">Sử dụng câu hỏi đóng để dễ phân tích</li>
+                                    <li class="mb-2">Kết hợp câu hỏi rating và text mở</li>
+                                    <li class="mb-2">Bật ẩn danh để nhận phản hồi trung thực</li>
+                                    <li>Gửi thông báo nhắc nhở trước hạn 2-3 ngày</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card border-0 shadow-sm border-start border-info border-4">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-info"><i class="fas fa-chart-bar me-2"></i>Thống kê</h6>
+                                <div class="small text-muted">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Tỷ lệ tham gia trung bình:</span>
+                                        <strong>72%</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Thời gian tốt nhất:</span>
+                                        <strong>Thứ 3, 10am</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Độ dài tối ưu:</span>
+                                        <strong>5-7 phút</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
