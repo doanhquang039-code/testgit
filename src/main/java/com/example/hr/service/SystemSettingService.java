@@ -2,12 +2,11 @@ package com.example.hr.service;
 
 import com.example.hr.models.SystemSetting;
 import com.example.hr.repository.SystemSettingRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -21,12 +20,13 @@ public class SystemSettingService {
 
     @PostConstruct
     public void initDefaultSettings() {
-        if (settingRepository.count() == 0) {
-            addSetting("COMPANY_NAME", "Công ty CP Công nghệ HRMS", "Tên công ty hiển thị trên báo cáo");
-            addSetting("WORKING_HOURS_PER_DAY", "8", "Số giờ làm việc tiêu chuẩn mỗi ngày");
-            addSetting("MAX_LEAVE_CARRYOVER", "5", "Số ngày phép tối đa được chuyển sang năm sau");
-            addSetting("ENABLE_AUTO_ATTENDANCE", "true", "Tự động chấm công vắng mặt nếu không check-in (true/false)");
-        }
+        addDefaultSetting("COMPANY_NAME", "Công ty CP Công nghệ HRMS", "Tên công ty hiển thị trên báo cáo");
+        addDefaultSetting("WORKING_HOURS_PER_DAY", "8", "Số giờ làm việc tiêu chuẩn mỗi ngày");
+        addDefaultSetting("MAX_LEAVE_CARRYOVER", "5", "Số ngày phép tối đa được chuyển sang năm sau");
+        addDefaultSetting("ENABLE_AUTO_ATTENDANCE", "true", "Tự động chấm công vắng mặt nếu không check-in (true/false)");
+        addDefaultSetting("LOGIN_VERIFICATION_ENABLED", "true", "Bật mã xác nhận khi đăng nhập (true/false)");
+        addDefaultSetting("LOGIN_VERIFICATION_CODE_LENGTH", "5", "Độ dài mã xác nhận đăng nhập, từ 4 đến 8 ký tự");
+        addDefaultSetting("LOGIN_VERIFICATION_CHARACTERS", "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", "Bộ ký tự dùng để sinh mã xác nhận đăng nhập");
     }
 
     public List<SystemSetting> getAllSettings() {
@@ -37,6 +37,19 @@ public class SystemSettingService {
         return settingRepository.findById(key)
                 .map(SystemSetting::getSettingValue)
                 .orElse(defaultValue);
+    }
+
+    public boolean getBoolean(String key, boolean defaultValue) {
+        return Boolean.parseBoolean(getValue(key, String.valueOf(defaultValue)));
+    }
+
+    public int getInt(String key, int defaultValue, int minValue, int maxValue) {
+        try {
+            int value = Integer.parseInt(getValue(key, String.valueOf(defaultValue)).trim());
+            return Math.max(minValue, Math.min(maxValue, value));
+        } catch (NumberFormatException ex) {
+            return defaultValue;
+        }
     }
 
     public void updateSetting(String key, String value) {
@@ -55,6 +68,12 @@ public class SystemSettingService {
             setting.setDescription(description);
             setting.setUpdatedAt(LocalDateTime.now());
             settingRepository.save(setting);
+        }
+    }
+
+    private void addDefaultSetting(String key, String value, String description) {
+        if (!settingRepository.existsById(key)) {
+            addSetting(key, value, description);
         }
     }
 }

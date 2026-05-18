@@ -1,6 +1,8 @@
 package com.example.hr.config;
 
+import com.example.hr.security.LoginVerificationCodeFilter;
 import com.example.hr.service.CustomOAuth2UserService;
+import com.example.hr.service.SystemSettingService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -10,6 +12,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -17,9 +20,11 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService oAuth2UserService;
+    private final SystemSettingService settingService;
 
-    public SecurityConfig(CustomOAuth2UserService oAuth2UserService) {
+    public SecurityConfig(CustomOAuth2UserService oAuth2UserService, SystemSettingService settingService) {
         this.oAuth2UserService = oAuth2UserService;
+        this.settingService = settingService;
     }
 
     @Bean
@@ -92,6 +97,10 @@ public class SecurityConfig {
                 .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
+            )
+            .addFilterBefore(
+                new LoginVerificationCodeFilter(settingService),
+                UsernamePasswordAuthenticationFilter.class
             );
 
         return http.build();

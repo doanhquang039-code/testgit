@@ -281,6 +281,284 @@
     return urlParams.get('lang') || getSetting('lang', 'vi');
   }
 
+  var UI_TEXT = {
+    vi: {
+      'settings.panel.title': 'Cài đặt',
+      'settings.panel.language': 'Ngôn ngữ',
+      'settings.panel.background': 'Giao diện nền',
+      'settings.panel.brightness': 'Độ sáng',
+      'settings.panel.fontSize': 'Cỡ chữ',
+      'settings.panel.compactMode': 'Chế độ gọn',
+      'settings.panel.compactDesc': 'Giảm khoảng cách hiển thị',
+      'settings.lang.vi': 'Tiếng Việt',
+      'settings.lang.en': 'English',
+      'settings.lang.zh': '中文',
+      'settings.lang.ja': '日本語',
+      'settings.lang.ko': '한국어',
+      'settings.font.small': 'Nhỏ',
+      'settings.font.medium': 'Vừa',
+      'settings.font.large': 'Lớn',
+      'admin.settings.title': 'Cài đặt hệ thống',
+      'admin.settings.hero.badge': 'Trung tâm điều khiển Admin',
+      'admin.settings.hero.desc': 'Quản lý cấu hình vận hành, bảo mật đăng nhập và các tham số HRMS.',
+      'admin.settings.viewLogin': 'Xem trang đăng nhập',
+      'admin.settings.total': 'Tổng cấu hình',
+      'admin.settings.loginVerification': 'Mã xác nhận đăng nhập',
+      'admin.settings.codeLengthMetric': 'Ký tự trong mã xác nhận',
+      'admin.settings.loginSecurity': 'Bảo mật đăng nhập',
+      'admin.settings.loginSecurityDesc': 'Các thay đổi ở đây áp dụng ngay cho form login.',
+      'admin.settings.loginSectionTag': 'Đăng nhập',
+      'admin.settings.verificationCode': 'Mã xác nhận',
+      'admin.settings.enabled': 'Bật',
+      'admin.settings.disabled': 'Tắt',
+      'admin.settings.enabledHint': 'Nên bật để giảm đăng nhập tự động.',
+      'admin.settings.codeLength': 'Độ dài mã',
+      'admin.settings.codeLengthHint': 'Giới hạn hợp lệ: 4 đến 8 ký tự.',
+      'admin.settings.charset': 'Bộ ký tự sinh mã',
+      'admin.settings.charsetHint': 'Đã bỏ các ký tự dễ nhầm như I, O, 0, 1 trong mặc định.',
+      'admin.settings.loginPreview': 'Xem trước đăng nhập',
+      'admin.settings.sampleCode': 'Mã mẫu',
+      'admin.settings.previewHint': 'Admin có thể tắt mã xác nhận khi demo nội bộ, nhưng môi trường thật nên giữ bật.',
+      'admin.settings.saveLogin': 'Lưu bảo mật đăng nhập',
+      'admin.settings.configList': 'Danh sách cấu hình',
+      'admin.settings.configKey': 'Mã cấu hình',
+      'admin.settings.configValue': 'Giá trị',
+      'admin.settings.description': 'Mô tả',
+      'admin.settings.valuePlaceholder': 'Nhập giá trị...',
+      'admin.settings.noConfig': 'Chưa có cấu hình nào',
+      'admin.settings.saveAll': 'Lưu tất cả thay đổi',
+      'admin.settings.addNew': 'Thêm cấu hình mới',
+      'admin.settings.addKeyPlaceholder': 'VD: MAX_FILE_SIZE',
+      'admin.settings.addValuePlaceholder': 'VD: 10MB',
+      'admin.settings.addDescPlaceholder': 'Kích thước file tối đa',
+      'nav.loginSettings': 'Cài đặt đăng nhập'
+    },
+    en: {
+      'settings.panel.title': 'Settings',
+      'settings.panel.language': 'Language',
+      'settings.panel.background': 'Background Theme',
+      'settings.panel.brightness': 'Brightness',
+      'settings.panel.fontSize': 'Font Size',
+      'settings.panel.compactMode': 'Compact Mode',
+      'settings.panel.compactDesc': 'Reduce padding and spacing',
+      'settings.lang.vi': 'Vietnamese',
+      'settings.lang.en': 'English',
+      'settings.lang.zh': 'Chinese',
+      'settings.lang.ja': 'Japanese',
+      'settings.lang.ko': 'Korean',
+      'settings.font.small': 'Small',
+      'settings.font.medium': 'Medium',
+      'settings.font.large': 'Large',
+      'admin.settings.title': 'System Settings',
+      'admin.settings.hero.badge': 'Admin Control Center',
+      'admin.settings.hero.desc': 'Manage runtime settings, login security, and HRMS parameters.',
+      'admin.settings.viewLogin': 'View login page',
+      'admin.settings.total': 'Total settings',
+      'admin.settings.loginVerification': 'Login verification code',
+      'admin.settings.codeLengthMetric': 'Verification code characters',
+      'admin.settings.loginSecurity': 'Login Security',
+      'admin.settings.loginSecurityDesc': 'Changes here apply immediately to the login form.',
+      'admin.settings.loginSectionTag': 'Login',
+      'admin.settings.verificationCode': 'Verification code',
+      'admin.settings.enabled': 'Enabled',
+      'admin.settings.disabled': 'Disabled',
+      'admin.settings.enabledHint': 'Keep this enabled to reduce automated sign-in attempts.',
+      'admin.settings.codeLength': 'Code length',
+      'admin.settings.codeLengthHint': 'Valid range: 4 to 8 characters.',
+      'admin.settings.charset': 'Code character set',
+      'admin.settings.charsetHint': 'The default set excludes confusing characters such as I, O, 0, and 1.',
+      'admin.settings.loginPreview': 'Login preview',
+      'admin.settings.sampleCode': 'Sample code',
+      'admin.settings.previewHint': 'Admins can disable verification for internal demos, but production should keep it enabled.',
+      'admin.settings.saveLogin': 'Save login security',
+      'admin.settings.configList': 'Settings list',
+      'admin.settings.configKey': 'Setting key',
+      'admin.settings.configValue': 'Value',
+      'admin.settings.description': 'Description',
+      'admin.settings.valuePlaceholder': 'Enter value...',
+      'admin.settings.noConfig': 'No settings yet',
+      'admin.settings.saveAll': 'Save all changes',
+      'admin.settings.addNew': 'Add new setting',
+      'admin.settings.addKeyPlaceholder': 'E.g. MAX_FILE_SIZE',
+      'admin.settings.addValuePlaceholder': 'E.g. 10MB',
+      'admin.settings.addDescPlaceholder': 'Maximum file size',
+      'nav.loginSettings': 'Login Settings'
+    },
+    zh: {
+      'settings.panel.title': '设置',
+      'settings.panel.language': '语言',
+      'settings.panel.background': '背景主题',
+      'settings.panel.brightness': '亮度',
+      'settings.panel.fontSize': '字体大小',
+      'settings.panel.compactMode': '紧凑模式',
+      'settings.panel.compactDesc': '减少内边距和间距',
+      'settings.lang.vi': '越南语',
+      'settings.lang.en': '英语',
+      'settings.lang.zh': '中文',
+      'settings.lang.ja': '日语',
+      'settings.lang.ko': '韩语',
+      'settings.font.small': '小',
+      'settings.font.medium': '中',
+      'settings.font.large': '大',
+      'admin.settings.title': '系统设置',
+      'admin.settings.hero.badge': '管理员控制中心',
+      'admin.settings.hero.desc': '管理运行配置、登录安全和 HRMS 参数。',
+      'admin.settings.viewLogin': '查看登录页',
+      'admin.settings.total': '设置总数',
+      'admin.settings.loginVerification': '登录验证码',
+      'admin.settings.codeLengthMetric': '验证码字符数',
+      'admin.settings.loginSecurity': '登录安全',
+      'admin.settings.loginSecurityDesc': '这里的更改会立即应用到登录表单。',
+      'admin.settings.loginSectionTag': '登录',
+      'admin.settings.verificationCode': '验证码',
+      'admin.settings.enabled': '启用',
+      'admin.settings.disabled': '关闭',
+      'admin.settings.enabledHint': '建议启用以减少自动登录尝试。',
+      'admin.settings.codeLength': '验证码长度',
+      'admin.settings.codeLengthHint': '有效范围：4 到 8 个字符。',
+      'admin.settings.charset': '验证码字符集',
+      'admin.settings.charsetHint': '默认字符集已排除 I、O、0、1 等易混字符。',
+      'admin.settings.loginPreview': '登录预览',
+      'admin.settings.sampleCode': '示例验证码',
+      'admin.settings.previewHint': '管理员可在内部演示时关闭验证码，但生产环境建议保持启用。',
+      'admin.settings.saveLogin': '保存登录安全设置',
+      'admin.settings.configList': '设置列表',
+      'admin.settings.configKey': '设置键',
+      'admin.settings.configValue': '值',
+      'admin.settings.description': '描述',
+      'admin.settings.valuePlaceholder': '输入值...',
+      'admin.settings.noConfig': '暂无设置',
+      'admin.settings.saveAll': '保存所有更改',
+      'admin.settings.addNew': '新增设置',
+      'admin.settings.addKeyPlaceholder': '例如：MAX_FILE_SIZE',
+      'admin.settings.addValuePlaceholder': '例如：10MB',
+      'admin.settings.addDescPlaceholder': '最大文件大小',
+      'nav.loginSettings': '登录设置'
+    },
+    ja: {
+      'settings.panel.title': '設定',
+      'settings.panel.language': '言語',
+      'settings.panel.background': '背景テーマ',
+      'settings.panel.brightness': '明るさ',
+      'settings.panel.fontSize': '文字サイズ',
+      'settings.panel.compactMode': 'コンパクトモード',
+      'settings.panel.compactDesc': '余白と間隔を減らします',
+      'settings.lang.vi': 'ベトナム語',
+      'settings.lang.en': '英語',
+      'settings.lang.zh': '中国語',
+      'settings.lang.ja': '日本語',
+      'settings.lang.ko': '韓国語',
+      'settings.font.small': '小',
+      'settings.font.medium': '中',
+      'settings.font.large': '大',
+      'admin.settings.title': 'システム設定',
+      'admin.settings.hero.badge': '管理者コントロールセンター',
+      'admin.settings.hero.desc': '実行設定、ログインセキュリティ、HRMS パラメータを管理します。',
+      'admin.settings.viewLogin': 'ログインページを表示',
+      'admin.settings.total': '設定数',
+      'admin.settings.loginVerification': 'ログイン確認コード',
+      'admin.settings.codeLengthMetric': '確認コードの文字数',
+      'admin.settings.loginSecurity': 'ログインセキュリティ',
+      'admin.settings.loginSecurityDesc': 'ここでの変更はログインフォームにすぐ反映されます。',
+      'admin.settings.loginSectionTag': 'ログイン',
+      'admin.settings.verificationCode': '確認コード',
+      'admin.settings.enabled': '有効',
+      'admin.settings.disabled': '無効',
+      'admin.settings.enabledHint': '自動ログイン試行を減らすため有効にしておくことを推奨します。',
+      'admin.settings.codeLength': 'コード長',
+      'admin.settings.codeLengthHint': '有効範囲：4～8文字。',
+      'admin.settings.charset': 'コード文字セット',
+      'admin.settings.charsetHint': '既定では I、O、0、1 など紛らわしい文字を除外しています。',
+      'admin.settings.loginPreview': 'ログインプレビュー',
+      'admin.settings.sampleCode': 'サンプルコード',
+      'admin.settings.previewHint': '内部デモでは無効にできますが、本番環境では有効のままにしてください。',
+      'admin.settings.saveLogin': 'ログインセキュリティを保存',
+      'admin.settings.configList': '設定一覧',
+      'admin.settings.configKey': '設定キー',
+      'admin.settings.configValue': '値',
+      'admin.settings.description': '説明',
+      'admin.settings.valuePlaceholder': '値を入力...',
+      'admin.settings.noConfig': '設定はまだありません',
+      'admin.settings.saveAll': 'すべての変更を保存',
+      'admin.settings.addNew': '新しい設定を追加',
+      'admin.settings.addKeyPlaceholder': '例：MAX_FILE_SIZE',
+      'admin.settings.addValuePlaceholder': '例：10MB',
+      'admin.settings.addDescPlaceholder': '最大ファイルサイズ',
+      'nav.loginSettings': 'ログイン設定'
+    },
+    ko: {
+      'settings.panel.title': '설정',
+      'settings.panel.language': '언어',
+      'settings.panel.background': '배경 테마',
+      'settings.panel.brightness': '밝기',
+      'settings.panel.fontSize': '글자 크기',
+      'settings.panel.compactMode': '간결 모드',
+      'settings.panel.compactDesc': '여백과 간격을 줄입니다',
+      'settings.lang.vi': '베트남어',
+      'settings.lang.en': '영어',
+      'settings.lang.zh': '중국어',
+      'settings.lang.ja': '일본어',
+      'settings.lang.ko': '한국어',
+      'settings.font.small': '작게',
+      'settings.font.medium': '보통',
+      'settings.font.large': '크게',
+      'admin.settings.title': '시스템 설정',
+      'admin.settings.hero.badge': '관리자 제어 센터',
+      'admin.settings.hero.desc': '운영 설정, 로그인 보안, HRMS 매개변수를 관리합니다.',
+      'admin.settings.viewLogin': '로그인 페이지 보기',
+      'admin.settings.total': '전체 설정',
+      'admin.settings.loginVerification': '로그인 인증 코드',
+      'admin.settings.codeLengthMetric': '인증 코드 문자 수',
+      'admin.settings.loginSecurity': '로그인 보안',
+      'admin.settings.loginSecurityDesc': '여기 변경 사항은 로그인 폼에 즉시 적용됩니다.',
+      'admin.settings.loginSectionTag': '로그인',
+      'admin.settings.verificationCode': '인증 코드',
+      'admin.settings.enabled': '켜짐',
+      'admin.settings.disabled': '꺼짐',
+      'admin.settings.enabledHint': '자동 로그인 시도를 줄이려면 켜두는 것을 권장합니다.',
+      'admin.settings.codeLength': '코드 길이',
+      'admin.settings.codeLengthHint': '유효 범위: 4~8자.',
+      'admin.settings.charset': '코드 문자 집합',
+      'admin.settings.charsetHint': '기본값은 I, O, 0, 1처럼 헷갈리는 문자를 제외합니다.',
+      'admin.settings.loginPreview': '로그인 미리보기',
+      'admin.settings.sampleCode': '샘플 코드',
+      'admin.settings.previewHint': '내부 데모에서는 인증 코드를 끌 수 있지만 운영 환경에서는 켜두는 것이 좋습니다.',
+      'admin.settings.saveLogin': '로그인 보안 저장',
+      'admin.settings.configList': '설정 목록',
+      'admin.settings.configKey': '설정 키',
+      'admin.settings.configValue': '값',
+      'admin.settings.description': '설명',
+      'admin.settings.valuePlaceholder': '값 입력...',
+      'admin.settings.noConfig': '아직 설정이 없습니다',
+      'admin.settings.saveAll': '모든 변경 저장',
+      'admin.settings.addNew': '새 설정 추가',
+      'admin.settings.addKeyPlaceholder': '예: MAX_FILE_SIZE',
+      'admin.settings.addValuePlaceholder': '예: 10MB',
+      'admin.settings.addDescPlaceholder': '최대 파일 크기',
+      'nav.loginSettings': '로그인 설정'
+    }
+  };
+
+  function uiText(lang, key) {
+    return (UI_TEXT[lang] && UI_TEXT[lang][key]) || UI_TEXT.vi[key] || key;
+  }
+
+  function applyExplicitTranslations(lang) {
+    document.documentElement.setAttribute('lang', lang);
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+      el.textContent = uiText(lang, el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+      el.setAttribute('placeholder', uiText(lang, el.getAttribute('data-i18n-placeholder')));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(function(el) {
+      el.setAttribute('title', uiText(lang, el.getAttribute('data-i18n-title')));
+    });
+    document.querySelectorAll('[data-i18n-document-title]').forEach(function(el) {
+      document.title = uiText(lang, el.getAttribute('data-i18n-document-title')) + ' - HRMS';
+    });
+  }
+
   function translatePage(lang) {
     if (lang === 'vi' || !DICT[lang]) return;
     var dict = DICT[lang];
@@ -354,6 +632,34 @@
   }
 
   // ==================== SETTINGS PANEL UI ====================
+  function localizeSettingsPanel(panel, lang) {
+    var replacements = [
+      ['Language', uiText(lang, 'settings.panel.language')],
+      ['Background Theme', uiText(lang, 'settings.panel.background')],
+      ['Brightness', uiText(lang, 'settings.panel.brightness')],
+      ['Font Size', uiText(lang, 'settings.panel.fontSize')],
+      ['Compact Mode', uiText(lang, 'settings.panel.compactMode')],
+      ['Reduce padding & spacing', uiText(lang, 'settings.panel.compactDesc')]
+    ];
+
+    var walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT, null, false);
+    var nodes = [];
+    var node;
+    while ((node = walker.nextNode())) {
+      nodes.push(node);
+    }
+
+    nodes.forEach(function(textNode) {
+      var value = textNode.nodeValue;
+      replacements.forEach(function(pair) {
+        if (value.indexOf(pair[0]) !== -1) {
+          value = pair[1];
+        }
+      });
+      textNode.nodeValue = value;
+    });
+  }
+
   function createSettingsPanel() {
     // Remove existing
     var existing = document.getElementById('hrms-settings-panel');
@@ -366,6 +672,15 @@
     var langFlags = { vi: '🇻🇳', en: '🇬🇧', zh: '🇨🇳', ja: '🇯🇵', ko: '🇰🇷' };
     var langNames = { vi: 'Tiếng Việt', en: 'English', zh: '中文', ja: '日本語', ko: '한국어' };
 
+    langFlags = { vi: 'VI', en: 'EN', zh: 'ZH', ja: 'JA', ko: 'KO' };
+    langNames = {
+      vi: uiText(currentLang, 'settings.lang.vi'),
+      en: uiText(currentLang, 'settings.lang.en'),
+      zh: uiText(currentLang, 'settings.lang.zh'),
+      ja: uiText(currentLang, 'settings.lang.ja'),
+      ko: uiText(currentLang, 'settings.lang.ko')
+    };
+
     var panel = document.createElement('div');
     panel.id = 'hrms-settings-panel';
     panel.innerHTML = [
@@ -375,7 +690,7 @@
         '<div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">',
           '<div style="display:flex;align-items:center;gap:10px;">',
             '<span style="font-size:1.3rem;">⚙️</span>',
-            '<span style="color:white;font-weight:700;font-size:1rem;">Settings</span>',
+            '<span style="color:white;font-weight:700;font-size:1rem;">' + uiText(currentLang, 'settings.panel.title') + '</span>',
           '</div>',
           '<button onclick="document.getElementById(\'hrms-settings-panel\').remove()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>',
         '</div>',
@@ -434,7 +749,11 @@
             '<div style="display:flex;gap:8px;">',
               ['small','medium','large'].map(function(s) {
                 var isActive = getSetting('fontSize','medium') === s;
-                var labels = {small:'Small',medium:'Medium',large:'Large'};
+                var labels = {
+                  small: uiText(currentLang, 'settings.font.small'),
+                  medium: uiText(currentLang, 'settings.font.medium'),
+                  large: uiText(currentLang, 'settings.font.large')
+                };
                 var sizes = {small:'0.78rem',medium:'0.85rem',large:'0.95rem'};
                 return '<button onclick="HRMS.settings.setFontSize(\'' + s + '\')" style="' +
                   'flex:1;padding:8px;border-radius:8px;cursor:pointer;font-size:' + sizes[s] + ';' +
@@ -469,6 +788,7 @@
     ].join('');
 
     document.body.appendChild(panel);
+    localizeSettingsPanel(panel, currentLang);
   }
 
   // ==================== GEAR BUTTON ====================
@@ -526,6 +846,8 @@
     if (lang !== 'vi') {
       translatePage(lang);
     }
+
+    applyExplicitTranslations(lang);
 
     // Inject gear button
     injectGearButton();
