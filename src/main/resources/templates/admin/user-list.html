@@ -268,6 +268,7 @@
                 <tr>
                     <th>Nhân viên</th>
                     <th>Tài khoản</th>
+                    <th>CCCD</th>
                     <th>Phòng ban</th>
                     <th>Chức vụ</th>
                     <th class="text-center">Thao tác</th>
@@ -275,7 +276,7 @@
                 </thead>
                 <tbody>
                 <tr th:if="${#lists.isEmpty(users)}">
-                    <td colspan="5" class="empty-state">
+                    <td colspan="6" class="empty-state">
                         <i class="bi bi-person-x"></i>
                         Không có nhân viên nào khớp bộ lọc hiện tại.
                     </td>
@@ -296,6 +297,12 @@
                         <span class="badge-soft badge-user">
                             <i class="bi bi-person-badge"></i>
                             <span th:text="${u.username}">username</span>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge-soft" style="background:#f1f5f9;color:#475569;">
+                            <i class="bi bi-shield-lock"></i>
+                            <span th:text="${u.maskedCccd}">***</span>
                         </span>
                     </td>
                     <td>

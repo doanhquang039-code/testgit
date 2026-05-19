@@ -2,6 +2,7 @@ package com.example.hr.models;
 
 import com.example.hr.enums.Role;
 import com.example.hr.enums.UserStatus;
+import com.example.hr.security.SensitiveStringCryptoConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,6 +37,10 @@ private String password;
 
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
+
+    @Convert(converter = SensitiveStringCryptoConverter.class)
+    @Column(name = "cccd", length = 1000)
+    private String cccd;
 
     @Column(length = 20)
     private String gender;
@@ -75,4 +80,14 @@ private String password;
     /** Firebase Cloud Messaging token — dùng cho push notifications */
     @Column(name = "fcm_token", length = 500)
     private String fcmToken;
+
+    public String getMaskedCccd() {
+        if (cccd == null || cccd.isBlank()) {
+            return "Chưa có CCCD";
+        }
+        if (cccd.length() <= 6) {
+            return "******";
+        }
+        return cccd.substring(0, 3) + "******" + cccd.substring(cccd.length() - 3);
+    }
 }

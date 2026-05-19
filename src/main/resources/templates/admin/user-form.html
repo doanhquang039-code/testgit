@@ -139,6 +139,12 @@
                                th:value="${user.phoneNumber}" placeholder="0901234567"/>
                     </div>
                     <div class="col-md-4">
+                        <label class="form-label">CCCD</label>
+                        <input type="text" name="cccd" class="form-control"
+                               th:value="${user.cccd}" placeholder="Nhập CCCD/CMND"/>
+                        <div class="pwd-hint"><i class="bi bi-shield-lock"></i> Được mã hóa khi lưu</div>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label">Giới tính</label>
                         <select name="gender" class="form-select">
                             <option value="">-- Chọn --</option>

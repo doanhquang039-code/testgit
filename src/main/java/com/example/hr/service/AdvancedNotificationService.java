@@ -34,6 +34,7 @@ public class AdvancedNotificationService {
     private final NotificationTemplateRepository notificationTemplateRepository;
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
+    private final InternalMessageDeliveryService internalMessageDeliveryService;
     
     @Transactional
     public void sendNotification(NotificationSendDTO dto) {
@@ -75,6 +76,12 @@ public class AdvancedNotificationService {
                     break;
                 case PUSH:
                     sendPushNotification(user, subject, message);
+                    break;
+                case SLACK:
+                    internalMessageDeliveryService.sendSlack(subject, message);
+                    break;
+                case ZALO:
+                    internalMessageDeliveryService.sendZalo(user, subject, message);
                     break;
             }
         }

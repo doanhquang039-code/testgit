@@ -198,8 +198,9 @@ public class UserController {
                            @RequestParam(value = "dateOfBirth", required = false) String dateOfBirth,
                            @RequestParam(value = "address", required = false) String address,
                            @RequestParam(value = "employeeCode", required = false) String employeeCode,
+                           @RequestParam(value = "cccd", required = false) String cccd,
                            @RequestParam(value = "hireDate", required = false) String hireDate) throws IOException {
-        userService.saveAdminUser(user, file, departmentId, positionId, phoneNumber, gender, dateOfBirth, address, employeeCode, hireDate);
+        userService.saveAdminUser(user, file, departmentId, positionId, phoneNumber, gender, dateOfBirth, address, employeeCode, cccd, hireDate);
         return "redirect:/admin/users";
     }
 

@@ -57,6 +57,8 @@ public class SelfServicePortalService {
             profile.setBankAccountNumber(updatedProfile.getBankAccountNumber());
         if (updatedProfile.getBankAccountName() != null) 
             profile.setBankAccountName(updatedProfile.getBankAccountName());
+        if (updatedProfile.getIdentityNumber() != null)
+            profile.setIdentityNumber(updatedProfile.getIdentityNumber());
         
         if (updatedProfile.getCurrentAddress() != null) 
             profile.setCurrentAddress(updatedProfile.getCurrentAddress());

@@ -4,7 +4,9 @@ public enum NotificationChannel {
     IN_APP("In-App"),
     EMAIL("Email"),
     SMS("SMS"),
-    PUSH("Push Notification");
+    PUSH("Push Notification"),
+    SLACK("Slack"),
+    ZALO("Zalo");
 
     private final String displayName;
 

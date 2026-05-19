@@ -12,6 +12,6 @@ public interface TaskAssignmentRepository extends JpaRepository<TaskAssignment, 
 
     List<TaskAssignment> findByUser(User user);
 
-    @Query("SELECT a FROM TaskAssignment a LEFT JOIN FETCH a.user")
+    @Query("SELECT a FROM TaskAssignment a LEFT JOIN FETCH a.user LEFT JOIN FETCH a.task")
     List<TaskAssignment> findAllWithUser();
 }

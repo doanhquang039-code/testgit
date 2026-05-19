@@ -1,6 +1,7 @@
 package com.example.hr.models;
 
 import com.example.hr.enums.PaymentStatus;
+import com.example.hr.security.SensitiveStringCryptoConverter;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -31,6 +32,10 @@ public class Payroll {
 
     @Column(name = "net_salary", insertable = false, updatable = false)
     private BigDecimal netSalary;
+
+    @Convert(converter = SensitiveStringCryptoConverter.class)
+    @Column(name = "encrypted_salary_payload", columnDefinition = "TEXT")
+    private String encryptedSalaryPayload;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
@@ -105,6 +110,14 @@ public class Payroll {
 
     public BigDecimal getNetSalary() {
         return netSalary;
+    }
+
+    public String getEncryptedSalaryPayload() {
+        return encryptedSalaryPayload;
+    }
+
+    public void setEncryptedSalaryPayload(String encryptedSalaryPayload) {
+        this.encryptedSalaryPayload = encryptedSalaryPayload;
     }
 
     public PaymentStatus getPaymentStatus() {

@@ -1,5 +1,6 @@
 package com.example.hr.models;
 
+import com.example.hr.security.SensitiveStringCryptoConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,11 +29,27 @@ public class EmployeeProfile {
     private String emergencyContactRelation;
     
     private String bankName;
+
+    @Convert(converter = SensitiveStringCryptoConverter.class)
+    @Column(length = 1000)
     private String bankAccountNumber;
+
     private String bankAccountName;
+
+    @Convert(converter = SensitiveStringCryptoConverter.class)
+    @Column(name = "identity_number", length = 1000)
+    private String identityNumber;
     
+    @Convert(converter = SensitiveStringCryptoConverter.class)
+    @Column(length = 1000)
     private String taxCode;
+
+    @Convert(converter = SensitiveStringCryptoConverter.class)
+    @Column(length = 1000)
     private String socialInsuranceNumber;
+
+    @Convert(converter = SensitiveStringCryptoConverter.class)
+    @Column(length = 1000)
     private String healthInsuranceNumber;
     
     private String permanentAddress;

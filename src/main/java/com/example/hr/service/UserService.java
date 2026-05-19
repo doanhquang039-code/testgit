@@ -100,12 +100,13 @@ public class UserService {
                               String dateOfBirth,
                               String address,
                               String employeeCode,
+                              String cccd,
                               String hireDate) throws IOException {
         User existing = user.getId() != null ? getUserById(user.getId()) : null;
         Department oldDepartment = existing != null ? existing.getDepartment() : null;
 
         applyRelations(user, departmentId, positionId);
-        applyEditableFields(user, phoneNumber, gender, dateOfBirth, address, employeeCode, hireDate, existing);
+        applyEditableFields(user, phoneNumber, gender, dateOfBirth, address, employeeCode, cccd, hireDate, existing);
         handleProfileImage(user, file, existing);
         handlePassword(user, existing);
         touchAuditFields(user, existing == null);
@@ -146,11 +147,17 @@ public class UserService {
                                      String dateOfBirth,
                                      String address,
                                      String employeeCode,
+                                     String cccd,
                                      String hireDate,
                                      User existing) {
         user.setPhoneNumber(phoneNumber);
         user.setGender(gender);
         user.setAddress(address);
+        if (cccd != null && !cccd.isBlank()) {
+            user.setCccd(cccd.trim());
+        } else if (existing != null) {
+            user.setCccd(existing.getCccd());
+        }
         
         // Handle employee code - generate unique if not provided or if creating new user
         if (existing == null) {
