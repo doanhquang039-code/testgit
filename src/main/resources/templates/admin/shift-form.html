@@ -78,21 +78,13 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Tên ca <span class="text-danger">*</span></label>
-                        <input type="text" name="shiftName" class="form-control" required
-                               th:value="${shift.shiftName}" placeholder="VD: Ca Sáng"/>
+                        <input type="text" name="name" class="form-control" required
+                               th:value="${shift.name}" placeholder="VD: Ca Sáng"/>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Mã ca <span class="text-danger">*</span></label>
-                        <input type="text" name="shiftCode" class="form-control" required
-                               th:value="${shift.shiftCode}" placeholder="VD: MORNING"/>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Loại ca</label>
-                        <select name="shiftType" class="form-select">
-                            <option value="REGULAR" th:selected="${shift.shiftType != null and shift.shiftType.name() == 'REGULAR'}">REGULAR</option>
-                            <option value="NIGHT"   th:selected="${shift.shiftType != null and shift.shiftType.name() == 'NIGHT'}">NIGHT</option>
-                            <option value="WEEKEND" th:selected="${shift.shiftType != null and shift.shiftType.name() == 'WEEKEND'}">WEEKEND</option>
-                        </select>
+                        <label class="form-label">Cho phép đi muộn (phút)</label>
+                        <input type="number" name="gracePeriodMinutes" class="form-control" min="0"
+                               th:value="${shift.gracePeriodMinutes != null ? shift.gracePeriodMinutes : 10}"/>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
@@ -105,20 +97,15 @@
                                th:value="${shift.endTime}"/>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Nghỉ giữa ca (phút)</label>
-                        <input type="number" name="breakMinutes" class="form-control" min="0"
-                               th:value="${shift.breakMinutes != null ? shift.breakMinutes : 60}"/>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Phụ cấp ca (VND)</label>
-                        <input type="number" name="allowance" class="form-control" min="0" step="1000"
-                               th:value="${shift.allowance != null ? shift.allowance : 0}"/>
+                        <label class="form-label">Ngưỡng OT (phút)</label>
+                        <input type="number" name="overtimeThresholdMinutes" class="form-control" min="0"
+                               th:value="${shift.overtimeThresholdMinutes != null ? shift.overtimeThresholdMinutes : 30}"/>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Trạng thái</label>
                         <select name="isActive" class="form-select">
                             <option value="true"  th:selected="${shift.isActive == null or shift.isActive}">✅ Active</option>
-                            <option value="false" th:selected="${shift.isActive != null and !shift.isActive}">❌ Inactive</option>
+                            <option value="false" th:selected="${shift.isActive != null and shift.isActive == false}">❌ Inactive</option>
                         </select>
                     </div>
                     <div class="col-12">

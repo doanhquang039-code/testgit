@@ -40,6 +40,12 @@ public class EmployeeSkillService {
     }
 
     public EmployeeSkill save(EmployeeSkill skill) {
+        if (skill.getSkillName() != null) {
+            skill.setSkillName(skill.getSkillName().trim());
+        }
+        if (skill.getSkillCategory() != null) {
+            skill.setSkillCategory(skill.getSkillCategory().trim().toUpperCase());
+        }
         if (skill.getId() == null) {
             skill.setCreatedAt(LocalDateTime.now());
         }
@@ -53,6 +59,15 @@ public class EmployeeSkillService {
 
     public boolean existsByUserAndSkillName(Integer userId, String skillName) {
         return employeeSkillRepository.existsByUserIdAndSkillName(userId, skillName);
+    }
+
+    public boolean existsForAnotherSkill(Integer userId, String skillName, Integer currentSkillId) {
+        if (userId == null || skillName == null || skillName.isBlank()) {
+            return false;
+        }
+        return employeeSkillRepository.findByUserIdAndSkillName(userId, skillName.trim())
+                .map(existing -> currentSkillId == null || !existing.getId().equals(currentSkillId))
+                .orElse(false);
     }
 
     public List<String> getDistinctSkillsByCategory(String category) {

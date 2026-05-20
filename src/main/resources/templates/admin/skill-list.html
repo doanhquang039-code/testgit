@@ -88,6 +88,10 @@
         <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 
     <!-- Filter -->
     <div class="filter-card">
@@ -97,7 +101,7 @@
                     <label style="font-size:0.8rem;color:#64748b;font-weight:600;" class="form-label">Nhân viên</label>
                     <select name="userId" class="form-select form-select-sm">
                         <option value="">-- Tất cả --</option>
-                        <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName}"
+                        <option th:each="u : ${userOptions}" th:value="${u.id}" th:text="${u.fullName}"
                                 th:selected="${u.id == selectedUserId}"></option>
                     </select>
                 </div>
@@ -127,7 +131,7 @@
     <div class="table-card">
         <div class="tc-head">
             <h6><i class="bi bi-list-ul me-2"></i>Danh Sách Kỹ Năng</h6>
-            <span style="font-size:0.8rem;color:#94a3b8;" th:text="${skills.size()} + ' kỹ năng'"></span>
+            <span style="font-size:0.8rem;color:#94a3b8;" th:text="${#lists.size(skills)} + ' kỹ năng'"></span>
         </div>
         <div class="table-responsive">
             <table class="table data-table mb-0 hrms-dt" data-page-size="15">
@@ -152,8 +156,8 @@
                     <tr th:each="s : ${skills}">
                         <td>
                             <div class="emp-cell">
-                                <div class="emp-av" th:text="${s.user != null ? #strings.substring(s.user.fullName,0,1) : 'N'}">N</div>
-                                <div style="font-weight:600;font-size:0.85rem;" th:text="${s.user != null ? s.user.fullName : 'N/A'}"></div>
+                                <div class="emp-av" th:text="${#strings.isEmpty(s.userFullName) ? 'N' : #strings.substring(s.userFullName,0,1)}">N</div>
+                                <div style="font-weight:600;font-size:0.85rem;" th:text="${s.userFullName}"></div>
                             </div>
                         </td>
                         <td style="font-weight:600;" th:text="${s.skillName}"></td>

@@ -76,7 +76,7 @@ public class ManagerMeetingController {
             meeting.setOrganizer(manager);
             meeting.setDepartment(manager.getDepartment());
             
-            meetingService.createMeeting(meeting);
+            meetingService.createMeeting(meeting, authentication);
             
             redirectAttributes.addFlashAttribute("successMessage", 
                     "Meeting scheduled successfully: " + meeting.getTitle());
@@ -126,10 +126,11 @@ public class ManagerMeetingController {
     public String updateMeeting(
             @PathVariable Integer id,
             @ModelAttribute Meeting meetingData,
+            Authentication authentication,
             RedirectAttributes redirectAttributes) {
         
         try {
-            meetingService.updateMeeting(id, meetingData);
+            meetingService.updateMeeting(id, meetingData, authentication);
             redirectAttributes.addFlashAttribute("successMessage", "Meeting updated successfully");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", 

@@ -39,6 +39,9 @@ public class ChatbotService {
     @Autowired(required = false)
     private GeminiAiService geminiAiService;
 
+    @Autowired
+    private HealthInsightService healthInsightService;
+
     @Transactional
     public ChatbotChatResponse chat(User user, String rawMessage, String sessionIdIn) {
         String message = rawMessage != null ? rawMessage.trim() : "";
@@ -88,6 +91,12 @@ public class ChatbotService {
         if (matches(norm, "don nghi cho duyet", "đơn nghỉ chờ duyệt", "don nghi cua toi", "đơn nghỉ của tôi")) {
             intent = "LEAVE_STATUS";
             reply = leaveAnswer(user, norm);
+            return saveAndBuild(user, sessionId, message, intent, reply, false);
+        }
+
+        if (matches(norm, "suc khoe", "sức khỏe", "stress", "met moi", "mệt mỏi", "burnout", "ngu it", "ngủ ít")) {
+            intent = "HEALTH_INSIGHT";
+            reply = healthInsightAnswer(user);
             return saveAndBuild(user, sessionId, message, intent, reply, false);
         }
 
@@ -207,6 +216,16 @@ public class ChatbotService {
             return base + " Tháng " + m + "/" + y + ": hệ thống đã có bản ghi bảng lương cho bạn.";
         }
         return base + " Tháng " + m + "/" + y + ": chưa thấy bản ghi lương — có thể HR chưa tạo; liên hệ HR nếu cần gấp.";
+    }
+
+    private String healthInsightAnswer(User user) {
+        HealthInsightService.HealthInsightResult result = healthInsightService.analyze(
+                user,
+                new HealthInsightService.HealthInsightInput(7.0, 4, 6000, 1.8, 0.0, null)
+        );
+        return "Mình đã thêm công cụ Health insight trên dashboard để bạn nhập ngủ/stress/bước chân/nước uống/OT và nhận phân tích theo vai trò. "
+                + "Mặc định hiện tại: " + result.wellnessScore() + "/100 - " + result.riskLevel() + ". "
+                + result.summary() + " Lưu ý: đây chỉ là tham khảo, không thay thế tư vấn y tế.";
     }
 
     private String workProgressAnswer(User user) {

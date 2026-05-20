@@ -79,6 +79,13 @@ public class AttendanceAdvancedController {
         model.addAttribute("shift", new Shift());
         return "admin/shift-form";
     }
+
+    @GetMapping("/admin/shifts/edit/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String editShiftForm(@PathVariable Integer id, Model model) {
+        model.addAttribute("shift", attendanceService.getShiftById(id));
+        return "admin/shift-form";
+    }
     
     @PostMapping("/admin/shifts/save")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
@@ -86,6 +93,18 @@ public class AttendanceAdvancedController {
         try {
             attendanceService.createShift(shift);
             ra.addFlashAttribute("success", "Tạo ca làm việc thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/shifts";
+    }
+
+    @GetMapping("/admin/shifts/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public String deleteShift(@PathVariable Integer id, RedirectAttributes ra) {
+        try {
+            attendanceService.deleteShift(id);
+            ra.addFlashAttribute("success", "Đã xóa ca làm việc.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }

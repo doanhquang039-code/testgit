@@ -10,6 +10,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -199,8 +200,9 @@ public class UserController {
                            @RequestParam(value = "address", required = false) String address,
                            @RequestParam(value = "employeeCode", required = false) String employeeCode,
                            @RequestParam(value = "cccd", required = false) String cccd,
-                           @RequestParam(value = "hireDate", required = false) String hireDate) throws IOException {
-        userService.saveAdminUser(user, file, departmentId, positionId, phoneNumber, gender, dateOfBirth, address, employeeCode, cccd, hireDate);
+                           @RequestParam(value = "hireDate", required = false) String hireDate,
+                           Authentication authentication) throws IOException {
+        userService.saveAdminUser(user, file, departmentId, positionId, phoneNumber, gender, dateOfBirth, address, employeeCode, cccd, hireDate, authentication);
         return "redirect:/admin/users";
     }
 

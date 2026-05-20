@@ -68,4 +68,10 @@ public class Meeting {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "created_by_encrypted", length = 1000)
+    private String createdByEncrypted;
+
+    @Column(name = "updated_by_encrypted", length = 1000)
+    private String updatedByEncrypted;
 }

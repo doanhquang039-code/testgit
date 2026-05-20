@@ -1,0 +1,42 @@
+<div th:fragment="widget" class="hrms-weather-route-widget mb-4">
+    <div class="hrms-wr-panel hrms-wr-weather">
+        <div class="hrms-wr-head">
+            <div>
+                <div class="hrms-wr-kicker">Thoi tiet</div>
+                <h2>Vi tri hien tai</h2>
+            </div>
+            <button type="button" class="hrms-wr-icon-btn" data-weather-refresh title="Tai lai thoi tiet">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+        </div>
+        <div class="hrms-wr-main">
+            <div class="hrms-wr-temp" data-weather-temp>--</div>
+            <div>
+                <div class="hrms-wr-desc" data-weather-desc>Dang tai du lieu...</div>
+                <div class="hrms-wr-meta" data-weather-location>Cho phep trinh duyet lay vi tri de hien thi dung khu vuc.</div>
+            </div>
+        </div>
+        <div class="hrms-wr-grid">
+            <div><span>Gio</span><strong data-weather-wind>--</strong></div>
+            <div><span>Do am</span><strong data-weather-humidity>--</strong></div>
+            <div><span>Cap nhat</span><strong data-weather-time>--</strong></div>
+        </div>
+    </div>
+
+    <div class="hrms-wr-panel hrms-wr-route">
+        <div class="hrms-wr-head">
+            <div>
+                <div class="hrms-wr-kicker">Duong di</div>
+                <h2>Tim den vi tri</h2>
+            </div>
+            <i class="bi bi-geo-alt hrms-wr-pin"></i>
+        </div>
+        <form class="hrms-wr-route-form" data-route-form>
+            <input type="text" data-route-destination placeholder="Nhap dia diem can den..." autocomplete="off">
+            <button type="submit"><i class="bi bi-signpost-2"></i> Tim</button>
+        </form>
+        <div class="hrms-wr-route-result" data-route-result>
+            Nhap dia diem de xem khoang cach va mo chi duong tren Google Maps.
+        </div>
+    </div>
+</div>

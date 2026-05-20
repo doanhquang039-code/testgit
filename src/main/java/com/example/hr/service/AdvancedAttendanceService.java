@@ -125,6 +125,18 @@ public class AdvancedAttendanceService {
     public Shift createShift(Shift shift) {
         return shiftRepository.save(shift);
     }
+
+    @Transactional(readOnly = true)
+    public Shift getShiftById(Integer id) {
+        return shiftRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Shift not found: " + id));
+    }
+
+    public void deleteShift(Integer id) {
+        Shift shift = getShiftById(id);
+        shift.setIsActive(false);
+        shiftRepository.save(shift);
+    }
     
     /**
      * Get all active shifts

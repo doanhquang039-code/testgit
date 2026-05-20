@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/role-polish.css}">
+    <link rel="stylesheet" th:href="@{/css/weather-route-widget.css}">
+    <link rel="stylesheet" th:href="@{/css/health-insight-widget.css}">
     <style>
         * { font-family: 'Inter', sans-serif; }
         body { background: #f0f4f8; min-height: 100vh; margin: 0; }
@@ -442,6 +444,9 @@
         </div>
     </div>
 
+    <div th:replace="fragments/weather-route-widget :: widget"></div>
+    <div th:replace="fragments/health-insight-widget :: widget"></div>
+
     <!-- CHECK-IN BOX -->
     <div class="checkin-box">
         <div>
@@ -692,5 +697,7 @@ setInterval(updateClock, 1000);
 <script th:src="@{/js/hrms-ui.js}"></script>
 <script th:src="@{/js/hrms-datatable.js}"></script>
 <script th:src="@{/js/role-polish.js}"></script>
+<script th:src="@{/js/weather-route-widget.js}"></script>
+<script th:src="@{/js/health-insight-widget.js}"></script>
 </body>
 </html>

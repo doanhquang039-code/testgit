@@ -1,0 +1,99 @@
+.hrms-health-widget {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    padding: 18px;
+}
+
+.hrms-health-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.hrms-health-head i {
+    color: #dc2626;
+    font-size: 1.45rem;
+}
+
+.hrms-health-kicker {
+    color: #64748b;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.hrms-health-head h2 {
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 3px 0 0;
+}
+
+.hrms-health-form {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(90px, 1fr)) auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.hrms-health-form label {
+    color: #334155;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.hrms-health-form input {
+    display: block;
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 7px 9px;
+    margin-top: 4px;
+}
+
+.hrms-health-form span {
+    color: #64748b;
+    display: block;
+    font-size: .7rem;
+    margin-top: 2px;
+}
+
+.hrms-health-form button {
+    border: 0;
+    border-radius: 10px;
+    background: #dc2626;
+    color: white;
+    font-weight: 800;
+    min-height: 38px;
+    padding: 8px 14px;
+    white-space: nowrap;
+}
+
+.hrms-health-result {
+    color: #475569;
+    font-size: .84rem;
+    line-height: 1.5;
+    margin-top: 12px;
+}
+
+.hrms-health-result strong.low { color: #047857; }
+.hrms-health-result strong.medium { color: #b45309; }
+.hrms-health-result strong.high { color: #b91c1c; }
+
+@media (max-width: 1200px) {
+    .hrms-health-form {
+        grid-template-columns: repeat(3, minmax(90px, 1fr));
+    }
+}
+
+@media (max-width: 575px) {
+    .hrms-health-form {
+        grid-template-columns: 1fr;
+    }
+}

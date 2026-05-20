@@ -54,6 +54,7 @@ public class SecurityConfig {
                     "/swagger-ui.html"
                 ).permitAll()
                 .requestMatchers(
+                    "/admin/departments/**",
                     "/admin/leaves/**",
                     "/admin/attendance/**",
                     "/admin/tasks/**",

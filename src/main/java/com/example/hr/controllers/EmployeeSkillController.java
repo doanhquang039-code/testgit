@@ -6,6 +6,7 @@ import com.example.hr.models.User;
 import com.example.hr.repository.UserRepository;
 import com.example.hr.service.AuthUserHelper;
 import com.example.hr.service.EmployeeSkillService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class EmployeeSkillController {
@@ -46,8 +49,11 @@ public class EmployeeSkillController {
             skills = employeeSkillService.findAll();
         }
 
-        model.addAttribute("skills", skills);
-        model.addAttribute("users", userRepository.findAll());
+        List<UserOption> userOptions = userOptions();
+        Map<Integer, String> userNames = userOptions.stream()
+                .collect(Collectors.toMap(UserOption::id, UserOption::fullName));
+        model.addAttribute("skills", skills.stream().map(skill -> SkillRow.from(skill, userNames)).toList());
+        model.addAttribute("userOptions", userOptions);
         model.addAttribute("skillLevels", SkillLevel.values());
         model.addAttribute("selectedUserId", userId);
         model.addAttribute("selectedCategory", category);
@@ -58,8 +64,9 @@ public class EmployeeSkillController {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public String showAddForm(Model model) {
         model.addAttribute("skill", new EmployeeSkill());
-        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("userOptions", userOptions());
         model.addAttribute("skillLevels", SkillLevel.values());
+        model.addAttribute("selectedUserId", null);
         return "admin/skill-form";
     }
 
@@ -69,8 +76,9 @@ public class EmployeeSkillController {
         EmployeeSkill skill = employeeSkillService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Skill không tồn tại"));
         model.addAttribute("skill", skill);
-        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("userOptions", userOptions());
         model.addAttribute("skillLevels", SkillLevel.values());
+        model.addAttribute("selectedUserId", skill.getUser() != null ? skill.getUser().getId() : null);
         return "admin/skill-form";
     }
 
@@ -82,14 +90,29 @@ public class EmployeeSkillController {
                        RedirectAttributes ra) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+
+        if (employeeSkillService.existsForAnotherSkill(userId, skill.getSkillName(), skill.getId())) {
+            ra.addFlashAttribute("error", "Nhân viên này đã có kỹ năng \"" + skill.getSkillName() + "\".");
+            return skill.getId() != null
+                    ? "redirect:/admin/skills/edit/" + skill.getId()
+                    : "redirect:/admin/skills/add";
+        }
+
         skill.setUser(user);
 
         User verifier = authUserHelper.getCurrentUser(auth);
         if (verifier != null) skill.setVerifiedBy(verifier);
 
-        employeeSkillService.save(skill);
-        ra.addFlashAttribute("success", "Lưu kỹ năng thành công!");
-        return "redirect:/admin/skills";
+        try {
+            employeeSkillService.save(skill);
+            ra.addFlashAttribute("success", "Lưu kỹ năng thành công!");
+            return "redirect:/admin/skills";
+        } catch (DataIntegrityViolationException ex) {
+            ra.addFlashAttribute("error", "Không lưu được kỹ năng. Vui lòng kiểm tra dữ liệu hoặc kỹ năng bị trùng.");
+            return skill.getId() != null
+                    ? "redirect:/admin/skills/edit/" + skill.getId()
+                    : "redirect:/admin/skills/add";
+        }
     }
 
     @GetMapping("/admin/skills/delete/{id}")
@@ -144,5 +167,41 @@ public class EmployeeSkillController {
         });
         ra.addFlashAttribute("success", "Đã xóa kỹ năng!");
         return "redirect:/user1/skills";
+    }
+
+    private List<UserOption> userOptions() {
+        return userRepository.findAll().stream()
+                .map(user -> new UserOption(user.getId(), user.getFullName()))
+                .toList();
+    }
+
+    public record UserOption(Integer id, String fullName) {
+    }
+
+    public record SkillRow(
+            Integer id,
+            Integer userId,
+            String userFullName,
+            String skillName,
+            String skillCategory,
+            SkillLevel skillLevel,
+            java.math.BigDecimal yearsExp,
+            Boolean isCertified,
+            String certificateName) {
+
+        static SkillRow from(EmployeeSkill skill, Map<Integer, String> userNames) {
+            User user = skill.getUser();
+            Integer userId = user != null ? user.getId() : null;
+            return new SkillRow(
+                    skill.getId(),
+                    userId,
+                    userNames.getOrDefault(userId, "N/A"),
+                    skill.getSkillName(),
+                    skill.getSkillCategory(),
+                    skill.getSkillLevel(),
+                    skill.getYearsExp(),
+                    Boolean.TRUE.equals(skill.getIsCertified()),
+                    skill.getCertificateName());
+        }
     }
 }

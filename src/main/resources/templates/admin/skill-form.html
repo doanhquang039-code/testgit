@@ -65,6 +65,10 @@
             <i class="bi bi-arrow-left me-1"></i>Quay lại
         </a>
     </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     <div class="form-card">
         <div class="form-card-header">
             <h5><i class="bi bi-mortarboard me-2"></i>
@@ -81,8 +85,8 @@
                         <label class="form-label">Nhân viên <span class="text-danger">*</span></label>
                         <select name="userId" class="form-select" required>
                             <option value="">-- Chọn nhân viên --</option>
-                            <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName}"
-                                    th:selected="${skill.user != null and skill.user.id == u.id}"></option>
+                            <option th:each="u : ${userOptions}" th:value="${u.id}" th:text="${u.fullName}"
+                                    th:selected="${selectedUserId != null and selectedUserId == u.id}"></option>
                         </select>
                     </div>
                     <div class="col-md-6">

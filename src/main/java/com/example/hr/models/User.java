@@ -77,6 +77,12 @@ private String password;
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "created_by_encrypted", length = 1000)
+    private String createdByEncrypted;
+
+    @Column(name = "updated_by_encrypted", length = 1000)
+    private String updatedByEncrypted;
+
     /** Firebase Cloud Messaging token — dùng cho push notifications */
     @Column(name = "fcm_token", length = 500)
     private String fcmToken;

@@ -4,6 +4,7 @@ import com.example.hr.models.Meeting;
 import com.example.hr.models.User;
 import com.example.hr.repository.MeetingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,13 +16,24 @@ import java.util.List;
 public class MeetingService {
 
     private final MeetingRepository meetingRepository;
+    private final AuthUserHelper authUserHelper;
+    private final AuditEncryptionService auditEncryptionService;
 
     /**
      * Create new meeting
      */
     @Transactional
     public Meeting createMeeting(Meeting meeting) {
+        return createMeeting(meeting, null);
+    }
+
+    @Transactional
+    public Meeting createMeeting(Meeting meeting, Authentication authentication) {
+        String encryptedActor = encryptActor(authUserHelper.getCurrentUser(authentication));
         meeting.setCreatedAt(LocalDateTime.now());
+        meeting.setUpdatedAt(LocalDateTime.now());
+        meeting.setCreatedByEncrypted(encryptedActor);
+        meeting.setUpdatedByEncrypted(encryptedActor);
         meeting.setStatus("SCHEDULED");
         return meetingRepository.save(meeting);
     }
@@ -31,6 +43,11 @@ public class MeetingService {
      */
     @Transactional
     public Meeting updateMeeting(Integer id, Meeting meetingData) {
+        return updateMeeting(id, meetingData, null);
+    }
+
+    @Transactional
+    public Meeting updateMeeting(Integer id, Meeting meetingData, Authentication authentication) {
         Meeting meeting = getMeetingById(id);
         
         meeting.setTitle(meetingData.getTitle());
@@ -41,6 +58,7 @@ public class MeetingService {
         meeting.setMeetingLink(meetingData.getMeetingLink());
         meeting.setAgenda(meetingData.getAgenda());
         meeting.setUpdatedAt(LocalDateTime.now());
+        meeting.setUpdatedByEncrypted(encryptActor(authUserHelper.getCurrentUser(authentication)));
         
         return meetingRepository.save(meeting);
     }
@@ -132,4 +150,15 @@ public class MeetingService {
             long scheduledMeetings,
             long cancelledMeetings
     ) {}
+
+    private String encryptActor(User actor) {
+        if (actor == null) {
+            return auditEncryptionService.encrypt("Khong xac dinh");
+        }
+        String payload = String.format("%s | %s | %s",
+                actor.getUsername(),
+                actor.getFullName(),
+                actor.getRole() != null ? actor.getRole().name() : "NO_ROLE");
+        return auditEncryptionService.encrypt(payload);
+    }
 }

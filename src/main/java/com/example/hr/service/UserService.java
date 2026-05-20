@@ -9,6 +9,7 @@ import com.example.hr.repository.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,18 +31,24 @@ public class UserService {
     private final JobPositionRepository positionRepository;
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
+    private final AuthUserHelper authUserHelper;
+    private final AuditEncryptionService auditEncryptionService;
  
     public UserService(
             UserRepository userRepository,
             DepartmentRepository departmentRepository,
             JobPositionRepository positionRepository,
             PasswordEncoder passwordEncoder,
-            CloudinaryService cloudinaryService) {
+            CloudinaryService cloudinaryService,
+            AuthUserHelper authUserHelper,
+            AuditEncryptionService auditEncryptionService) {
         this.userRepository = userRepository;
         this.departmentRepository = departmentRepository;
         this.positionRepository = positionRepository;
         this.passwordEncoder = passwordEncoder;
         this.cloudinaryService = cloudinaryService;
+        this.authUserHelper = authUserHelper;
+        this.auditEncryptionService = auditEncryptionService;
     }
 
     @CacheEvict(value = {"users", "departments"}, allEntries = true)
@@ -102,6 +109,23 @@ public class UserService {
                               String employeeCode,
                               String cccd,
                               String hireDate) throws IOException {
+        return saveAdminUser(user, file, departmentId, positionId, phoneNumber, gender, dateOfBirth,
+                address, employeeCode, cccd, hireDate, null);
+    }
+
+    @CacheEvict(value = {"users", "departments"}, allEntries = true)
+    public User saveAdminUser(User user,
+                              MultipartFile file,
+                              Integer departmentId,
+                              Integer positionId,
+                              String phoneNumber,
+                              String gender,
+                              String dateOfBirth,
+                              String address,
+                              String employeeCode,
+                              String cccd,
+                              String hireDate,
+                              Authentication authentication) throws IOException {
         User existing = user.getId() != null ? getUserById(user.getId()) : null;
         Department oldDepartment = existing != null ? existing.getDepartment() : null;
 
@@ -109,7 +133,7 @@ public class UserService {
         applyEditableFields(user, phoneNumber, gender, dateOfBirth, address, employeeCode, cccd, hireDate, existing);
         handleProfileImage(user, file, existing);
         handlePassword(user, existing);
-        touchAuditFields(user, existing == null);
+        touchAuditFields(user, existing, authentication);
 
         User saved = userRepository.save(user);
         refreshDepartmentEmployeeCount(oldDepartment);
@@ -269,12 +293,32 @@ public class UserService {
         }
     }
 
-    private void touchAuditFields(User user, boolean creating) {
+    private void touchAuditFields(User user, User existing, Authentication authentication) {
         LocalDateTime now = LocalDateTime.now();
+        boolean creating = existing == null;
+        String encryptedActor = encryptActor(authUserHelper.getCurrentUser(authentication));
         if (creating && user.getCreatedAt() == null) {
             user.setCreatedAt(now);
         }
+        if (creating) {
+            user.setCreatedByEncrypted(encryptedActor);
+        } else {
+            user.setCreatedAt(existing.getCreatedAt());
+            user.setCreatedByEncrypted(existing.getCreatedByEncrypted());
+        }
+        user.setUpdatedByEncrypted(encryptedActor);
         user.setUpdatedAt(now);
+    }
+
+    private String encryptActor(User actor) {
+        if (actor == null) {
+            return auditEncryptionService.encrypt("Khong xac dinh");
+        }
+        String payload = String.format("%s | %s | %s",
+                actor.getUsername(),
+                actor.getFullName(),
+                actor.getRole() != null ? actor.getRole().name() : "NO_ROLE");
+        return auditEncryptionService.encrypt(payload);
     }
 
     private boolean matchesKeyword(User user, String keyword) {
